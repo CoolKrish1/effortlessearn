@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel</title>
+<title>FULL ADMIN DASHBOARD</title>
 
 <style>
 body{
@@ -13,10 +13,14 @@ height:100vh;
 
 /* SIDEBAR */
 .sidebar{
-width:220px;
+width:240px;
 background:#111;
 color:white;
 padding:20px;
+}
+
+.sidebar h2{
+margin-bottom:20px;
 }
 
 .sidebar button{
@@ -42,6 +46,15 @@ padding:20px;
 overflow:auto;
 }
 
+.page{
+display:none;
+}
+
+.active{
+display:block;
+}
+
+/* CARD */
 .card{
 background:white;
 padding:15px;
@@ -50,15 +63,17 @@ border-radius:10px;
 box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-button.approve{
+/* BUTTONS */
+.approve{
 background:green;
 color:white;
 padding:8px;
 border:none;
 cursor:pointer;
+margin-right:5px;
 }
 
-button.reject{
+.reject{
 background:red;
 color:white;
 padding:8px;
@@ -72,11 +87,13 @@ cursor:pointer;
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-<h2>Admin</h2>
+<h2>🔥 Admin Panel</h2>
 
-<button onclick="showPage('dashboard')">📊 Dashboard</button>
-<button onclick="showPage('withdraw')">💰 Withdraw</button>
-<button onclick="showPage('users')">👤 Users</button>
+<button onclick="show('dashboard')">📊 Dashboard</button>
+<button onclick="show('withdraw')">💰 Withdraw</button>
+<button onclick="show('users')">👤 Users</button>
+<button onclick="show('wallets')">💳 Wallets</button>
+<button onclick="show('campaigns')">📦 Campaigns</button>
 
 </div>
 
@@ -84,26 +101,39 @@ cursor:pointer;
 <div class="content">
 
 <!-- DASHBOARD -->
-<div id="dashboard" class="page">
+<div id="dashboard" class="page active">
 <h2>📊 Dashboard</h2>
 
 <div class="card">
-<p>Total Users: <span id="usersCount">0</span></p>
-<p>Total Withdrawals: <span id="withdrawCount">0</span></p>
-<p>Total Payout: ₹<span id="payout">0</span></p>
+<p>Total Users: <span id="totalUsers">0</span></p>
+<p>Total Withdrawals: <span id="totalWithdraw">0</span></p>
+<p>Total Payout: ₹<span id="totalPayout">0</span></p>
+<p>Pending Requests: <span id="pending">0</span></p>
 </div>
 </div>
 
 <!-- WITHDRAW -->
-<div id="withdraw" class="page" style="display:none;">
+<div id="withdraw" class="page">
 <h2>💰 Withdraw Requests</h2>
 <div id="withdrawList">Loading...</div>
 </div>
 
 <!-- USERS -->
-<div id="users" class="page" style="display:none;">
+<div id="users" class="page">
 <h2>👤 Users</h2>
 <div id="userList">Loading...</div>
+</div>
+
+<!-- WALLETS -->
+<div id="wallets" class="page">
+<h2>💳 Wallets</h2>
+<div id="walletList">Loading...</div>
+</div>
+
+<!-- CAMPAIGNS -->
+<div id="campaigns" class="page">
+<h2>📦 Campaigns</h2>
+<div id="campaignList">Loading...</div>
 </div>
 
 </div>
@@ -136,44 +166,52 @@ const db = getFirestore(app);
 //
 // PAGE SWITCH
 //
-window.showPage = function(page){
+window.show = function(page){
 
   document.querySelectorAll('.page').forEach(p=>{
-    p.style.display = "none";
+    p.classList.remove('active');
   });
 
-  document.getElementById(page).style.display = "block";
+  document.getElementById(page).classList.add('active');
 };
 
 //
-// LOAD DASHBOARD
+// LOAD DASHBOARD STATS
 //
-async function loadDashboard(){
+async function loadStats(){
 
   const users = await getDocs(collection(db,"wallets"));
   const withdraw = await getDocs(collection(db,"withdrawals"));
 
   let payout = 0;
+  let pending = 0;
 
   withdraw.forEach(d=>{
-    if(d.data().status==="approved"){
-      payout += Number(d.data().amount);
+    const data = d.data();
+
+    if(data.status==="approved"){
+      payout += Number(data.amount);
+    }
+
+    if(data.status==="pending"){
+      pending++;
     }
   });
 
-  document.getElementById("usersCount").innerText = users.size;
-  document.getElementById("withdrawCount").innerText = withdraw.size;
-  document.getElementById("payout").innerText = payout;
+  document.getElementById("totalUsers").innerText = users.size;
+  document.getElementById("totalWithdraw").innerText = withdraw.size;
+  document.getElementById("totalPayout").innerText = payout;
+  document.getElementById("pending").innerText = pending;
 }
 
 //
-// LOAD WITHDRAW
+// WITHDRAW LIST
 //
 async function loadWithdraw(){
 
   const snap = await getDocs(collection(db,"withdrawals"));
 
-  let html = "";
+  let html="";
 
   snap.forEach(d=>{
 
@@ -181,9 +219,10 @@ async function loadWithdraw(){
 
     html += `
       <div class="card">
-        <p>User: ${data.userId}</p>
-        <p>Amount: ₹${data.amount}</p>
-        <p>Status: ${data.status}</p>
+        <p><b>User:</b> ${data.userId}</p>
+        <p><b>Amount:</b> ₹${data.amount}</p>
+        <p><b>UPI:</b> ${data.upi}</p>
+        <p><b>Status:</b> ${data.status}</p>
 
         ${data.status==="pending" ? `
           <button class="approve" onclick="approve('${d.id}')">Approve</button>
@@ -194,6 +233,76 @@ async function loadWithdraw(){
   });
 
   document.getElementById("withdrawList").innerHTML = html;
+}
+
+//
+// USERS
+//
+async function loadUsers(){
+
+  const snap = await getDocs(collection(db,"wallets"));
+
+  let html="";
+
+  snap.forEach(d=>{
+    const data = d.data();
+
+    html += `
+      <div class="card">
+        <p><b>User ID:</b> ${d.id}</p>
+        <p><b>Balance:</b> ₹${data.balance}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("userList").innerHTML = html;
+}
+
+//
+// WALLET VIEW
+//
+async function loadWallets(){
+
+  const snap = await getDocs(collection(db,"wallets"));
+
+  let html="";
+
+  snap.forEach(d=>{
+    const data = d.data();
+
+    html += `
+      <div class="card">
+        <p><b>User:</b> ${d.id}</p>
+        <p><b>Balance:</b> ₹${data.balance}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("walletList").innerHTML = html;
+}
+
+//
+// CAMPAIGNS VIEW
+//
+async function loadCampaigns(){
+
+  const snap = await getDocs(collection(db,"campaigns"));
+
+  let html="";
+
+  snap.forEach(d=>{
+    const data = d.data();
+
+    html += `
+      <div class="card">
+        <p><b>Title:</b> ${data.title}</p>
+        <p><b>Reward:</b> ₹${data.reward}</p>
+        <p><b>Status:</b> ${data.status}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("campaignList").innerHTML = html;
 }
 
 //
@@ -212,7 +321,7 @@ window.approve = async function(id){
   await updateDoc(walletRef,{balance:increment(-data.amount)});
 
   loadWithdraw();
-  loadDashboard();
+  loadStats();
 };
 
 //
@@ -225,10 +334,14 @@ window.reject = async function(id){
   });
 
   loadWithdraw();
+  loadStats();
 };
 
-loadDashboard();
+loadStats();
 loadWithdraw();
+loadUsers();
+loadWallets();
+loadCampaigns();
 
 </script>
 
