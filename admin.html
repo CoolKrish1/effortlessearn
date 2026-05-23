@@ -10,137 +10,233 @@ background:#f5f5f5;
 padding:20px;
 }
 
+h1{ margin-bottom:20px; }
+
+.tabs button{
+padding:10px;
+margin-right:10px;
+cursor:pointer;
+border:none;
+background:#333;
+color:white;
+border-radius:5px;
+}
+
+.tab{
+display:none;
+margin-top:20px;
+}
+
+.active{
+display:block;
+}
+
 .card{
 background:white;
 padding:15px;
-margin-bottom:15px;
+margin:10px 0;
 border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-button{
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.stat{
+font-size:20px;
+font-weight:bold;
+}
+
+button.action{
 padding:8px 12px;
 margin-right:10px;
+border:none;
 cursor:pointer;
+border-radius:5px;
 }
 
-.approve{
-background:green;
-color:white;
-border:none;
-}
-
-.reject{
-background:red;
-color:white;
-border:none;
-}
+.approve{ background:green;color:white; }
+.reject{ background:red;color:white; }
 </style>
 </head>
 
 <body>
 
-<h1>Admin Panel - Pending Approvals</h1>
+<h1>🔥 Admin Control Panel</h1>
+
+<div class="tabs">
+<button onclick="openTab('dashboard')">📊 Dashboard</button>
+<button onclick="openTab('withdraw')">💰 Withdraw Requests</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="tab active">
+
+<div class="grid">
 
 <div class="card">
+<h3>Total Users</h3>
+<p class="stat" id="users">0</p>
+</div>
+
+<div class="card">
+<h3>Total Withdrawals</h3>
+<p class="stat" id="withdrawals">0</p>
+</div>
+
+<div class="card">
+<h3>Total Payout</h3>
+<p class="stat" id="payout">₹0</p>
+</div>
+
+<div class="card">
+<h3>Pending Requests</h3>
+<p class="stat" id="pending">0</p>
+</div>
+
+</div>
+
+</div>
+
+<!-- WITHDRAW -->
+<div id="withdraw" class="tab">
+
 <div id="list">Loading...</div>
+
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, increment } 
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {
+getFirestore,
+collection,
+getDocs,
+doc,
+updateDoc,
+getDoc,
+increment
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-  authDomain: "effortless-earn-7f39e.firebaseapp.com",
-  projectId: "effortless-earn-7f39e",
-  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
-  messagingSenderId: "554178513766",
-  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+ apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+ authDomain: "effortless-earn-7f39e.firebaseapp.com",
+ projectId: "effortless-earn-7f39e",
+ storageBucket: "effortless-earn-7f39e.firebasestorage.app",
+ messagingSenderId: "554178513766",
+ appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 //
-// 📦 LOAD PENDING REQUESTS
+// TAB SWITCH
 //
-async function loadRequests() {
-  const snap = await getDocs(collection(db, "participations"));
+window.openTab = function(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+};
 
-  let html = "";
+//
+// LOAD STATS
+//
+async function loadStats(){
 
-  snap.forEach(docSnap => {
-    const data = docSnap.data();
+  const usersSnap = await getDocs(collection(db,"wallets"));
+  const withdrawSnap = await getDocs(collection(db,"withdrawals"));
 
-    if (data.status === "pending") {
+  let payout = 0;
+  let pending = 0;
 
-      html += `
-        <div class="card">
-          <p><b>User:</b> ${data.userId}</p>
-          <p><b>Campaign:</b> ${data.campaignId}</p>
-          <p><b>Reward:</b> ₹${data.reward}</p>
+  withdrawSnap.forEach(d=>{
+    const data = d.data();
 
-          <button class="approve" onclick="approve('${docSnap.id}', '${data.userId}', ${data.reward})">
-            Approve
-          </button>
+    if(data.status === "approved"){
+      payout += Number(data.amount);
+    }
 
-          <button class="reject" onclick="reject('${docSnap.id}')">
-            Reject
-          </button>
-        </div>
-      `;
+    if(data.status === "pending"){
+      pending++;
     }
   });
 
-  document.getElementById("list").innerHTML = html || "No pending requests";
+  document.getElementById("users").innerText = usersSnap.size;
+  document.getElementById("withdrawals").innerText = withdrawSnap.size;
+  document.getElementById("payout").innerText = "₹" + payout;
+  document.getElementById("pending").innerText = pending;
 }
 
 //
-// ✅ APPROVE FUNCTION
+// LOAD WITHDRAWALS
 //
-window.approve = async function(id, userId, reward) {
+async function loadWithdrawals(){
 
-  // update participation
-  const ref = doc(db, "participations", id);
+  const snap = await getDocs(collection(db,"withdrawals"));
 
-  await updateDoc(ref, {
-    status: "approved"
+  let html = "";
+
+  snap.forEach(docSnap=>{
+
+    const data = docSnap.data();
+
+    html += `
+      <div class="card">
+        <p><b>User:</b> ${data.userId}</p>
+        <p><b>Amount:</b> ₹${data.amount}</p>
+        <p><b>UPI:</b> ${data.upi}</p>
+        <p><b>Status:</b> ${data.status}</p>
+
+        ${data.status==="pending" ? `
+          <button class="action approve" onclick="approve('${docSnap.id}')">Approve</button>
+          <button class="action reject" onclick="reject('${docSnap.id}')">Reject</button>
+        ` : ``}
+      </div>
+    `;
   });
 
-  // update wallet
-  const walletRef = doc(db, "wallets", userId);
+  document.getElementById("list").innerHTML = html || "No requests";
+}
 
-  const walletSnap = await getDoc(walletRef);
+//
+// APPROVE
+//
+window.approve = async function(id){
 
-  if (!walletSnap.exists()) {
-    await setDoc(walletRef, { balance: reward });
-  } else {
-    await updateDoc(walletRef, {
-      balance: increment(reward)
-    });
-  }
+  const ref = doc(db,"withdrawals",id);
+  const snap = await getDoc(ref);
 
-  alert("Approved + Wallet updated!");
-  loadRequests();
+  const data = snap.data();
+
+  const walletRef = doc(db,"wallets",data.userId);
+
+  await updateDoc(ref,{status:"approved"});
+  await updateDoc(walletRef,{balance:increment(-data.amount)});
+
+  alert("Approved");
+  loadWithdrawals();
+  loadStats();
 };
 
 //
-// ❌ REJECT FUNCTION
+// REJECT
 //
-window.reject = async function(id) {
-  const ref = doc(db, "participations", id);
+window.reject = async function(id){
 
-  await updateDoc(ref, {
-    status: "rejected"
+  await updateDoc(doc(db,"withdrawals",id),{
+    status:"rejected"
   });
 
-  alert("Rejected!");
-  loadRequests();
+  alert("Rejected");
+  loadWithdrawals();
+  loadStats();
 };
 
-loadRequests();
+loadStats();
+loadWithdrawals();
 
 </script>
 
