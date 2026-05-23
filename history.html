@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>User History</title>
+<title>History</title>
 
 <style>
 body{
@@ -19,7 +19,7 @@ border-radius:10px;
 
 .pending{color:orange;}
 .approved{color:green;}
-rejected{color:red;}
+.rejected{color:red;}
 </style>
 </head>
 
@@ -31,4 +31,77 @@ rejected{color:red;}
 
 <script type="module">
 
-import { initializeApp }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+  authDomain: "effortless-earn-7f39e.firebaseapp.com",
+  projectId: "effortless-earn-7f39e",
+  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
+  messagingSenderId: "554178513766",
+  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth, async (user) => {
+
+  if(!user){
+    window.location.href = "signin.html";
+    return;
+  }
+
+  console.log("User logged in:", user.uid);
+
+  const q = query(
+    collection(db,"withdrawals"),
+    where("userId","==",user.uid)
+  );
+
+  const snap = await getDocs(q);
+
+  console.log("Records found:", snap.size);
+
+  let html = "";
+
+  if(snap.empty){
+    document.getElementById("list").innerHTML = "No history found";
+    return;
+  }
+
+  snap.forEach(doc => {
+
+    const d = doc.data();
+
+    let cls =
+      d.status === "pending" ? "pending" :
+      d.status === "approved" ? "approved" :
+      "rejected";
+
+    html += `
+      <div class="card">
+        <p><b>Amount:</b> ₹${d.amount}</p>
+        <p><b>UPI:</b> ${d.upi}</p>
+        <p><b>Status:</b> <span class="${cls}">${d.status}</span></p>
+      </div>
+    `;
+  });
+
+  document.getElementById("list").innerHTML = html;
+
+});
+
+</script>
+
+</body>
+</html>
