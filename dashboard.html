@@ -29,7 +29,7 @@ cursor:pointer;
 
 <div class="card">
 <h2>Wallet Balance</h2>
-<p>₹0</p>
+<p id="walletBalance">Loading...</p>
 </div>
 
 <div class="card">
@@ -40,9 +40,12 @@ cursor:pointer;
 <button onclick="logout()">Logout</button>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { 
+getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, increment 
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
@@ -59,56 +62,65 @@ const db = getFirestore(app);
 
 let currentUser = null;
 
+//
 // 🔐 LOGIN CHECK
+//
 onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
+    loadWallet();
     loadCampaigns();
   } else {
     window.location.href = "signin.html";
   }
 });
 
-// 📦 LOAD CAMPAIGNS
-async function loadCampaigns() {
-  try {
-    const querySnapshot = await getDocs(collection(db, "campaigns"));
+//
+// 💰 LOAD WALLET
+//
+async function loadWallet() {
+  const ref = doc(db, "wallets", currentUser.uid);
+  const snap = await getDoc(ref);
 
-    let html = "";
-
-    if (querySnapshot.empty) {
-      html = "<p>No campaigns found</p>";
-    } else {
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-
-        html += `
-          <div style="border:1px solid #ccc;padding:10px;margin:10px 0;">
-            <h3>${data.title}</h3>
-            <p>Reward: ₹${data.reward}</p>
-            <button onclick="participate('${docSnap.id}', ${data.reward})">
-              Participate
-            </button>
-          </div>
-        `;
-      });
-    }
-
-    document.getElementById("campaignList").innerHTML = html;
-
-  } catch (error) {
-    alert("ERROR: " + error.message);
+  if (snap.exists()) {
+    document.getElementById("walletBalance").innerText = "₹" + snap.data().balance;
+  } else {
+    document.getElementById("walletBalance").innerText = "₹0";
   }
 }
 
-// 🎯 PARTICIPATE FUNCTION
-window.participate = async function(campaignId, reward) {
-  if (!currentUser) {
-    alert("Please login first");
-    return;
-  }
+//
+// 📦 LOAD CAMPAIGNS
+//
+async function loadCampaigns() {
+  const querySnapshot = await getDocs(collection(db, "campaigns"));
 
+  let html = "";
+
+  querySnapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+
+    html += `
+      <div style="border:1px solid #ccc;padding:10px;margin:10px 0;">
+        <h3>${data.title}</h3>
+        <p>Reward: ₹${data.reward}</p>
+        <button onclick="participate('${docSnap.id}', ${data.reward})">
+          Participate
+        </button>
+      </div>
+    `;
+  });
+
+  document.getElementById("campaignList").innerHTML = html;
+}
+
+//
+// 🎯 PARTICIPATE + WALLET UPDATE (pending system)
+//
+window.participate = async function(campaignId, reward) {
   try {
+
+    // save participation
     await setDoc(doc(db, "participations", currentUser.uid + "_" + campaignId), {
       userId: currentUser.uid,
       campaignId: campaignId,
@@ -117,22 +129,22 @@ window.participate = async function(campaignId, reward) {
       createdAt: new Date()
     });
 
-    alert("Campaign joined successfully!");
+    alert("Campaign joined!");
+
   } catch (error) {
-    alert("Error: " + error.message);
+    alert(error.message);
   }
 };
 
+//
 // 🚪 LOGOUT
+//
 window.logout = function() {
-  signOut(auth)
-  .then(() => {
+  signOut(auth).then(() => {
     window.location.href = "signin.html";
-  })
-  .catch((error) => {
-    alert(error.message);
   });
 };
+
 </script>
 
 </body>
