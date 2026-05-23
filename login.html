@@ -1,45 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login - Campaign Reward Hub</title>
+<title>Login - Campaign Reward Hub</title>
 </head>
+
 <body>
 
-<h2>Create Account</h2>
+<h2>Login / Register</h2>
 
 <input type="email" id="email" placeholder="Enter Email"><br><br>
 <input type="password" id="password" placeholder="Enter Password"><br><br>
 
 <button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
+
+<p id="msg"></p>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+setDoc,
+getDoc
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-  authDomain: "effortless-earn-7f39e.firebaseapp.com",
-  projectId: "effortless-earn-7f39e",
-  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
-  messagingSenderId: "554178513766",
-  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+authDomain: "effortless-earn-7f39e.firebaseapp.com",
+projectId: "effortless-earn-7f39e",
+storageBucket: "effortless-earn-7f39e.firebasestorage.app",
+messagingSenderId: "554178513766",
+appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-window.register = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+/* REGISTER */
+window.register = async function(){
 
-  createUserWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      alert("Account Created Successfully!");
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
+
+try{
+
+const userCred = await createUserWithEmailAndPassword(auth,email,password);
+
+/* 🔥 SAVE USER IN FIRESTORE */
+await setDoc(doc(db,"users",userCred.user.uid),{
+email: email,
+role: "user",
+balance: 0
+});
+
+document.getElementById("msg").innerText = "Account Created ✔";
+
+}catch(err){
+document.getElementById("msg").innerText = err.message;
+}
+
 };
+
+/* LOGIN */
+window.login = async function(){
+
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
+
+try{
+
+const userCred = await signInWithEmailAndPassword(auth,email,password);
+
+const snap = await getDoc(doc(db,"users",userCred.user.uid));
+
+if(!snap.exists()){
+document.getElementById("msg").innerText = "User not found in DB";
+return;
+}
+
+const role = snap.data().role;
+
+/* 🔥 ROLE BASED REDIRECT */
+if(role === "admin"){
+window.location.href = "admin.html";
+}else{
+window.location.href = "dashboard.html";
+}
+
+}catch(err){
+document.getElementById("msg").innerText = err.message;
+}
+
+};
+
 </script>
 
 </body>
