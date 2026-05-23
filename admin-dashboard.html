@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f5f5f5;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.stat{
+font-size:20px;
+font-weight:bold;
+}
+
+.pending{ color:orange; }
+.approved{ color:green; }
+.rejected{ color:red; }
+</style>
+</head>
+
+<body>
+
+<h1>Admin Dashboard 📊</h1>
+
+<div class="grid">
+
+<div class="card">
+<h3>Total Users</h3>
+<p class="stat" id="users">Loading...</p>
+</div>
+
+<div class="card">
+<h3>Total Withdraw Requests</h3>
+<p class="stat" id="withdrawals">Loading...</p>
+</div>
+
+<div class="card">
+<h3>Total Approved Payout</h3>
+<p class="stat" id="payout">Loading...</p>
+</div>
+
+<div class="card">
+<h3>Pending Requests</h3>
+<p class="stat" id="pending">Loading...</p>
+</div>
+
+</div>
+
+<div class="card">
+<h2>Quick Links</h2>
+
+<button onclick="location.href='admin-withdraw.html'">
+Withdraw Panel
+</button>
+
+<button onclick="location.href='history.html'">
+User History
+</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {
+getFirestore,
+collection,
+getDocs
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyD...",
+ authDomain: "effortless-earn-7f39e.firebaseapp.com",
+ projectId: "effortless-earn-7f39e",
+ storageBucket: "effortless-earn-7f39e.firebasestorage.app",
+ messagingSenderId: "554178513766",
+ appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+//
+// 📊 LOAD STATS
+//
+async function loadStats(){
+
+  // USERS COUNT
+  const usersSnap = await getDocs(collection(db,"wallets"));
+  document.getElementById("users").innerText = usersSnap.size;
+
+  // WITHDRAWALS
+  const withdrawSnap = await getDocs(collection(db,"withdrawals"));
+  document.getElementById("withdrawals").innerText = withdrawSnap.size;
+
+  let totalPayout = 0;
+  let pending = 0;
+
+  withdrawSnap.forEach(doc=>{
+    const d = doc.data();
+
+    if(d.status === "approved"){
+      totalPayout += Number(d.amount);
+    }
+
+    if(d.status === "pending"){
+      pending++;
+    }
+  });
+
+  document.getElementById("payout").innerText = "₹" + totalPayout;
+  document.getElementById("pending").innerText = pending;
+}
+
+loadStats();
+
+</script>
+
+</body>
+</html>
