@@ -5,56 +5,68 @@
 </head>
 <body>
 
-<h2>Admin Panel</h2>
+<h2>Admin Dashboard</h2>
 
-<div id="users"></div>
-<div id="withdraw"></div>
+<button onclick="logout()">Logout</button>
+
+<h3>Stats</h3>
+<p>Users: <span id="u">0</span></p>
+<p>Withdraw: <span id="w">0</span></p>
+
+<div id="list"></div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {
-getFirestore,
-collection,
-getDocs
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-import {
-getAuth,
-onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-authDomain: "effortless-earn-7f39e.firebaseapp.com",
-projectId: "effortless-earn-7f39e",
-storageBucket: "effortless-earn-7f39e.appspot.com",
-messagingSenderId: "554178513766",
-appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+  authDomain: "effortless-earn-7f39e.firebaseapp.com",
+  projectId: "effortless-earn-7f39e",
+  storageBucket: "effortless-earn-7f39e.appspot.com",
+  messagingSenderId: "554178513766",
+  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-onAuthStateChanged(auth, async(user)=>{
+onAuthStateChanged(auth,(user)=>{
+
 if(!user){
-location.href="login.html";
-return;
+window.location.href="login.html";
 }
 
-load();
+loadData();
+
 });
 
-async function load(){
+async function loadData(){
 
 const users = await getDocs(collection(db,"users"));
-document.getElementById("users").innerHTML = "Users: " + users.size;
+const withdraw = await getDocs(collection(db,"withdrawals"));
 
-const w = await getDocs(collection(db,"withdrawals"));
-document.getElementById("withdraw").innerHTML = "Withdraw: " + w.size;
+document.getElementById("u").innerText = users.size;
+document.getElementById("w").innerText = withdraw.size;
+
+let html = "";
+
+withdraw.forEach(d=>{
+let x = d.data();
+html += `<p>${x.userId} - ₹${x.amount} - ${x.status}</p>`;
+});
+
+document.getElementById("list").innerHTML = html;
 
 }
+
+window.logout = function(){
+signOut(auth);
+window.location.href="login.html";
+};
 
 </script>
 
