@@ -153,11 +153,25 @@ window.participate = async function(campaignId, reward) {
 
     // 💰 OPTIONAL TEST EARNING (remove later if needed)
     const walletRef = doc(db, "wallets", currentUser.uid);
-    await updateDoc(walletRef, {
-      balance: increment(reward)
+    window.participate = async function(campaignId, reward) {
+  try {
+
+    const participationRef = doc(db, "participations", currentUser.uid + "_" + campaignId);
+
+    await setDoc(participationRef, {
+      userId: currentUser.uid,
+      campaignId: campaignId,
+      reward: reward,
+      status: "pending",
+      createdAt: new Date()
     });
 
-    loadWallet();
+    alert("Campaign submitted! Wait for approval.");
+
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
     alert("Campaign joined + ₹" + reward + " added to wallet!");
 
