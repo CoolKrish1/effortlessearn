@@ -35,6 +35,10 @@ color:white;
 background:red;
 color:white;
 }
+
+.pending{ color:orange; font-weight:bold; }
+.approved{ color:green; font-weight:bold; }
+.rejected{ color:red; font-weight:bold; }
 </style>
 </head>
 
@@ -42,7 +46,7 @@ color:white;
 
 <h1>Withdraw Requests (Admin Panel)</h1>
 
-<div id="list">Loading...</div>
+<div id="list">Loading requests...</div>
 
 <script type="module">
 
@@ -69,6 +73,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+let processing = false;
+
 //
 // 📦 LOAD WITHDRAW REQUESTS
 //
@@ -82,15 +88,21 @@ async function loadWithdrawals() {
 
     const data = docSnap.data();
 
-    if (data.status === "pending") {
+    let statusClass = data.status === "pending"
+      ? "pending"
+      : data.status === "approved"
+      ? "approved"
+      : "rejected";
 
-      html += `
-        <div class="card">
-          <p><b>User ID:</b> ${data.userId}</p>
-          <p><b>Amount:</b> ₹${data.amount}</p>
-          <p><b>UPI:</b> ${data.upi}</p>
-          <p><b>Status:</b> ${data.status}</p>
+    html += `
+      <div class="card">
+        <p><b>User ID:</b> ${data.userId}</p>
+        <p><b>Amount:</b> ₹${data.amount}</p>
+        <p><b>UPI:</b> ${data.upi}</p>
+        <p><b>Status:</b> <span class="${statusClass}">${data.status}</span></p>
+        <p><b>Time:</b> ${data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleString() : "N/A"}</p>
 
+        ${data.status === "pending" ? `
           <button class="approve" onclick="approve('${docSnap.id}')">
             Approve
           </button>
@@ -98,56 +110,71 @@ async function loadWithdrawals() {
           <button class="reject" onclick="reject('${docSnap.id}')">
             Reject
           </button>
-        </div>
-      `;
-    }
+        ` : ``}
+      </div>
+    `;
   });
 
-  document.getElementById("list").innerHTML = html || "No pending withdrawals";
+  document.getElementById("list").innerHTML = html || "No withdrawals found";
 }
 
 //
-// ✅ APPROVE (wallet deduct + status update)
+// ✅ APPROVE
 //
 window.approve = async function(id) {
 
-  const ref = doc(db, "withdrawals", id);
-  const snap = await getDoc(ref);
+  if(processing) return;
+  processing = true;
 
-  if (!snap.exists()) {
-    alert("Request not found");
-    return;
+  try {
+
+    const ref = doc(db, "withdrawals", id);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      alert("Request not found");
+      return;
+    }
+
+    const data = snap.data();
+
+    if(data.status !== "pending"){
+      alert("Already processed");
+      return;
+    }
+
+    const walletRef = doc(db, "wallets", data.userId);
+    const walletSnap = await getDoc(walletRef);
+
+    if (!walletSnap.exists()) {
+      alert("Wallet not found");
+      return;
+    }
+
+    const currentBalance = walletSnap.data().balance || 0;
+
+    if (currentBalance < data.amount) {
+      alert("Insufficient balance");
+      return;
+    }
+
+    await updateDoc(ref, {
+      status: "approved"
+    });
+
+    await updateDoc(walletRef, {
+      balance: increment(-data.amount)
+    });
+
+    alert("Approved successfully!");
+
+    loadWithdrawals();
+
+  } catch (err) {
+    alert(err.message);
   }
 
-  const data = snap.data();
-
-  const walletRef = doc(db, "wallets", data.userId);
-  const walletSnap = await getDoc(walletRef);
-
-  if (!walletSnap.exists()) {
-    alert("Wallet not found");
-    return;
-  }
-
-  const currentBalance = walletSnap.data().balance || 0;
-
-  if (currentBalance < data.amount) {
-    alert("Insufficient wallet balance");
-    return;
-  }
-
-  // mark approved
-  await updateDoc(ref, {
-    status: "approved"
-  });
-
-  // deduct wallet
-  await updateDoc(walletRef, {
-    balance: increment(-data.amount)
-  });
-
-  alert("Approved + Payment processed (manual assumed)");
-  loadWithdrawals();
+  processing = false;
 };
 
 //
@@ -155,17 +182,26 @@ window.approve = async function(id) {
 //
 window.reject = async function(id) {
 
-  const ref = doc(db, "withdrawals", id);
+  try {
 
-  await updateDoc(ref, {
-    status: "rejected"
-  });
+    const ref = doc(db, "withdrawals", id);
 
-  alert("Rejected");
-  loadWithdrawals();
+    await updateDoc(ref, {
+      status: "rejected"
+    });
+
+    alert("Rejected successfully!");
+    loadWithdrawals();
+
+  } catch (err) {
+    alert(err.message);
+  }
 };
 
 loadWithdrawals();
+
+// 🔄 auto refresh every 10 sec
+setInterval(loadWithdrawals, 10000);
 
 </script>
 
