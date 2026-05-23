@@ -18,6 +18,7 @@ border-radius:10px;
 
 button{
 padding:10px;
+cursor:pointer;
 }
 </style>
 </head>
@@ -40,8 +41,8 @@ padding:10px;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
@@ -56,6 +57,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+let currentUser = null;
+
+// 🔐 LOGIN CHECK
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    loadCampaigns();
+  } else {
+    window.location.href = "signin.html";
+  }
+});
+
+// 📦 LOAD CAMPAIGNS
 async function loadCampaigns() {
   try {
     const querySnapshot = await getDocs(collection(db, "campaigns"));
@@ -65,14 +79,16 @@ async function loadCampaigns() {
     if (querySnapshot.empty) {
       html = "<p>No campaigns found</p>";
     } else {
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
 
         html += `
           <div style="border:1px solid #ccc;padding:10px;margin:10px 0;">
             <h3>${data.title}</h3>
             <p>Reward: ₹${data.reward}</p>
-            <button>Participate</button>
+            <button onclick="participate('${docSnap.id}', ${data.reward})">
+              Participate
+            </button>
           </div>
         `;
       });
@@ -82,12 +98,32 @@ async function loadCampaigns() {
 
   } catch (error) {
     alert("ERROR: " + error.message);
-    console.error(error);
   }
 }
 
-loadCampaigns();
+// 🎯 PARTICIPATE FUNCTION
+window.participate = async function(campaignId, reward) {
+  if (!currentUser) {
+    alert("Please login first");
+    return;
+  }
 
+  try {
+    await setDoc(doc(db, "participations", currentUser.uid + "_" + campaignId), {
+      userId: currentUser.uid,
+      campaignId: campaignId,
+      reward: reward,
+      status: "pending",
+      createdAt: new Date()
+    });
+
+    alert("Campaign joined successfully!");
+  } catch (error) {
+    alert("Error: " + error.message);
+  }
+};
+
+// 🚪 LOGOUT
 window.logout = function() {
   signOut(auth)
   .then(() => {
@@ -96,7 +132,7 @@ window.logout = function() {
   .catch((error) => {
     alert(error.message);
   });
-}
+};
 </script>
 
 </body>
