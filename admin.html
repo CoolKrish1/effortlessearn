@@ -1,137 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Dashboard FIXED</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body{
-margin:0;
-font-family:Arial;
-background:#0b1220;
-color:white;
-display:flex;
-}
-
-/* SIDEBAR */
-.sidebar{
-width:230px;
-height:100vh;
-background:#111827;
-position:fixed;
-padding:20px;
-}
-
-.sidebar h2{
-color:#38bdf8;
-}
-
-.sidebar button{
-width:100%;
-padding:10px;
-margin:6px 0;
-border:none;
-border-radius:8px;
-background:#1f2937;
-color:white;
-cursor:pointer;
-}
-
-.sidebar button:hover{
-background:#38bdf8;
-color:black;
-}
-
-/* MAIN */
-.main{
-margin-left:240px;
-padding:20px;
-width:100%;
-}
-
-/* SECTIONS */
-.section{
-display:none;
-}
-
-.active{
-display:block;
-}
-
-/* CARDS */
-.cards{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:12px;
-}
-
-.card{
-background:#1e293b;
-padding:15px;
-border-radius:12px;
-text-align:center;
-}
-
-/* ITEM */
-.item{
-background:#1e293b;
-padding:10px;
-margin:8px 0;
-border-radius:10px;
-}
-</style>
+<title>Admin</title>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-<h2>⚡ Admin Panel</h2>
+<h2>Admin Panel</h2>
 
-<button onclick="show('home')">Home</button>
-<button onclick="show('users')">Users</button>
-<button onclick="show('withdraw')">Withdraw</button>
-<button onclick="show('campaigns')">Campaigns</button>
-<button onclick="logout()">Logout</button>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
-<!-- HOME -->
-<div id="home" class="section active">
-
-<div class="cards">
-<div class="card">Users <h2 id="usersCount">0</h2></div>
-<div class="card">Withdraw <h2 id="withdrawCount">0</h2></div>
-<div class="card">Pending <h2 id="pendingCount">0</h2></div>
-<div class="card">Payout <h2 id="payoutCount">0</h2></div>
-</div>
-
-<canvas id="chart"></canvas>
-
-</div>
-
-<!-- USERS -->
-<div id="users" class="section">
-<h2>Users</h2>
-<div id="userList"></div>
-</div>
-
-<!-- WITHDRAW -->
-<div id="withdraw" class="section">
-<h2>Withdraw Requests</h2>
-<div id="withdrawList"></div>
-</div>
-
-<!-- CAMPAIGNS -->
-<div id="campaigns" class="section">
-<h2>Campaigns</h2>
-<div id="campaignList"></div>
-</div>
-
-</div>
+<div id="users"></div>
+<div id="withdraw"></div>
 
 <script type="module">
 
@@ -148,125 +25,33 @@ onAuthStateChanged,
 signOut
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-/* FIREBASE */
-const firebaseConfig = {
-apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-authDomain: "effortless-earn-7f39e.firebaseapp.com",
-projectId: "effortless-earn-7f39e",
-storageBucket: "effortless-earn-7f39e.appspot.com",
-messagingSenderId: "554178513766",
-appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
-};
+const app = initializeApp({
+apiKey:"AIzaSyD...",
+authDomain:"effortless-earn-7f39e.firebaseapp.com",
+projectId:"effortless-earn-7f39e"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* NAV */
-window.show = function(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-};
-
-/* AUTH GUARD */
-onAuthStateChanged(auth, (user)=>{
-
+onAuthStateChanged(auth,(user)=>{
 if(!user){
-window.location.href="login.html";
-return;
+location.href="login.html";
 }
-
-loadAll();
-
+load();
 });
 
-/* INIT LOAD */
-async function loadAll(){
+async function load(){
 
-loadStats();
-loadUsers();
-loadWithdraw();
-loadCampaigns();
+const users = await getDocs(collection(db,"users"));
+document.getElementById("users").innerHTML =
+"<h3>Users</h3>" + users.size;
 
-show("home");
-}
-
-/* STATS */
-async function loadStats(){
-
-const users = await getDocs(collection(db,"wallets"));
-const withdraw = await getDocs(collection(db,"withdrawals"));
-
-let pending = 0;
-let payout = 0;
-
-withdraw.forEach(d=>{
-let x = d.data();
-if(x.status==="pending") pending++;
-if(x.status==="approved") payout += Number(x.amount || 0);
-});
-
-document.getElementById("usersCount").innerText = users.size;
-document.getElementById("withdrawCount").innerText = withdraw.size;
-document.getElementById("pendingCount").innerText = pending;
-document.getElementById("payoutCount").innerText = payout;
-
-/* SAFE CHART */
-new Chart(document.getElementById("chart"),{
-type:"bar",
-data:{
-labels:["Users","Withdraw","Pending","Payout"],
-datasets:[{
-data:[users.size,withdraw.size,pending,payout],
-backgroundColor:["#38bdf8","#60a5fa","#facc15","#22c55e"]
-}]
-}
-});
+const w = await getDocs(collection(db,"withdrawals"));
+document.getElementById("withdraw").innerHTML =
+"<h3>Withdraw</h3>" + w.size;
 
 }
-
-/* USERS */
-async function loadUsers(){
-const snap = await getDocs(collection(db,"wallets"));
-let html="";
-
-snap.forEach(d=>{
-html += `<div class="item">${d.id} → ₹${d.data().balance || 0}</div>`;
-});
-
-document.getElementById("userList").innerHTML = html || "No users";
-}
-
-/* WITHDRAW */
-async function loadWithdraw(){
-const snap = await getDocs(collection(db,"withdrawals"));
-let html="";
-
-snap.forEach(d=>{
-let x = d.data();
-html += `<div class="item">${x.userId} → ₹${x.amount} (${x.status})</div>`;
-});
-
-document.getElementById("withdrawList").innerHTML = html || "No withdraws";
-}
-
-/* CAMPAIGNS */
-async function loadCampaigns(){
-const snap = await getDocs(collection(db,"campaigns"));
-let html="";
-
-snap.forEach(d=>{
-html += `<div class="item">${d.data().title || "No title"}</div>`;
-});
-
-document.getElementById("campaignList").innerHTML = html || "No campaigns";
-}
-
-/* LOGOUT */
-window.logout = function(){
-signOut(auth);
-window.location.href="login.html";
-};
 
 </script>
 
