@@ -128,7 +128,7 @@ const firebaseConfig = {
 apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
 authDomain: "effortless-earn-7f39e.firebaseapp.com",
 projectId: "effortless-earn-7f39e",
-storageBucket: "effortless-earn-7f39e.firebasestorage.app",
+storageBucket: "effortless-earn-7f39e.firebaseapp.com",
 messagingSenderId: "554178513766",
 appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
 };
@@ -137,10 +137,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* SAFE INIT FLAG */
-let isReady = false;
-
-/* AUTH CHECK (NO LOOP FIX) */
+/* SAFE AUTH */
 let ready = false;
 
 onAuthStateChanged(auth, async (user) => {
@@ -154,7 +151,7 @@ return;
 
 try {
 
-const snap = await getDoc(doc(db, "users", user.uid));
+const snap = await getDoc(doc(db,"users",user.uid));
 
 if (!snap.exists() || snap.data().role !== "admin") {
 window.location.replace("login.html");
@@ -162,48 +159,17 @@ return;
 }
 
 ready = true;
-
-/* 👉 AB DASHBOARD START HOGA */
 init();
 
 } catch (err) {
 console.log(err);
+window.location.replace("login.html");
 }
 
 });
 
-if(isReady) return;
-
-if(!user){
-window.location.replace("login.html");
-return;
-}
-
-try{
-
-const snap = await getDoc(doc(db,"users",user.uid));
-
-if(!snap.exists()){
-window.location.replace("login.html");
-return;
-}
-
-if(snap.data().role !== "admin"){
-window.location.replace("login.html");
-return;
-}
-
-isReady = true;
-initDashboard();
-
-}catch(err){
-console.log("AUTH ERROR:", err);
-}
-
-});
-
-/* INIT DASHBOARD */
-function initDashboard(){
+/* INIT */
+function init(){
 show("home");
 loadStats();
 loadUsers();
@@ -243,7 +209,6 @@ document.getElementById("withdrawCount").innerText = withdraw.size;
 document.getElementById("pendingCount").innerText = pending;
 document.getElementById("payoutCount").innerText = payout;
 
-/* SAFE CHART */
 new Chart(document.getElementById("chart"),{
 type:"bar",
 data:{
