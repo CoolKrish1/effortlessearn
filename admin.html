@@ -2,6 +2,147 @@
 <html>
 <head>
 <title>Admin Panel</title>
+
 <style>
-body{font-family:Arial;padding:20px;background:#f5f5f5;}
-.card{background:white;padding:15px;margin:
+body{
+font-family:Arial;
+background:#f5f5f5;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+}
+
+button{
+padding:8px 12px;
+margin-right:10px;
+cursor:pointer;
+}
+
+.approve{
+background:green;
+color:white;
+border:none;
+}
+
+.reject{
+background:red;
+color:white;
+border:none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Admin Panel - Pending Approvals</h1>
+
+<div class="card">
+<div id="list">Loading...</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, increment } 
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+  authDomain: "effortless-earn-7f39e.firebaseapp.com",
+  projectId: "effortless-earn-7f39e",
+  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
+  messagingSenderId: "554178513766",
+  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+//
+// 📦 LOAD PENDING REQUESTS
+//
+async function loadRequests() {
+  const snap = await getDocs(collection(db, "participations"));
+
+  let html = "";
+
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+
+    if (data.status === "pending") {
+
+      html += `
+        <div class="card">
+          <p><b>User:</b> ${data.userId}</p>
+          <p><b>Campaign:</b> ${data.campaignId}</p>
+          <p><b>Reward:</b> ₹${data.reward}</p>
+
+          <button class="approve" onclick="approve('${docSnap.id}', '${data.userId}', ${data.reward})">
+            Approve
+          </button>
+
+          <button class="reject" onclick="reject('${docSnap.id}')">
+            Reject
+          </button>
+        </div>
+      `;
+    }
+  });
+
+  document.getElementById("list").innerHTML = html || "No pending requests";
+}
+
+//
+// ✅ APPROVE FUNCTION
+//
+window.approve = async function(id, userId, reward) {
+
+  // update participation
+  const ref = doc(db, "participations", id);
+
+  await updateDoc(ref, {
+    status: "approved"
+  });
+
+  // update wallet
+  const walletRef = doc(db, "wallets", userId);
+
+  const walletSnap = await getDoc(walletRef);
+
+  if (!walletSnap.exists()) {
+    await setDoc(walletRef, { balance: reward });
+  } else {
+    await updateDoc(walletRef, {
+      balance: increment(reward)
+    });
+  }
+
+  alert("Approved + Wallet updated!");
+  loadRequests();
+};
+
+//
+// ❌ REJECT FUNCTION
+//
+window.reject = async function(id) {
+  const ref = doc(db, "participations", id);
+
+  await updateDoc(ref, {
+    status: "rejected"
+  });
+
+  alert("Rejected!");
+  loadRequests();
+};
+
+loadRequests();
+
+</script>
+
+</body>
+</html>
