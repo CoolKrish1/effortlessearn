@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard Fixed</title>
+<title>Stable Dashboard</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -14,41 +15,39 @@ color:white;
 }
 
 .sidebar{
-width:240px;
-background:#111827;
+width:220px;
 height:100vh;
+background:#111827;
 padding:20px;
 position:fixed;
 }
 
-.sidebar h2{color:#38bdf8;}
-
 .sidebar button{
 width:100%;
 padding:10px;
-margin-top:10px;
-background:#1f2937;
-color:white;
+margin:8px 0;
 border:none;
 border-radius:8px;
+background:#1f2937;
+color:white;
 cursor:pointer;
 }
 
 .main{
-margin-left:260px;
+margin-left:240px;
 padding:20px;
 width:100%;
 }
 
-.card{
-background:#1e293b;
-padding:15px;
-border-radius:12px;
-margin:10px 0;
-}
-
 .section{display:none;}
 .active{display:block;}
+
+.card{
+background:#1e293b;
+padding:12px;
+margin:8px 0;
+border-radius:10px;
+}
 </style>
 </head>
 
@@ -56,7 +55,6 @@ margin:10px 0;
 
 <div class="sidebar">
 <h2>Dashboard</h2>
-
 <button onclick="show('home')">Home</button>
 <button onclick="show('users')">Users</button>
 <button onclick="show('withdraw')">Withdraw</button>
@@ -66,12 +64,11 @@ margin:10px 0;
 <div class="main">
 
 <div id="home" class="section active">
-<h2>Overview</h2>
+<h2>Home</h2>
 
-<div class="card">Total Users: <span id="usersCount">0</span></div>
+<div class="card">Users: <span id="usersCount">0</span></div>
 <div class="card">Withdraw: <span id="withdrawCount">0</span></div>
 <div class="card">Pending: <span id="pendingCount">0</span></div>
-<div class="card">Payout: <span id="payoutCount">0</span></div>
 
 <canvas id="chart"></canvas>
 </div>
@@ -113,16 +110,16 @@ projectId:"effortless-earn-7f39e"
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-onAuthStateChanged(auth, async (user)=>{
+let chartInstance = null; // ✅ IMPORTANT FIX
 
+/* AUTH */
+onAuthStateChanged(auth,(user)=>{
 if(!user){
 window.location.href="login.html";
 return;
 }
 
-/* 🔥 FIX: NO ADMIN BLOCK (temporary) */
-init();
-
+loadDashboard();
 });
 
 window.show=function(id){
@@ -135,60 +132,52 @@ signOut(auth);
 window.location.href="login.html";
 };
 
-async function init(){
-loadStats();
-loadUsers();
-loadWithdraw();
-show("home");
-}
+async function loadDashboard(){
 
-async function loadStats(){
+const usersSnap = await getDocs(collection(db,"users"));
+const withdrawSnap = await getDocs(collection(db,"withdrawals"));
 
-const users = await getDocs(collection(db,"users"));   // ✅ FIXED
-const withdraw = await getDocs(collection(db,"withdrawals"));
+let pending = 0;
 
-let pending=0;
-let payout=0;
-
-withdraw.forEach(d=>{
-let x=d.data();
-if(x.status==="pending") pending++;
-if(x.status==="approved") payout+=Number(x.amount);
+withdrawSnap.forEach(d=>{
+if(d.data().status==="pending") pending++;
 });
 
-document.getElementById("usersCount").innerText=users.size;
-document.getElementById("withdrawCount").innerText=withdraw.size;
-document.getElementById("pendingCount").innerText=pending;
-document.getElementById("payoutCount").innerText=payout;
+document.getElementById("usersCount").innerText = usersSnap.size;
+document.getElementById("withdrawCount").innerText = withdrawSnap.size;
+document.getElementById("pendingCount").innerText = pending;
 
-new Chart(document.getElementById("chart"),{
+/* SAFE CHART (NO CRASH) */
+if(chartInstance){
+chartInstance.destroy();
+}
+
+chartInstance = new Chart(document.getElementById("chart"),{
 type:"bar",
 data:{
-labels:["Users","Withdraw","Pending","Payout"],
+labels:["Users","Withdraw","Pending"],
 datasets:[{
-data:[users.size,withdraw.size,pending,payout]
+data:[usersSnap.size,withdrawSnap.size,pending],
+backgroundColor:["#38bdf8","#60a5fa","#facc15"]
 }]
 }
 });
-}
 
-async function loadUsers(){
-const snap=await getDocs(collection(db,"users")); // ✅ FIXED
-let html="";
-snap.forEach(d=>{
-html+=`<div class="card">${d.id}</div>`;
+/* USERS LIST */
+let uhtml="";
+usersSnap.forEach(d=>{
+uhtml += `<div class="card">${d.id}</div>`;
 });
-document.getElementById("userList").innerHTML=html;
-}
+document.getElementById("userList").innerHTML = uhtml;
 
-async function loadWithdraw(){
-const snap=await getDocs(collection(db,"withdrawals"));
-let html="";
-snap.forEach(d=>{
+/* WITHDRAW LIST */
+let whtml="";
+withdrawSnap.forEach(d=>{
 let x=d.data();
-html+=`<div class="card">${x.userId} - ₹${x.amount}</div>`;
+whtml += `<div class="card">${x.userId} - ₹${x.amount} (${x.status})</div>`;
 });
-document.getElementById("withdrawList").innerHTML=html;
+document.getElementById("withdrawList").innerHTML = whtml;
+
 }
 
 </script>
