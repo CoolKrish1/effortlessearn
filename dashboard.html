@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard</title>
+<title>User Dashboard</title>
 
 <style>
 body{margin:0;font-family:Arial;display:flex;background:#0b1220;color:white;}
@@ -29,8 +29,6 @@ body{margin:0;font-family:Arial;display:flex;background:#0b1220;color:white;}
 <div id="home" class="section active">
 <h2>Home</h2>
 <div class="card">Balance: <span id="balance">0</span></div>
-<div class="card">Withdraw: <span id="wcount">0</span></div>
-<div class="card">Pending: <span id="pending">0</span></div>
 </div>
 
 <div id="withdraw" class="section">
@@ -64,22 +62,29 @@ onAuthStateChanged,
 signOut
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-const app = initializeApp({
-apiKey:"AIzaSyD...",
-authDomain:"effortless-earn-7f39e.firebaseapp.com",
-projectId:"effortless-earn-7f39e"
-});
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY_HERE",
+authDomain: "effortless-earn-7f39e.firebaseapp.com",
+projectId: "effortless-earn-7f39e",
+storageBucket: "effortless-earn-7f39e.appspot.com",
+messagingSenderId: "554178513766",
+appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+};
 
+const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* NAV */
-window.show=(id)=>{
+window.show = (id)=>{
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 };
 
-/* AUTH */
+window.logout = ()=>{
+signOut(auth);
+location.href="login.html";
+};
+
 onAuthStateChanged(auth,async(user)=>{
 
 if(!user){
@@ -87,49 +92,29 @@ location.href="login.html";
 return;
 }
 
-load(user.uid);
+const snap = await getDoc(doc(db,"users",user.uid));
+document.getElementById("balance").innerText = snap.data().balance || 0;
 
-});
+const q = query(collection(db,"withdrawals"),where("userId","==",user.uid));
+const w = await getDocs(q);
 
-/* LOAD */
-async function load(uid){
-
-const userSnap = await getDoc(doc(db,"users",uid));
-document.getElementById("balance").innerText = userSnap.data().balance || 0;
-
-/* withdraw */
-const q = query(collection(db,"withdrawals"),where("userId","==",uid));
-const snap = await getDocs(q);
-
-let w=0,p=0,html="";
-
-snap.forEach(d=>{
+let html="";
+w.forEach(d=>{
 let x=d.data();
-w++;
-if(x.status==="pending") p++;
 html+=`<div class="card">${x.amount} - ${x.status}</div>`;
 });
 
 document.getElementById("withdrawList").innerHTML=html;
-document.getElementById("wcount").innerText=w;
-document.getElementById("pending").innerText=p;
 
-/* campaigns */
-const camp = await getDocs(collection(db,"campaigns"));
-let c="";
-camp.forEach(d=>{
-c+=`<div class="card">${d.data().title}</div>`;
+const c = await getDocs(collection(db,"campaigns"));
+let ch="";
+c.forEach(d=>{
+ch+=`<div class="card">${d.data().title}</div>`;
 });
 
-document.getElementById("campaignList").innerHTML=c;
+document.getElementById("campaignList").innerHTML=ch;
 
-}
-
-/* LOGOUT */
-window.logout=function(){
-signOut(auth);
-location.href="login.html";
-};
+});
 
 </script>
 
