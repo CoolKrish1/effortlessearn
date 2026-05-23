@@ -1,66 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pro Admin Dashboard</title>
+<title>Pro CPA Admin Panel</title>
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
 margin:0;
 font-family:Arial;
-display:flex;
-background:#0f172a;
+background:#0b1220;
 color:white;
+display:flex;
 }
 
 /* SIDEBAR */
 .sidebar{
-width:250px;
-background:#111827;
-padding:20px;
+width:260px;
 height:100vh;
+background:#0f172a;
+padding:20px;
+position:fixed;
 }
 
-.sidebar h2{
+.logo{
+font-size:22px;
+font-weight:bold;
 color:#38bdf8;
+margin-bottom:20px;
 }
 
-.sidebar button{
+.menu button{
 width:100%;
 padding:12px;
-margin-top:10px;
+margin:6px 0;
 border:none;
-cursor:pointer;
-border-radius:8px;
-background:#1f2937;
+border-radius:10px;
+background:#111827;
 color:white;
-transition:0.3s;
+cursor:pointer;
+text-align:left;
+transition:0.2s;
 }
 
-.sidebar button:hover{
-background:#38bdf8;
-color:black;
+.menu button i{
+margin-right:10px;
+}
+
+.menu button:hover{
+background:#2563eb;
+}
+
+/* TOP BAR */
+.topbar{
+margin-left:260px;
+padding:15px 25px;
+background:#0f172a;
+border-bottom:1px solid #1e293b;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.topbar h2{
+margin:0;
 }
 
 /* MAIN */
 .main{
-flex:1;
+margin-left:260px;
 padding:20px;
-overflow:auto;
 }
 
 /* CARDS */
-.grid{
+.cards{
 display:grid;
 grid-template-columns:repeat(4,1fr);
 gap:15px;
 }
 
 .card{
-background:#1e293b;
-padding:15px;
-border-radius:12px;
+background:#111827;
+padding:18px;
+border-radius:14px;
+border:1px solid #1e293b;
+box-shadow:0 0 10px rgba(56,189,248,0.08);
 }
 
 .card h3{
@@ -68,77 +93,116 @@ margin:0;
 color:#38bdf8;
 }
 
-/* SECTION */
-.section{
+.card p{
+font-size:24px;
+margin-top:10px;
+}
+
+/* SECTION BOX */
+.box{
 margin-top:20px;
-background:#1e293b;
+background:#111827;
+padding:20px;
+border-radius:14px;
+border:1px solid #1e293b;
+}
+
+/* TABLE */
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+padding:12px;
+border-bottom:1px solid #1e293b;
+}
+
+th{
+color:#38bdf8;
+text-align:left;
+}
+
+/* ICON GRID */
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+margin-top:20px;
+}
+
+.grid div{
+background:#111827;
 padding:15px;
 border-radius:12px;
+border:1px solid #1e293b;
 }
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
-<h2>⚡ Admin Panel</h2>
+<div class="logo">⚡ CPA PANEL</div>
 
-<button onclick="show('dashboard')">📊 Dashboard</button>
-<button onclick="show('withdraw')">💰 Withdraw</button>
-<button onclick="show('users')">👤 Users</button>
-<button onclick="show('campaigns')">📦 Campaigns</button>
+<div class="menu">
+<button onclick="show('dashboard')"><i class="fa fa-chart-line"></i> Dashboard</button>
+<button onclick="show('users')"><i class="fa fa-users"></i> Users</button>
+<button onclick="show('offers')"><i class="fa fa-bullhorn"></i> Offers</button>
+<button onclick="show('earnings')"><i class="fa fa-dollar-sign"></i> Earnings</button>
+<button onclick="show('withdraw')"><i class="fa fa-wallet"></i> Withdraw</button>
+<button onclick="show('settings')"><i class="fa fa-gear"></i> Settings</button>
+</div>
 </div>
 
+<!-- TOPBAR -->
+<div class="topbar">
+<h2>Admin Dashboard</h2>
+<div>🔥 Live System</div>
+</div>
+
+<!-- MAIN -->
 <div class="main">
 
 <!-- DASHBOARD -->
 <div id="dashboard">
 
-<div class="grid">
-<div class="card">
-<h3>Total Users</h3>
-<p id="usersCount">0</p>
+<div class="cards">
+<div class="card"><h3>Total Users</h3><p id="u">0</p></div>
+<div class="card"><h3>Earnings</h3><p id="e">₹0</p></div>
+<div class="card"><h3>Pending</h3><p id="p">0</p></div>
+<div class="card"><h3>Withdraw</h3><p id="w">0</p></div>
 </div>
 
-<div class="card">
-<h3>Total Withdraw</h3>
-<p id="withdrawCount">0</p>
-</div>
-
-<div class="card">
-<h3>Pending</h3>
-<p id="pendingCount">0</p>
-</div>
-
-<div class="card">
-<h3>Total Payout</h3>
-<p id="payoutCount">0</p>
-</div>
-</div>
-
-<div class="section">
-<h3>📈 Analytics</h3>
+<div class="box">
 <canvas id="chart"></canvas>
 </div>
 
 </div>
 
-<!-- WITHDRAW -->
-<div id="withdraw" style="display:none;">
-<h2>Withdraw Requests</h2>
-<div id="withdrawList"></div>
-</div>
-
 <!-- USERS -->
 <div id="users" style="display:none;">
-<h2>Users</h2>
+<div class="box">
+<h3>Users List</h3>
 <div id="userList"></div>
 </div>
+</div>
 
-<!-- CAMPAIGNS -->
-<div id="campaigns" style="display:none;">
-<h2>Campaigns</h2>
-<div id="campaignList"></div>
+<!-- OFFERS -->
+<div id="offers" style="display:none;">
+<div class="box">
+<h3>Offers / Campaigns</h3>
+<div id="offerList"></div>
+</div>
+</div>
+
+<!-- WITHDRAW -->
+<div id="withdraw" style="display:none;">
+<div class="box">
+<h3>Withdraw Requests</h3>
+<div id="withdrawList"></div>
+</div>
 </div>
 
 </div>
@@ -146,190 +210,53 @@ border-radius:12px;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {
-getFirestore,
-collection,
-getDocs,
-doc,
-updateDoc,
-getDoc,
-increment
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const firebaseConfig = {
-apiKey: "AIzaSyD...",
-authDomain: "effortless-earn-7f39e.firebaseapp.com",
-projectId: "effortless-earn-7f39e",
-storageBucket: "effortless-earn-7f39e.firebasestorage.app",
-messagingSenderId: "554178513766",
-appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
-};
+const app = initializeApp({
+apiKey:"AIzaSyD...",
+authDomain:"effortless-earn-7f39e.firebaseapp.com",
+projectId:"effortless-earn-7f39e"
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-//
-// NAVIGATION
-//
-window.show = function(page){
-document.querySelectorAll(".main > div").forEach(d=>{
-d.style.display="none";
-});
-document.getElementById(page).style.display="block";
+window.show=(id)=>{
+document.querySelectorAll(".main > div").forEach(d=>d.style.display="none");
+document.getElementById(id).style.display="block";
 };
 
-//
-// LOAD DASHBOARD STATS
-//
-async function loadStats(){
+/* STATS */
+async function load(){
 
-const users = await getDocs(collection(db,"wallets"));
-const withdraw = await getDocs(collection(db,"withdrawals"));
+const users=await getDocs(collection(db,"wallets"));
+const withdraw=await getDocs(collection(db,"withdrawals"));
 
-let pending=0;
-let payout=0;
+let pending=0,total=0;
 
 withdraw.forEach(d=>{
-const data=d.data();
-
-if(data.status==="pending") pending++;
-if(data.status==="approved") payout += Number(data.amount);
+let x=d.data();
+if(x.status==="pending") pending++;
+if(x.status==="approved") total+=Number(x.amount);
 });
 
-document.getElementById("usersCount").innerText = users.size;
-document.getElementById("withdrawCount").innerText = withdraw.size;
-document.getElementById("pendingCount").innerText = pending;
-document.getElementById("payoutCount").innerText = payout;
-
-loadChart(pending,payout);
-}
-
-//
-// CHART
-//
-function loadChart(pending,payout){
+document.getElementById("u").innerText=users.size;
+document.getElementById("e").innerText="₹"+total;
+document.getElementById("p").innerText=pending;
+document.getElementById("w").innerText=withdraw.size;
 
 new Chart(document.getElementById("chart"),{
-type:"bar",
+type:"line",
 data:{
-labels:["Pending","Payout"],
+labels:["Users","Earnings","Pending","Withdraw"],
 datasets:[{
-label:"Stats",
-data:[pending,payout],
-backgroundColor:["orange","green"]
+data:[users.size,total,pending,withdraw.size],
+borderColor:"#38bdf8"
 }]
 }
 });
 }
 
-//
-// WITHDRAW LIST
-//
-async function loadWithdraw(){
-
-const snap = await getDocs(collection(db,"withdrawals"));
-
-let html="";
-
-snap.forEach(d=>{
-
-const data=d.data();
-
-html+=`
-<div class="card">
-<p>User: ${data.userId}</p>
-<p>Amount: ₹${data.amount}</p>
-<p>Status: ${data.status}</p>
-
-${data.status==="pending" ? `
-<button onclick="approve('${d.id}')">Approve</button>
-<button onclick="reject('${d.id}')">Reject</button>
-`:""}
-</div>
-`;
-});
-
-document.getElementById("withdrawList").innerHTML=html;
-}
-
-//
-// USERS
-//
-async function loadUsers(){
-
-const snap = await getDocs(collection(db,"wallets"));
-
-let html="";
-
-snap.forEach(d=>{
-html+=`
-<div class="card">
-User: ${d.id} <br>
-Balance: ₹${d.data().balance}
-</div>
-`;
-});
-
-document.getElementById("userList").innerHTML=html;
-}
-
-//
-// CAMPAIGNS
-//
-async function loadCampaigns(){
-
-const snap = await getDocs(collection(db,"campaigns"));
-
-let html="";
-
-snap.forEach(d=>{
-html+=`
-<div class="card">
-${d.data().title} - ₹${d.data().reward}
-</div>
-`;
-});
-
-document.getElementById("campaignList").innerHTML=html;
-}
-
-//
-// APPROVE
-//
-window.approve=async function(id){
-
-const ref=doc(db,"withdrawals",id);
-const snap=await getDoc(ref);
-
-const data=snap.data();
-
-await updateDoc(ref,{status:"approved"});
-
-await updateDoc(doc(db,"wallets",data.userId),{
-balance:increment(-data.amount)
-});
-
-loadStats();
-loadWithdraw();
-};
-
-//
-// REJECT
-//
-window.reject=async function(id){
-
-await updateDoc(doc(db,"withdrawals",id),{
-status:"rejected"
-});
-
-loadStats();
-loadWithdraw();
-};
-
-loadStats();
-loadWithdraw();
-loadUsers();
-loadCampaigns();
+load();
 
 </script>
 
