@@ -66,37 +66,31 @@ border-radius:12px;
 color:#38bdf8;
 }
 
-/* TABLE */
-table{
-width:100%;
-margin-top:20px;
-border-collapse:collapse;
-}
-
-th,td{
-padding:10px;
-border-bottom:1px solid #334155;
+/* HIDE SECTIONS */
+.section{
+display:none;
 }
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
-<h2>⚡ Panel</h2>
+<h2>⚡ Admin Panel</h2>
 
 <button onclick="show('home')">Dashboard</button>
 <button onclick="show('users')">Users</button>
 <button onclick="show('withdraw')">Withdraw</button>
 <button onclick="show('campaigns')">Campaigns</button>
-
 <button onclick="logout()">Logout</button>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
 <!-- HOME -->
-<div id="home">
+<div id="home" class="section">
 
 <div class="cards">
 <div class="card">
@@ -125,19 +119,19 @@ border-bottom:1px solid #334155;
 </div>
 
 <!-- USERS -->
-<div id="users" style="display:none;">
+<div id="users" class="section">
 <h2>Users</h2>
 <div id="userList"></div>
 </div>
 
 <!-- WITHDRAW -->
-<div id="withdraw" style="display:none;">
+<div id="withdraw" class="section">
 <h2>Withdraw</h2>
 <div id="withdrawList"></div>
 </div>
 
 <!-- CAMPAIGNS -->
-<div id="campaigns" style="display:none;">
+<div id="campaigns" class="section">
 <h2>Campaigns</h2>
 <div id="campaignList"></div>
 </div>
@@ -150,7 +144,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebas
 import {
 getFirestore,
 collection,
-getDocs
+getDocs,
+doc,
+getDoc
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 import {
@@ -159,61 +155,82 @@ onAuthStateChanged,
 signOut
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-const firebaseConfig={
-apiKey:"AIzaSyD...",
-authDomain:"effortless-earn-7f39e.firebaseapp.com",
-projectId:"effortless-earn-7f39e"
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_AUTH_DOMAIN",
+projectId: "YOUR_PROJECT_ID",
+storageBucket: "YOUR_STORAGE_BUCKET",
+messagingSenderId: "YOUR_SENDER_ID",
+appId: "YOUR_APP_ID"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-const auth=getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-/* 🔐 LOGIN GUARD */
-onAuthStateChanged(auth,(user)=>{
+/* 🔐 LOGIN + ROLE GUARD */
+onAuthStateChanged(auth, async (user) => {
+
 if(!user){
-window.location.href="login.html";
+window.location.href = "login.html";
+return;
 }
+
+const snap = await getDoc(doc(db,"users",user.uid));
+
+if(!snap.exists()){
+window.location.href = "login.html";
+return;
+}
+
+if(snap.data().role !== "admin"){
+alert("Access Denied");
+window.location.href = "dashboard.html";
+}
+
 });
 
 /* LOGOUT */
-window.logout=function(){
+window.logout = function(){
 signOut(auth);
 window.location.href="login.html";
 };
 
-/* NAV */
-window.show=function(id){
-document.querySelectorAll(".main > div").forEach(d=>d.style.display="none");
+/* NAVIGATION */
+window.show = function(id){
+document.querySelectorAll(".section").forEach(s => s.style.display="none");
 document.getElementById(id).style.display="block";
 };
 
-/* STATS */
+/* LOAD STATS */
 async function loadStats(){
 
-const users=await getDocs(collection(db,"wallets"));
-const withdraw=await getDocs(collection(db,"withdrawals"));
+const users = await getDocs(collection(db,"wallets"));
+const withdraw = await getDocs(collection(db,"withdrawals"));
 
-let pending=0,payout=0;
+let pending = 0;
+let payout = 0;
 
-withdraw.forEach(d=>{
-let x=d.data();
-if(x.status==="pending") pending++;
-if(x.status==="approved") payout+=Number(x.amount);
+withdraw.forEach(d => {
+let x = d.data();
+if(x.status === "pending") pending++;
+if(x.status === "approved") payout += Number(x.amount);
 });
 
-document.getElementById("usersCount").innerText=users.size;
-document.getElementById("withdrawCount").innerText=withdraw.size;
-document.getElementById("pendingCount").innerText=pending;
-document.getElementById("payoutCount").innerText=payout;
+document.getElementById("usersCount").innerText = users.size;
+document.getElementById("withdrawCount").innerText = withdraw.size;
+document.getElementById("pendingCount").innerText = pending;
+document.getElementById("payoutCount").innerText = payout;
 
-new Chart(document.getElementById("chart"),{
-type:"bar",
-data:{
-labels:["Users","Withdraw","Pending","Payout"],
-datasets:[{
-data:[users.size,withdraw.size,pending,payout],
-backgroundColor:["#38bdf8","#6366f1","#facc15","#22c55e"]
+/* CHART */
+new Chart(document.getElementById("chart"), {
+type: "bar",
+data: {
+labels: ["Users","Withdraw","Pending","Payout"],
+datasets: [{
+data: [users.size, withdraw.size, pending, payout],
+backgroundColor: ["#38bdf8","#6366f1","#facc15","#22c55e"]
 }]
 }
 });
@@ -221,44 +238,48 @@ backgroundColor:["#38bdf8","#6366f1","#facc15","#22c55e"]
 
 /* USERS */
 async function loadUsers(){
-const snap=await getDocs(collection(db,"wallets"));
-let html="";
+const snap = await getDocs(collection(db,"wallets"));
+let html = "";
 snap.forEach(d=>{
-html+=`<div class="card">${d.id} - ₹${d.data().balance}</div>`;
+html += `<div class="card">${d.id} - ₹${d.data().balance}</div>`;
 });
-document.getElementById("userList").innerHTML=html;
+document.getElementById("userList").innerHTML = html;
 }
 
 /* WITHDRAW */
 async function loadWithdraw(){
-const snap=await getDocs(collection(db,"withdrawals"));
-let html="";
+const snap = await getDocs(collection(db,"withdrawals"));
+let html = "";
 snap.forEach(d=>{
-let x=d.data();
-html+=`
+let x = d.data();
+html += `
 <div class="card">
-<p>${x.userId}</p>
+<p>User: ${x.userId}</p>
 <p>₹${x.amount}</p>
-<p>${x.status}</p>
+<p>Status: ${x.status}</p>
 </div>`;
 });
-document.getElementById("withdrawList").innerHTML=html;
+document.getElementById("withdrawList").innerHTML = html;
 }
 
 /* CAMPAIGNS */
 async function loadCampaigns(){
-const snap=await getDocs(collection(db,"campaigns"));
-let html="";
+const snap = await getDocs(collection(db,"campaigns"));
+let html = "";
 snap.forEach(d=>{
-html+=`<div class="card">${d.data().title}</div>`;
+html += `<div class="card">${d.data().title}</div>`;
 });
-document.getElementById("campaignList").innerHTML=html;
+document.getElementById("campaignList").innerHTML = html;
 }
 
+/* INIT */
+window.onload = () => {
+show("home");
 loadStats();
 loadUsers();
 loadWithdraw();
 loadCampaigns();
+};
 
 </script>
 
