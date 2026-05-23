@@ -82,7 +82,6 @@ border-bottom:1px solid #334155;
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
 <h2>⚡ Panel</h2>
 
@@ -90,9 +89,10 @@ border-bottom:1px solid #334155;
 <button onclick="show('users')">Users</button>
 <button onclick="show('withdraw')">Withdraw</button>
 <button onclick="show('campaigns')">Campaigns</button>
+
+<button onclick="logout()">Logout</button>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
 <!-- HOME -->
@@ -101,22 +101,22 @@ border-bottom:1px solid #334155;
 <div class="cards">
 <div class="card">
 <h3>Total Users</h3>
-<p id="users">0</p>
+<p id="usersCount">0</p>
 </div>
 
 <div class="card">
 <h3>Withdrawals</h3>
-<p id="withdraw">0</p>
+<p id="withdrawCount">0</p>
 </div>
 
 <div class="card">
 <h3>Pending</h3>
-<p id="pending">0</p>
+<p id="pendingCount">0</p>
 </div>
 
 <div class="card">
 <h3>Payout</h3>
-<p id="payout">0</p>
+<p id="payoutCount">0</p>
 </div>
 </div>
 
@@ -150,60 +150,76 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebas
 import {
 getFirestore,
 collection,
-getDocs,
-doc,
-updateDoc,
-increment,
-getDoc
+getDocs
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+import {
+getAuth,
+onAuthStateChanged,
+signOut
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyD...",
 authDomain:"effortless-earn-7f39e.firebaseapp.com",
-projectId:"effortless-earn-7f39e",
-storageBucket:"effortless-earn-7f39e.appspot.com",
-messagingSenderId:"554178513766",
-appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
+projectId:"effortless-earn-7f39e"
 };
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
+const auth=getAuth(app);
 
+/* 🔐 LOGIN GUARD */
+onAuthStateChanged(auth,(user)=>{
+if(!user){
+window.location.href="login.html";
+}
+});
+
+/* LOGOUT */
+window.logout=function(){
+signOut(auth);
+window.location.href="login.html";
+};
+
+/* NAV */
 window.show=function(id){
 document.querySelectorAll(".main > div").forEach(d=>d.style.display="none");
 document.getElementById(id).style.display="block";
 };
 
+/* STATS */
 async function loadStats(){
 
 const users=await getDocs(collection(db,"wallets"));
 const withdraw=await getDocs(collection(db,"withdrawals"));
 
-let p=0,total=0;
+let pending=0,payout=0;
 
 withdraw.forEach(d=>{
-let data=d.data();
-if(data.status==="pending")p++;
-if(data.status==="approved")total+=Number(data.amount);
+let x=d.data();
+if(x.status==="pending") pending++;
+if(x.status==="approved") payout+=Number(x.amount);
 });
 
-document.getElementById("users").innerText=users.size;
-document.getElementById("withdraw").innerText=withdraw.size;
-document.getElementById("pending").innerText=p;
-document.getElementById("payout").innerText=total;
+document.getElementById("usersCount").innerText=users.size;
+document.getElementById("withdrawCount").innerText=withdraw.size;
+document.getElementById("pendingCount").innerText=pending;
+document.getElementById("payoutCount").innerText=payout;
 
 new Chart(document.getElementById("chart"),{
-type:"line",
+type:"bar",
 data:{
 labels:["Users","Withdraw","Pending","Payout"],
 datasets:[{
-data:[users.size,withdraw.size,p,total],
-borderColor:"#38bdf8"
+data:[users.size,withdraw.size,pending,payout],
+backgroundColor:["#38bdf8","#6366f1","#facc15","#22c55e"]
 }]
 }
 });
 }
 
+/* USERS */
 async function loadUsers(){
 const snap=await getDocs(collection(db,"wallets"));
 let html="";
@@ -213,21 +229,23 @@ html+=`<div class="card">${d.id} - ₹${d.data().balance}</div>`;
 document.getElementById("userList").innerHTML=html;
 }
 
+/* WITHDRAW */
 async function loadWithdraw(){
 const snap=await getDocs(collection(db,"withdrawals"));
 let html="";
 snap.forEach(d=>{
-let data=d.data();
+let x=d.data();
 html+=`
 <div class="card">
-<p>${data.userId}</p>
-<p>₹${data.amount}</p>
-<p>${data.status}</p>
+<p>${x.userId}</p>
+<p>₹${x.amount}</p>
+<p>${x.status}</p>
 </div>`;
 });
 document.getElementById("withdrawList").innerHTML=html;
 }
 
+/* CAMPAIGNS */
 async function loadCampaigns(){
 const snap=await getDocs(collection(db,"campaigns"));
 let html="";
