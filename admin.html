@@ -5,13 +5,41 @@
 
 <style>
 body{
+margin:0;
 font-family:Arial;
-background:#f5f5f5;
+display:flex;
+height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+width:220px;
+background:#111;
+color:white;
 padding:20px;
 }
 
-h1{
-margin-bottom:20px;
+.sidebar button{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border:none;
+cursor:pointer;
+background:#333;
+color:white;
+border-radius:5px;
+}
+
+.sidebar button:hover{
+background:#555;
+}
+
+/* CONTENT */
+.content{
+flex:1;
+background:#f5f5f5;
+padding:20px;
+overflow:auto;
 }
 
 .card{
@@ -22,35 +50,63 @@ border-radius:10px;
 box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-button{
-padding:8px 12px;
-margin-right:10px;
-border:none;
-cursor:pointer;
-border-radius:5px;
-}
-
-.approve{
+button.approve{
 background:green;
 color:white;
+padding:8px;
+border:none;
+cursor:pointer;
 }
 
-.reject{
+button.reject{
 background:red;
 color:white;
-}
-
-.status{
-font-weight:bold;
+padding:8px;
+border:none;
+cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🔥 Admin Withdraw Panel (Single Page)</h1>
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>Admin</h2>
 
-<div id="list">Loading requests...</div>
+<button onclick="showPage('dashboard')">📊 Dashboard</button>
+<button onclick="showPage('withdraw')">💰 Withdraw</button>
+<button onclick="showPage('users')">👤 Users</button>
+
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="page">
+<h2>📊 Dashboard</h2>
+
+<div class="card">
+<p>Total Users: <span id="usersCount">0</span></p>
+<p>Total Withdrawals: <span id="withdrawCount">0</span></p>
+<p>Total Payout: ₹<span id="payout">0</span></p>
+</div>
+</div>
+
+<!-- WITHDRAW -->
+<div id="withdraw" class="page" style="display:none;">
+<h2>💰 Withdraw Requests</h2>
+<div id="withdrawList">Loading...</div>
+</div>
+
+<!-- USERS -->
+<div id="users" class="page" style="display:none;">
+<h2>👤 Users</h2>
+<div id="userList">Loading...</div>
+</div>
+
+</div>
 
 <script type="module">
 
@@ -66,7 +122,7 @@ increment
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+ apiKey: "AIzaSyD...",
  authDomain: "effortless-earn-7f39e.firebaseapp.com",
  projectId: "effortless-earn-7f39e",
  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
@@ -78,34 +134,66 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 //
-// LOAD REQUESTS
+// PAGE SWITCH
 //
-async function loadRequests(){
+window.showPage = function(page){
+
+  document.querySelectorAll('.page').forEach(p=>{
+    p.style.display = "none";
+  });
+
+  document.getElementById(page).style.display = "block";
+};
+
+//
+// LOAD DASHBOARD
+//
+async function loadDashboard(){
+
+  const users = await getDocs(collection(db,"wallets"));
+  const withdraw = await getDocs(collection(db,"withdrawals"));
+
+  let payout = 0;
+
+  withdraw.forEach(d=>{
+    if(d.data().status==="approved"){
+      payout += Number(d.data().amount);
+    }
+  });
+
+  document.getElementById("usersCount").innerText = users.size;
+  document.getElementById("withdrawCount").innerText = withdraw.size;
+  document.getElementById("payout").innerText = payout;
+}
+
+//
+// LOAD WITHDRAW
+//
+async function loadWithdraw(){
 
   const snap = await getDocs(collection(db,"withdrawals"));
 
   let html = "";
 
-  snap.forEach(docSnap => {
+  snap.forEach(d=>{
 
-    const data = docSnap.data();
+    const data = d.data();
 
     html += `
       <div class="card">
-        <p><b>User ID:</b> ${data.userId}</p>
-        <p><b>Amount:</b> ₹${data.amount}</p>
-        <p><b>UPI:</b> ${data.upi}</p>
-        <p><b>Status:</b> <span class="status">${data.status}</span></p>
+        <p>User: ${data.userId}</p>
+        <p>Amount: ₹${data.amount}</p>
+        <p>Status: ${data.status}</p>
 
-        ${data.status === "pending" ? `
-          <button class="approve" onclick="approve('${docSnap.id}')">Approve</button>
-          <button class="reject" onclick="reject('${docSnap.id}')">Reject</button>
-        ` : `<p>Processed</p>`}
+        ${data.status==="pending" ? `
+          <button class="approve" onclick="approve('${d.id}')">Approve</button>
+          <button class="reject" onclick="reject('${d.id}')">Reject</button>
+        ` : ``}
       </div>
     `;
   });
 
-  document.getElementById("list").innerHTML = html || "No requests found";
+  document.getElementById("withdrawList").innerHTML = html;
 }
 
 //
@@ -120,18 +208,11 @@ window.approve = async function(id){
 
   const walletRef = doc(db,"wallets",data.userId);
 
-  // mark approved
-  await updateDoc(ref,{
-    status:"approved"
-  });
+  await updateDoc(ref,{status:"approved"});
+  await updateDoc(walletRef,{balance:increment(-data.amount)});
 
-  // deduct wallet
-  await updateDoc(walletRef,{
-    balance:increment(-data.amount)
-  });
-
-  alert("Approved ✅");
-  loadRequests();
+  loadWithdraw();
+  loadDashboard();
 };
 
 //
@@ -143,11 +224,11 @@ window.reject = async function(id){
     status:"rejected"
   });
 
-  alert("Rejected ❌");
-  loadRequests();
+  loadWithdraw();
 };
 
-loadRequests();
+loadDashboard();
+loadWithdraw();
 
 </script>
 
