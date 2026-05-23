@@ -1,120 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>User Dashboard</title>
-
-<style>
-body{margin:0;font-family:Arial;display:flex;background:#0b1220;color:white;}
-.sidebar{width:220px;height:100vh;background:#111827;padding:20px;position:fixed;}
-.sidebar button{width:100%;padding:10px;margin:6px 0;background:#1f2937;color:white;border:none;border-radius:8px;}
-.main{margin-left:240px;padding:20px;width:100%;}
-.section{display:none;}
-.active{display:block;}
-.card{background:#1e293b;padding:10px;margin:8px 0;border-radius:8px;}
-</style>
+<title>Dashboard</title>
 </head>
-
 <body>
 
-<div class="sidebar">
-<h3>Dashboard</h3>
-<button onclick="show('home')">Home</button>
-<button onclick="show('withdraw')">Withdraw</button>
-<button onclick="show('campaigns')">Campaigns</button>
+<h2>User Dashboard</h2>
+
 <button onclick="logout()">Logout</button>
-</div>
 
-<div class="main">
+<h3>Balance: ₹<span id="bal">0</span></h3>
 
-<div id="home" class="section active">
-<h2>Home</h2>
-<div class="card">Balance: <span id="balance">0</span></div>
-</div>
-
-<div id="withdraw" class="section">
-<h2>Withdraw</h2>
-<div id="withdrawList"></div>
-</div>
-
-<div id="campaigns" class="section">
-<h2>Campaigns</h2>
-<div id="campaignList"></div>
-</div>
-
-</div>
+<div id="campaigns"></div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {
-getFirestore,
-doc,
-getDoc,
-collection,
-query,
-where,
-getDocs
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-import {
-getAuth,
-onAuthStateChanged,
-signOut
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-authDomain: "effortless-earn-7f39e.firebaseapp.com",
-projectId: "effortless-earn-7f39e",
-storageBucket: "effortless-earn-7f39e.appspot.com",
-messagingSenderId: "554178513766",
-appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+  authDomain: "effortless-earn-7f39e.firebaseapp.com",
+  projectId: "effortless-earn-7f39e",
+  storageBucket: "effortless-earn-7f39e.appspot.com",
+  messagingSenderId: "554178513766",
+  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-window.show = (id)=>{
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-};
+let userID = null;
 
-window.logout = ()=>{
-signOut(auth);
-location.href="login.html";
-};
-
-onAuthStateChanged(auth,async(user)=>{
+onAuthStateChanged(auth, async (user)=>{
 
 if(!user){
-location.href="login.html";
+window.location.href="login.html";
 return;
 }
 
+userID = user.uid;
+
 const snap = await getDoc(doc(db,"users",user.uid));
-document.getElementById("balance").innerText = snap.data().balance || 0;
+document.getElementById("bal").innerText = snap.data().balance || 0;
 
-const q = query(collection(db,"withdrawals"),where("userId","==",user.uid));
-const w = await getDocs(q);
-
-let html="";
-w.forEach(d=>{
-let x=d.data();
-html+=`<div class="card">${x.amount} - ${x.status}</div>`;
-});
-
-document.getElementById("withdrawList").innerHTML=html;
-
-const c = await getDocs(collection(db,"campaigns"));
-let ch="";
-c.forEach(d=>{
-ch+=`<div class="card">${d.data().title}</div>`;
-});
-
-document.getElementById("campaignList").innerHTML=ch;
+loadCampaigns();
 
 });
+
+async function loadCampaigns(){
+
+const snap = await getDocs(collection(db,"campaigns"));
+
+let html = "";
+
+snap.forEach(d=>{
+html += `
+<div>
+<h3>${d.data().title}</h3>
+<p>Reward: ₹${d.data().reward}</p>
+</div>`;
+});
+
+document.getElementById("campaigns").innerHTML = html;
+
+}
+
+window.logout = function(){
+signOut(auth);
+window.location.href="login.html";
+};
 
 </script>
 
