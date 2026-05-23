@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel</title>
+<title>Admin Hub</title>
 
 <style>
 body{
@@ -10,21 +10,14 @@ background:#f5f5f5;
 padding:20px;
 }
 
-h1{ margin-bottom:20px; }
-
-.tabs button{
+nav button{
 padding:10px;
 margin-right:10px;
 cursor:pointer;
-border:none;
-background:#333;
-color:white;
-border-radius:5px;
 }
 
 .tab{
 display:none;
-margin-top:20px;
 }
 
 .active{
@@ -36,76 +29,44 @@ background:white;
 padding:15px;
 margin:10px 0;
 border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-.grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:10px;
-}
-
-.stat{
-font-size:20px;
-font-weight:bold;
-}
-
-button.action{
-padding:8px 12px;
-margin-right:10px;
-border:none;
-cursor:pointer;
-border-radius:5px;
-}
-
-.approve{ background:green;color:white; }
-.reject{ background:red;color:white; }
+.approve{background:green;color:white;}
+.reject{background:red;color:white;}
 </style>
 </head>
 
 <body>
 
-<h1>🔥 Admin Control Panel</h1>
+<h1>🔥 Admin Hub System</h1>
 
-<div class="tabs">
-<button onclick="openTab('dashboard')">📊 Dashboard</button>
-<button onclick="openTab('withdraw')">💰 Withdraw Requests</button>
-</div>
+<nav>
+<button onclick="showTab('dashboard')">📊 Dashboard</button>
+<button onclick="showTab('withdraw')">💰 Withdraw</button>
+<button onclick="showTab('users')">👤 Users</button>
+</nav>
 
 <!-- DASHBOARD -->
 <div id="dashboard" class="tab active">
+  <h2>Analytics</h2>
 
-<div class="grid">
-
-<div class="card">
-<h3>Total Users</h3>
-<p class="stat" id="users">0</p>
-</div>
-
-<div class="card">
-<h3>Total Withdrawals</h3>
-<p class="stat" id="withdrawals">0</p>
-</div>
-
-<div class="card">
-<h3>Total Payout</h3>
-<p class="stat" id="payout">₹0</p>
-</div>
-
-<div class="card">
-<h3>Pending Requests</h3>
-<p class="stat" id="pending">0</p>
-</div>
-
-</div>
-
+  <div class="card">
+    <p>Total Users: <span id="usersCount">0</span></p>
+    <p>Total Withdrawals: <span id="withdrawCount">0</span></p>
+    <p>Total Payout: ₹<span id="payout">0</span></p>
+  </div>
 </div>
 
 <!-- WITHDRAW -->
 <div id="withdraw" class="tab">
+  <h2>Withdraw Requests</h2>
+  <div id="withdrawList">Loading...</div>
+</div>
 
-<div id="list">Loading...</div>
-
+<!-- USERS -->
+<div id="users" class="tab">
+  <h2>User History</h2>
+  <div id="userList">Loading...</div>
 </div>
 
 <script type="module">
@@ -122,7 +83,7 @@ increment
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+ apiKey: "AIzaSyDxd...",
  authDomain: "effortless-earn-7f39e.firebaseapp.com",
  projectId: "effortless-earn-7f39e",
  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
@@ -136,9 +97,9 @@ const db = getFirestore(app);
 //
 // TAB SWITCH
 //
-window.openTab = function(tab){
+window.showTab = function(id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(tab).classList.add('active');
+  document.getElementById(id).classList.add('active');
 };
 
 //
@@ -146,59 +107,50 @@ window.openTab = function(tab){
 //
 async function loadStats(){
 
-  const usersSnap = await getDocs(collection(db,"wallets"));
-  const withdrawSnap = await getDocs(collection(db,"withdrawals"));
+  const users = await getDocs(collection(db,"wallets"));
+  const withdraw = await getDocs(collection(db,"withdrawals"));
 
   let payout = 0;
-  let pending = 0;
 
-  withdrawSnap.forEach(d=>{
-    const data = d.data();
-
-    if(data.status === "approved"){
-      payout += Number(data.amount);
-    }
-
-    if(data.status === "pending"){
-      pending++;
+  withdraw.forEach(d=>{
+    if(d.data().status==="approved"){
+      payout += Number(d.data().amount);
     }
   });
 
-  document.getElementById("users").innerText = usersSnap.size;
-  document.getElementById("withdrawals").innerText = withdrawSnap.size;
-  document.getElementById("payout").innerText = "₹" + payout;
-  document.getElementById("pending").innerText = pending;
+  document.getElementById("usersCount").innerText = users.size;
+  document.getElementById("withdrawCount").innerText = withdraw.size;
+  document.getElementById("payout").innerText = payout;
 }
 
 //
-// LOAD WITHDRAWALS
+// WITHDRAW LOAD
 //
-async function loadWithdrawals(){
+async function loadWithdraw(){
 
   const snap = await getDocs(collection(db,"withdrawals"));
 
-  let html = "";
+  let html="";
 
-  snap.forEach(docSnap=>{
+  snap.forEach(d=>{
 
-    const data = docSnap.data();
+    const data = d.data();
 
     html += `
       <div class="card">
-        <p><b>User:</b> ${data.userId}</p>
-        <p><b>Amount:</b> ₹${data.amount}</p>
-        <p><b>UPI:</b> ${data.upi}</p>
-        <p><b>Status:</b> ${data.status}</p>
+        <p>User: ${data.userId}</p>
+        <p>Amount: ₹${data.amount}</p>
+        <p>Status: ${data.status}</p>
 
         ${data.status==="pending" ? `
-          <button class="action approve" onclick="approve('${docSnap.id}')">Approve</button>
-          <button class="action reject" onclick="reject('${docSnap.id}')">Reject</button>
+          <button class="approve" onclick="approve('${d.id}')">Approve</button>
+          <button class="reject" onclick="reject('${d.id}')">Reject</button>
         ` : ``}
       </div>
     `;
   });
 
-  document.getElementById("list").innerHTML = html || "No requests";
+  document.getElementById("withdrawList").innerHTML = html;
 }
 
 //
@@ -216,8 +168,7 @@ window.approve = async function(id){
   await updateDoc(ref,{status:"approved"});
   await updateDoc(walletRef,{balance:increment(-data.amount)});
 
-  alert("Approved");
-  loadWithdrawals();
+  loadWithdraw();
   loadStats();
 };
 
@@ -230,13 +181,12 @@ window.reject = async function(id){
     status:"rejected"
   });
 
-  alert("Rejected");
-  loadWithdrawals();
+  loadWithdraw();
   loadStats();
 };
 
 loadStats();
-loadWithdrawals();
+loadWithdraw();
 
 </script>
 
