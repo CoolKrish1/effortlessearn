@@ -32,7 +32,7 @@ setDoc,
 getDoc
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-/* 🔥 FIREBASE CONFIG */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
 apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
 authDomain: "effortless-earn-7f39e.firebaseapp.com",
@@ -46,7 +46,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* REGISTER */
+/* ================= REGISTER ================= */
 window.register = async function(){
 
 const email = document.getElementById("email").value;
@@ -56,22 +56,26 @@ try{
 
 const userCred = await createUserWithEmailAndPassword(auth,email,password);
 
-/* 🔥 SAVE USER IN FIRESTORE */
+console.log("UID:", userCred.user.uid);
+
+/* 🔥 SAVE TO FIRESTORE */
 await setDoc(doc(db,"users",userCred.user.uid),{
 email: email,
 role: "user",
-balance: 0
+balance: 0,
+createdAt: new Date().toISOString()
 });
 
 document.getElementById("msg").innerText = "Account Created ✔";
 
 }catch(err){
+console.log("REGISTER ERROR:", err);
 document.getElementById("msg").innerText = err.message;
 }
 
 };
 
-/* LOGIN */
+/* ================= LOGIN ================= */
 window.login = async function(){
 
 const email = document.getElementById("email").value;
@@ -81,23 +85,28 @@ try{
 
 const userCred = await signInWithEmailAndPassword(auth,email,password);
 
-const snap = await getDoc(doc(db,"users",userCred.user.uid));
+const userRef = doc(db,"users",userCred.user.uid);
+const snap = await getDoc(userRef);
 
 if(!snap.exists()){
-document.getElementById("msg").innerText = "User not found in DB";
+document.getElementById("msg").innerText = "User DB entry missing (Firestore issue)";
 return;
 }
 
-const role = snap.data().role;
+const data = snap.data();
 
-/* 🔥 ROLE BASED REDIRECT */
-if(role === "admin"){
+if(!data.role){
+data.role = "user";
+}
+
+if(data.role === "admin"){
 window.location.href = "admin.html";
 }else{
 window.location.href = "dashboard.html";
 }
 
 }catch(err){
+console.log("LOGIN ERROR:", err);
 document.getElementById("msg").innerText = err.message;
 }
 
