@@ -1,202 +1,246 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard</title>
+<title>Pro Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body{
+margin:0;
 font-family:Arial;
-background:#f5f5f5;
+display:flex;
+background:#0b1220;
+color:white;
+}
+
+/* SIDEBAR */
+.sidebar{
+width:240px;
+background:#111827;
+height:100vh;
 padding:20px;
+position:fixed;
+}
+
+.sidebar h2{
+color:#38bdf8;
+}
+
+.sidebar button{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#1f2937;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.sidebar button:hover{
+background:#38bdf8;
+color:black;
+}
+
+/* MAIN */
+.main{
+margin-left:260px;
+padding:20px;
+width:100%;
+}
+
+/* CARDS */
+.cards{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:15px;
 }
 
 .card{
-background:white;
+background:#1e293b;
 padding:15px;
-margin-bottom:15px;
-border-radius:10px;
+border-radius:12px;
 }
 
-button{
+.card h3{
+color:#38bdf8;
+}
+
+/* TABLE */
+table{
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+th,td{
 padding:10px;
-cursor:pointer;
+border-bottom:1px solid #334155;
 }
 </style>
 </head>
 
 <body>
 
-<h1>User Dashboard</h1>
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>⚡ Panel</h2>
 
+<button onclick="show('home')">Dashboard</button>
+<button onclick="show('users')">Users</button>
+<button onclick="show('withdraw')">Withdraw</button>
+<button onclick="show('campaigns')">Campaigns</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- HOME -->
+<div id="home">
+
+<div class="cards">
 <div class="card">
-<h2>Wallet Balance</h2>
-<p id="walletBalance">Loading...</p>
+<h3>Total Users</h3>
+<p id="users">0</p>
 </div>
 
 <div class="card">
-<h2>Available Campaigns</h2> 
-<div id="campaignList">Loading campaigns...</div>
+<h3>Withdrawals</h3>
+<p id="withdraw">0</p>
 </div>
 
 <div class="card">
-  <h2>More Options</h2>
+<h3>Pending</h3>
+<p id="pending">0</p>
+</div>
 
-  <button onclick="location.href='history.html'">
-    📊 My Earnings History
-  </button>
+<div class="card">
+<h3>Payout</h3>
+<p id="payout">0</p>
+</div>
+</div>
+
+<canvas id="chart"></canvas>
 
 </div>
 
-<button onclick="logout()">Logout</button>
+<!-- USERS -->
+<div id="users" style="display:none;">
+<h2>Users</h2>
+<div id="userList"></div>
+</div>
+
+<!-- WITHDRAW -->
+<div id="withdraw" style="display:none;">
+<h2>Withdraw</h2>
+<div id="withdrawList"></div>
+</div>
+
+<!-- CAMPAIGNS -->
+<div id="campaigns" style="display:none;">
+<h2>Campaigns</h2>
+<div id="campaignList"></div>
+</div>
+
+</div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { 
-getFirestore, 
-collection, 
-getDocs, 
-doc, 
-setDoc, 
-getDoc,
+import {
+getFirestore,
+collection,
+getDocs,
+doc,
 updateDoc,
-increment
+increment,
+getDoc
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-  authDomain: "effortless-earn-7f39e.firebaseapp.com",
-  projectId: "effortless-earn-7f39e",
-  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
-  messagingSenderId: "554178513766",
-  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+const firebaseConfig={
+apiKey:"AIzaSyD...",
+authDomain:"effortless-earn-7f39e.firebaseapp.com",
+projectId:"effortless-earn-7f39e",
+storageBucket:"effortless-earn-7f39e.appspot.com",
+messagingSenderId:"554178513766",
+appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
-let currentUser = null;
+window.show=function(id){
+document.querySelectorAll(".main > div").forEach(d=>d.style.display="none");
+document.getElementById(id).style.display="block";
+};
 
-//
-// 🔐 LOGIN CHECK
-//
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
+async function loadStats(){
 
-    await ensureWalletExists();
-    loadWallet();
-    loadCampaigns();
+const users=await getDocs(collection(db,"wallets"));
+const withdraw=await getDocs(collection(db,"withdrawals"));
 
-  } else {
-    window.location.href = "signin.html";
-  }
+let p=0,total=0;
+
+withdraw.forEach(d=>{
+let data=d.data();
+if(data.status==="pending")p++;
+if(data.status==="approved")total+=Number(data.amount);
 });
 
-//
-// 💰 CREATE WALLET IF NOT EXISTS
-//
-async function ensureWalletExists() {
-  const ref = doc(db, "wallets", currentUser.uid);
-  const snap = await getDoc(ref);
+document.getElementById("users").innerText=users.size;
+document.getElementById("withdraw").innerText=withdraw.size;
+document.getElementById("pending").innerText=p;
+document.getElementById("payout").innerText=total;
 
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      balance: 0
-    });
-  }
+new Chart(document.getElementById("chart"),{
+type:"line",
+data:{
+labels:["Users","Withdraw","Pending","Payout"],
+datasets:[{
+data:[users.size,withdraw.size,p,total],
+borderColor:"#38bdf8"
+}]
+}
+});
 }
 
-//
-// 💰 LOAD WALLET
-//
-async function loadWallet() {
-  const ref = doc(db, "wallets", currentUser.uid);
-  const snap = await getDoc(ref);
-
-  const balance = snap.data()?.balance ?? 0;
-
-  document.getElementById("walletBalance").innerText = "₹" + balance;
+async function loadUsers(){
+const snap=await getDocs(collection(db,"wallets"));
+let html="";
+snap.forEach(d=>{
+html+=`<div class="card">${d.id} - ₹${d.data().balance}</div>`;
+});
+document.getElementById("userList").innerHTML=html;
 }
 
-//
-// 📦 LOAD CAMPAIGNS
-//
-async function loadCampaigns() {
-  const querySnapshot = await getDocs(collection(db, "campaigns"));
-
-  let html = "";
-
-  querySnapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-
-    html += `
-      <div style="border:1px solid #ccc;padding:10px;margin:10px 0;">
-        <h3>${data.title}</h3>
-        <p>Reward: ₹${data.reward}</p>
-        <button onclick="participate('${docSnap.id}', ${data.reward})">
-          Participate
-        </button>
-      </div>
-    `;
-  });
-
-  document.getElementById("campaignList").innerHTML = html;
+async function loadWithdraw(){
+const snap=await getDocs(collection(db,"withdrawals"));
+let html="";
+snap.forEach(d=>{
+let data=d.data();
+html+=`
+<div class="card">
+<p>${data.userId}</p>
+<p>₹${data.amount}</p>
+<p>${data.status}</p>
+</div>`;
+});
+document.getElementById("withdrawList").innerHTML=html;
 }
 
-//
-// 🎯 PARTICIPATE + SAFE WALLET UPDATE (ADDED)
-//
-window.participate = async function(campaignId, reward) {
-  try {
+async function loadCampaigns(){
+const snap=await getDocs(collection(db,"campaigns"));
+let html="";
+snap.forEach(d=>{
+html+=`<div class="card">${d.data().title}</div>`;
+});
+document.getElementById("campaignList").innerHTML=html;
+}
 
-    // save participation
-    await setDoc(doc(db, "participations", currentUser.uid + "_" + campaignId), {
-      userId: currentUser.uid,
-      campaignId: campaignId,
-      reward: reward,
-      status: "pending",
-      createdAt: new Date()
-    });
-
-    // 💰 OPTIONAL TEST EARNING (remove later if needed)
-    const walletRef = doc(db, "wallets", currentUser.uid);
-    window.participate = async function(campaignId, reward) {
-  try {
-
-    const participationRef = doc(db, "participations", currentUser.uid + "_" + campaignId);
-
-    await setDoc(participationRef, {
-      userId: currentUser.uid,
-      campaignId: campaignId,
-      reward: reward,
-      status: "pending",
-      createdAt: new Date()
-    });
-
-    alert("Campaign submitted! Wait for approval.");
-
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-    alert("Campaign joined + ₹" + reward + " added to wallet!");
-
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-//
-// 🚪 LOGOUT
-//
-window.logout = function() {
-  signOut(auth).then(() => {
-    window.location.href = "signin.html";
-  });
-};
+loadStats();
+loadUsers();
+loadWithdraw();
+loadCampaigns();
 
 </script>
 
