@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Hub</title>
+<title>Admin Panel</title>
 
 <style>
 body{
@@ -10,18 +10,8 @@ background:#f5f5f5;
 padding:20px;
 }
 
-nav button{
-padding:10px;
-margin-right:10px;
-cursor:pointer;
-}
-
-.tab{
-display:none;
-}
-
-.active{
-display:block;
+h1{
+margin-bottom:20px;
 }
 
 .card{
@@ -29,45 +19,38 @@ background:white;
 padding:15px;
 margin:10px 0;
 border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-.approve{background:green;color:white;}
-.reject{background:red;color:white;}
+button{
+padding:8px 12px;
+margin-right:10px;
+border:none;
+cursor:pointer;
+border-radius:5px;
+}
+
+.approve{
+background:green;
+color:white;
+}
+
+.reject{
+background:red;
+color:white;
+}
+
+.status{
+font-weight:bold;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🔥 Admin Hub System</h1>
+<h1>🔥 Admin Withdraw Panel (Single Page)</h1>
 
-<nav>
-<button onclick="showTab('dashboard')">📊 Dashboard</button>
-<button onclick="showTab('withdraw')">💰 Withdraw</button>
-<button onclick="showTab('users')">👤 Users</button>
-</nav>
-
-<!-- DASHBOARD -->
-<div id="dashboard" class="tab active">
-  <h2>Analytics</h2>
-
-  <div class="card">
-    <p>Total Users: <span id="usersCount">0</span></p>
-    <p>Total Withdrawals: <span id="withdrawCount">0</span></p>
-    <p>Total Payout: ₹<span id="payout">0</span></p>
-  </div>
-</div>
-
-<!-- WITHDRAW -->
-<div id="withdraw" class="tab">
-  <h2>Withdraw Requests</h2>
-  <div id="withdrawList">Loading...</div>
-</div>
-
-<!-- USERS -->
-<div id="users" class="tab">
-  <h2>User History</h2>
-  <div id="userList">Loading...</div>
-</div>
+<div id="list">Loading requests...</div>
 
 <script type="module">
 
@@ -83,7 +66,7 @@ increment
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyDxd...",
+ apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
  authDomain: "effortless-earn-7f39e.firebaseapp.com",
  projectId: "effortless-earn-7f39e",
  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
@@ -95,62 +78,34 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 //
-// TAB SWITCH
+// LOAD REQUESTS
 //
-window.showTab = function(id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-};
-
-//
-// LOAD STATS
-//
-async function loadStats(){
-
-  const users = await getDocs(collection(db,"wallets"));
-  const withdraw = await getDocs(collection(db,"withdrawals"));
-
-  let payout = 0;
-
-  withdraw.forEach(d=>{
-    if(d.data().status==="approved"){
-      payout += Number(d.data().amount);
-    }
-  });
-
-  document.getElementById("usersCount").innerText = users.size;
-  document.getElementById("withdrawCount").innerText = withdraw.size;
-  document.getElementById("payout").innerText = payout;
-}
-
-//
-// WITHDRAW LOAD
-//
-async function loadWithdraw(){
+async function loadRequests(){
 
   const snap = await getDocs(collection(db,"withdrawals"));
 
-  let html="";
+  let html = "";
 
-  snap.forEach(d=>{
+  snap.forEach(docSnap => {
 
-    const data = d.data();
+    const data = docSnap.data();
 
     html += `
       <div class="card">
-        <p>User: ${data.userId}</p>
-        <p>Amount: ₹${data.amount}</p>
-        <p>Status: ${data.status}</p>
+        <p><b>User ID:</b> ${data.userId}</p>
+        <p><b>Amount:</b> ₹${data.amount}</p>
+        <p><b>UPI:</b> ${data.upi}</p>
+        <p><b>Status:</b> <span class="status">${data.status}</span></p>
 
-        ${data.status==="pending" ? `
-          <button class="approve" onclick="approve('${d.id}')">Approve</button>
-          <button class="reject" onclick="reject('${d.id}')">Reject</button>
-        ` : ``}
+        ${data.status === "pending" ? `
+          <button class="approve" onclick="approve('${docSnap.id}')">Approve</button>
+          <button class="reject" onclick="reject('${docSnap.id}')">Reject</button>
+        ` : `<p>Processed</p>`}
       </div>
     `;
   });
 
-  document.getElementById("withdrawList").innerHTML = html;
+  document.getElementById("list").innerHTML = html || "No requests found";
 }
 
 //
@@ -165,11 +120,18 @@ window.approve = async function(id){
 
   const walletRef = doc(db,"wallets",data.userId);
 
-  await updateDoc(ref,{status:"approved"});
-  await updateDoc(walletRef,{balance:increment(-data.amount)});
+  // mark approved
+  await updateDoc(ref,{
+    status:"approved"
+  });
 
-  loadWithdraw();
-  loadStats();
+  // deduct wallet
+  await updateDoc(walletRef,{
+    balance:increment(-data.amount)
+  });
+
+  alert("Approved ✅");
+  loadRequests();
 };
 
 //
@@ -181,12 +143,11 @@ window.reject = async function(id){
     status:"rejected"
   });
 
-  loadWithdraw();
-  loadStats();
+  alert("Rejected ❌");
+  loadRequests();
 };
 
-loadStats();
-loadWithdraw();
+loadRequests();
 
 </script>
 
