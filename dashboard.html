@@ -76,7 +76,10 @@ async function loadCampaigns() {
   document.getElementById("campaignList").innerHTML = html;
 }
 
-loadCampaigns();
+loadCampaigns().catch((error) => {
+  alert("ERROR: " + error.message);
+  console.error(error);
+});
 
 window.logout = function() {
 signOut(auth)
