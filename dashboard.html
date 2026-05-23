@@ -54,6 +54,29 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+
+async function loadCampaigns() {
+  const querySnapshot = await getDocs(collection(db, "campaigns"));
+
+  let html = "";
+
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+
+    html += `
+      <div style="border:1px solid #ccc;padding:10px;margin:10px 0;">
+        <h3>${data.title}</h3>
+        <p>Reward: ₹${data.reward}</p>
+        <button>Participate</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("campaignList").innerHTML = html;
+}
+
+loadCampaigns();
 
 window.logout = function() {
 signOut(auth)
