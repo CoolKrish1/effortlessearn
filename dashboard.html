@@ -44,7 +44,7 @@ cursor:pointer;
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import { 
-getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, increment 
+getFirestore, collection, getDocs, doc, setDoc, getDoc 
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -65,15 +65,32 @@ let currentUser = null;
 //
 // 🔐 LOGIN CHECK
 //
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
+
+    await ensureWalletExists();  // 🔥 IMPORTANT FIX
     loadWallet();
     loadCampaigns();
+
   } else {
     window.location.href = "signin.html";
   }
 });
+
+//
+// 💰 CREATE WALLET IF NOT EXISTS
+//
+async function ensureWalletExists() {
+  const ref = doc(db, "wallets", currentUser.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      balance: 0
+    });
+  }
+}
 
 //
 // 💰 LOAD WALLET
@@ -82,11 +99,9 @@ async function loadWallet() {
   const ref = doc(db, "wallets", currentUser.uid);
   const snap = await getDoc(ref);
 
-  if (snap.exists()) {
-    document.getElementById("walletBalance").innerText = "₹" + snap.data().balance;
-  } else {
-    document.getElementById("walletBalance").innerText = "₹0";
-  }
+  const balance = snap.data()?.balance ?? 0;
+
+  document.getElementById("walletBalance").innerText = "₹" + balance;
 }
 
 //
@@ -115,12 +130,11 @@ async function loadCampaigns() {
 }
 
 //
-// 🎯 PARTICIPATE + WALLET UPDATE (pending system)
+// 🎯 PARTICIPATE
 //
 window.participate = async function(campaignId, reward) {
   try {
 
-    // save participation
     await setDoc(doc(db, "participations", currentUser.uid + "_" + campaignId), {
       userId: currentUser.uid,
       campaignId: campaignId,
