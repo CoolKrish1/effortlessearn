@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pro Dashboard</title>
+<title>Admin Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -57,15 +57,8 @@ padding:15px;
 border-radius:12px;
 }
 
-.card h3{color:#38bdf8;}
-
-.section{
-display:none;
-}
-
-.active{
-display:block;
-}
+.section{display:none;}
+.active{display:block;}
 </style>
 </head>
 
@@ -83,12 +76,11 @@ display:block;
 
 <div class="main">
 
-<!-- HOME -->
 <div id="home" class="section active">
 
 <div class="cards">
 <div class="card"><h3>Total Users</h3><p id="usersCount">0</p></div>
-<div class="card"><h3>Withdrawals</h3><p id="withdrawCount">0</p></div>
+<div class="card"><h3>Withdraw</h3><p id="withdrawCount">0</p></div>
 <div class="card"><h3>Pending</h3><p id="pendingCount">0</p></div>
 <div class="card"><h3>Payout</h3><p id="payoutCount">0</p></div>
 </div>
@@ -145,32 +137,61 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* AUTH CHECK */
+/* SAFE INIT FLAG */
+let isReady = false;
+
+/* AUTH CHECK (NO LOOP FIX) */
 onAuthStateChanged(auth, async (user)=>{
 
+if(isReady) return;
+
 if(!user){
-window.location.href="login.html";
+window.location.replace("login.html");
 return;
 }
 
+try{
+
 const snap = await getDoc(doc(db,"users",user.uid));
 
-if(!snap.exists() || snap.data().role !== "admin"){
-window.location.href="dashboard.html";
+if(!snap.exists()){
+window.location.replace("login.html");
+return;
+}
+
+if(snap.data().role !== "admin"){
+window.location.replace("login.html");
+return;
+}
+
+isReady = true;
+initDashboard();
+
+}catch(err){
+console.log("AUTH ERROR:", err);
 }
 
 });
 
-/* LOGOUT */
-window.logout = function(){
-signOut(auth);
-window.location.href="login.html";
-};
+/* INIT DASHBOARD */
+function initDashboard(){
+show("home");
+loadStats();
+loadUsers();
+loadWithdraw();
+loadCampaigns();
+}
 
 /* NAV */
 window.show = function(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
+};
+
+/* LOGOUT */
+window.logout = function(){
+signOut(auth);
+window.location.replace("login.html");
 };
 
 /* STATS */
@@ -179,8 +200,8 @@ async function loadStats(){
 const users = await getDocs(collection(db,"wallets"));
 const withdraw = await getDocs(collection(db,"withdrawals"));
 
-let pending = 0;
-let payout = 0;
+let pending=0;
+let payout=0;
 
 withdraw.forEach(d=>{
 let x=d.data();
@@ -193,6 +214,7 @@ document.getElementById("withdrawCount").innerText = withdraw.size;
 document.getElementById("pendingCount").innerText = pending;
 document.getElementById("payoutCount").innerText = payout;
 
+/* SAFE CHART */
 new Chart(document.getElementById("chart"),{
 type:"bar",
 data:{
@@ -202,11 +224,12 @@ data:[users.size,withdraw.size,pending,payout]
 }]
 }
 });
+
 }
 
-/* LOADS */
+/* USERS */
 async function loadUsers(){
-const snap=await getDocs(collection(db,"wallets"));
+const snap = await getDocs(collection(db,"wallets"));
 let html="";
 snap.forEach(d=>{
 html+=`<div class="card">${d.id} - ₹${d.data().balance}</div>`;
@@ -214,8 +237,9 @@ html+=`<div class="card">${d.id} - ₹${d.data().balance}</div>`;
 document.getElementById("userList").innerHTML=html;
 }
 
+/* WITHDRAW */
 async function loadWithdraw(){
-const snap=await getDocs(collection(db,"withdrawals"));
+const snap = await getDocs(collection(db,"withdrawals"));
 let html="";
 snap.forEach(d=>{
 let x=d.data();
@@ -224,23 +248,15 @@ html+=`<div class="card">${x.userId} - ₹${x.amount} (${x.status})</div>`;
 document.getElementById("withdrawList").innerHTML=html;
 }
 
+/* CAMPAIGNS */
 async function loadCampaigns(){
-const snap=await getDocs(collection(db,"campaigns"));
+const snap = await getDocs(collection(db,"campaigns"));
 let html="";
 snap.forEach(d=>{
 html+=`<div class="card">${d.data().title}</div>`;
 });
 document.getElementById("campaignList").innerHTML=html;
 }
-
-/* INIT */
-window.onload = () => {
-show("home");
-loadStats();
-loadUsers();
-loadWithdraw();
-loadCampaigns();
-};
 
 </script>
 
