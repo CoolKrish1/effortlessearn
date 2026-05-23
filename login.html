@@ -3,6 +3,7 @@
 <head>
 <title>Login</title>
 </head>
+
 <body>
 
 <h2>Login</h2>
@@ -11,17 +12,21 @@
 <input id="password" type="password" placeholder="Password"><br><br>
 
 <button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
 
 <p id="msg"></p>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+import { getFirestore, doc, setDoc, getDoc } 
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+  apiKey: "YOUR_API_KEY",
   authDomain: "effortless-earn-7f39e.firebaseapp.com",
   projectId: "effortless-earn-7f39e",
   storageBucket: "effortless-earn-7f39e.appspot.com",
@@ -33,32 +38,44 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.login = async function(){
+/* REGISTER */
+window.register = async function(){
 
 const email = document.getElementById("email").value;
 const password = document.getElementById("password").value;
 
-try{
+const userCred = await createUserWithEmailAndPassword(auth,email,password);
+
+await setDoc(doc(db,"users",userCred.user.uid),{
+  email,
+  role:"user",
+  balance:0
+});
+
+document.getElementById("msg").innerText="Registered";
+};
+
+/* LOGIN */
+window.login = async function(){
+
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
 
 const userCred = await signInWithEmailAndPassword(auth,email,password);
 
 const snap = await getDoc(doc(db,"users",userCred.user.uid));
 
 if(!snap.exists()){
-document.getElementById("msg").innerText = "User not found";
-return;
+  document.getElementById("msg").innerText="User not found";
+  return;
 }
 
 const role = snap.data().role;
 
 if(role === "admin"){
-window.location.href = "admin.html";
+  window.location.href="admin.html";
 }else{
-window.location.href = "dashboard.html";
-}
-
-}catch(err){
-document.getElementById("msg").innerText = err.message;
+  window.location.href="dashboard.html";
 }
 
 };
