@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+<style>
+body{
+font-family:Arial;
+background:#f5f5f5;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+}
+
+button{
+padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>User Dashboard</h1>
+
+<div class="card">
+<h2>Wallet Balance</h2>
+<p>₹0</p>
+</div>
+
+<div class="card">
+<h2>Available Campaigns</h2>
+
+<p>Myntra Signup - ₹50</p>
+<button>Participate</button>
+
+<hr>
+
+<p>MyGlamm Offer - ₹100</p>
+<button>Participate</button>
+
+</div>
+
+<button onclick="logout()">Logout</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+  authDomain: "effortless-earn-7f39e.firebaseapp.com",
+  projectId: "effortless-earn-7f39e",
+  storageBucket: "effortless-earn-7f39e.firebasestorage.app",
+  messagingSenderId: "554178513766",
+  appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.logout = function() {
+signOut(auth)
+.then(()=>{
+window.location.href="signin.html";
+});
+}
+</script>
+
+</body>
+</html>
