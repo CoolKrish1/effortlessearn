@@ -44,7 +44,14 @@ cursor:pointer;
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import { 
-getFirestore, collection, getDocs, doc, setDoc, getDoc 
+getFirestore, 
+collection, 
+getDocs, 
+doc, 
+setDoc, 
+getDoc,
+updateDoc,
+increment
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -69,7 +76,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
 
-    await ensureWalletExists();  // 🔥 IMPORTANT FIX
+    await ensureWalletExists();
     loadWallet();
     loadCampaigns();
 
@@ -130,11 +137,12 @@ async function loadCampaigns() {
 }
 
 //
-// 🎯 PARTICIPATE
+// 🎯 PARTICIPATE + SAFE WALLET UPDATE (ADDED)
 //
 window.participate = async function(campaignId, reward) {
   try {
 
+    // save participation
     await setDoc(doc(db, "participations", currentUser.uid + "_" + campaignId), {
       userId: currentUser.uid,
       campaignId: campaignId,
@@ -143,7 +151,15 @@ window.participate = async function(campaignId, reward) {
       createdAt: new Date()
     });
 
-    alert("Campaign joined!");
+    // 💰 OPTIONAL TEST EARNING (remove later if needed)
+    const walletRef = doc(db, "wallets", currentUser.uid);
+    await updateDoc(walletRef, {
+      balance: increment(reward)
+    });
+
+    loadWallet();
+
+    alert("Campaign joined + ₹" + reward + " added to wallet!");
 
   } catch (error) {
     alert(error.message);
