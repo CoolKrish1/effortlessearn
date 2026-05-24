@@ -238,42 +238,41 @@ document.getElementById("pubid").innerText="ID : PUB-"+currentUser.uid.slice(0,6
 }
 
 async function loadCampaigns(){
-const snap=await getDocs(collection(db,"campaigns"));
+const snap = await getDocs(collection(db,"campaigns"));
+
 let html="";
 
 snap.forEach(d=>{
-const c=d.data();
-const title=c.title || "Untitled Offer";
-const reward=Number(c.reward || 0);
-const status=c.status || "active";
-const img=c.image || "https://via.placeholder.com/120";
+const c = d.data();
+
+const title = c.title || "Untitled";
+const reward = Number(c.reward || 0);
+const status = c.status || "active";
 
 if(status !== "active") return;
 
-html+=`
+html += `
 <div class="offer-card">
-<div class="offer-head">
-<img class="offer-logo" src="${img}">
-<div>
-<h3>${title}</h3>
-<p>${c.category || "CPA"} • CPA</p>
-</div>
-<span class="badge">ACTIVE</span>
-</div>
+  <div class="offer-head">
+    <img src="${c.image || 'https://via.placeholder.com/100'}" class="offer-logo">
+    <div>
+      <h3>${title}</h3>
+      <p>${c.category || 'CPA Offer'}</p>
+      <span class="badge">ACTIVE</span>
+    </div>
+  </div>
 
-<div class="reward">
-<span>Total Earnings</span>
-<b>₹${reward}</b>
-</div>
+  <div class="reward-box">₹${reward}</div>
 
-<button class="start-btn" onclick="startTracking('${d.id}','${title}',${reward})">
-START EARNING →
-</button>
+  <button class="start-btn" onclick="startTracking('${d.id}', '${title}', ${reward})">
+    START EARNING →
+  </button>
 </div>
 `;
 });
 
-document.getElementById("campaignList").innerHTML=html || "<div class='card'>No active offers found.</div>";
+document.getElementById("campaignList").innerHTML =
+html || "<div class='card'>No campaigns found</div>";
 }
 
 window.applyCampaign=async function(id,title,reward){
