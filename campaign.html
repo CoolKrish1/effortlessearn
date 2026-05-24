@@ -134,6 +134,13 @@ Submit your UPI ID and start the task. Cashback/payment will be handled by the c
 CONFIRM & START TASK ✨
 </button>
 
+import {
+getFirestore,
+collection,
+addDoc
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
 <div class="error" id="error"></div>
 
 </div>
@@ -274,6 +281,57 @@ el("startBtn").innerText="CONFIRM & START TASK ✨";
 };
 
 loadCampaign();
+
+window.startOffer = async function(){
+
+const upi =
+document
+.getElementById("upi")
+.value
+.trim();
+
+if(!upi){
+
+alert("UPI enter karo");
+
+return;
+
+}
+
+await addDoc(
+collection(db,"smart_users"),
+{
+slug:data.slug,
+
+upi:upi,
+
+publisherId:data.publisherId,
+
+trackingId:data.trackingId,
+
+reward:data.userReward,
+
+commission:data.affiliateCommission,
+
+status:"pending",
+
+time:Date.now()
+}
+);
+
+let finalLink =
+data.offerLink || "";
+
+finalLink =
+finalLink.replace(
+"{trackingId}",
+data.trackingId
+);
+
+window.location.href =
+finalLink;
+
+}
 
 </script>
 
