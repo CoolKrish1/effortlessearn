@@ -33,6 +33,7 @@ button.action{padding:10px 14px;margin:5px;border:0;border-radius:8px;cursor:poi
 <button onclick="show('withdraw')">💰 Withdraw</button>
 <button onclick="show('reports')">📄 Reports</button>
 <button onclick="show('fraud')">🛡 Fraud Logs</button>
+<button onclick="show('clicks')">🖱 Clicks</button>
 </div>
 
 <div class="main">
@@ -84,6 +85,11 @@ button.action{padding:10px 14px;margin:5px;border:0;border-radius:8px;cursor:poi
 <div id="fraud" class="section">
 <h2>Fraud Logs</h2>
 <div id="fraudList"></div>
+</div>
+
+<div id="clicks" class="section">
+<h2>Click Tracking</h2>
+<div id="clickList"></div>
 </div>
 
 </div>
@@ -154,6 +160,29 @@ html+=`
 </div>`;
 });
 document.getElementById("userList").innerHTML=html||"<div class='card'>No users</div>";
+}
+
+async function loadClicks(){
+
+const snap = await getDocs(collection(db,"clicks"));
+
+let html="";
+
+snap.forEach(d=>{
+let c=d.data();
+
+html+=`
+<div class="card">
+<p><b>User:</b> ${c.userId}</p>
+<p><b>Campaign:</b> ${c.campaignTitle}</p>
+<p><b>Reward:</b> ₹${c.reward}</p>
+<p><b>Tracking ID:</b> ${c.trackingId}</p>
+<p><b>Time:</b> ${new Date(c.time).toLocaleString()}</p>
+</div>
+`;
+});
+
+document.getElementById("clickList").innerHTML =html || "<div class='card'>No clicks yet</div>";
 }
 
 window.addBalance=async function(uid){
@@ -348,6 +377,7 @@ loadApplications();
 loadWithdraw();
 loadReports();
 loadFraud();
+loadClicks();
 }
 
 refreshAll();
