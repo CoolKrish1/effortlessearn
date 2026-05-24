@@ -286,6 +286,7 @@ time:Date.now()
 });
 
 window.startTracking = async function(campaignId, title, reward){
+window.startTracking = async function(campaignId,title,reward){
 
 const trackingId = Math.random().toString(36).slice(2,10);
 
@@ -318,7 +319,7 @@ trackingId: trackingId,
 time: Date.now()
 });
 
-alert("Tracking Started: " + trackingId);
+alert("Applied Successfully");
 
 loadHistory();
 loadReports();
