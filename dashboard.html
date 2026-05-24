@@ -242,39 +242,106 @@ el("campaignList").innerHTML=html||"<div class='card'>No campaigns found</div>";
 loadSmartCampaignOptions();
 }
 
-window.startTracking=async function(campaignId){
-const c=campaignCache[campaignId];
-if(!c){alert("Campaign not found. Refresh page.");return;}
+window.startTracking = async function(campaignId){
 
-const trackingId=Math.random().toString(36).slice(2,10);
+const c = campaignCache[campaignId];
 
-await addDoc(collection(db,"clicks"),{
-userId:currentUser.uid,campaignId:c.id,campaignTitle:c.title,
-reward:c.reward,trackingId,time:Date.now()
-});
-
-await addDoc(collection(db,"applications"),{
-userId:currentUser.uid,campaignId:c.id,campaignTitle:c.title,
-reward:c.reward,status:"pending",trackingId,time:Date.now()
-});
-
-await addDoc(collection(db,"reports"),{
-userId:currentUser.uid,offerName:c.title,event:"Install & Login",
-payout:c.reward,status:"pending",worker:"P1",trackingId,time:Date.now()
-});
-
-alert("Application Submitted");
-
-if(c.offerLink){
-const finalLink=c.offerLink.replace("{trackingId}",trackingId);
-window.open(finalLink,"_blank");
+if(!c){
+alert("Campaign not found");
+return;
 }
 
-await loadHistory();
-await loadReports();
-await loadClicks();
-};
+const trackingId =
+Math.random()
+.toString(36)
+.slice(2,10);
 
+const finalLink =
+(c.offerLink || "")
+.replace(
+"{trackingId}",
+trackingId
+);
+
+await addDoc(
+collection(db,"clicks"),
+{
+userId:currentUser.uid,
+campaignId:c.id,
+campaignTitle:c.title,
+reward:c.reward,
+trackingId:trackingId,
+time:Date.now()
+}
+);
+
+await addDoc(
+collection(db,"applications"),
+{
+userId:currentUser.uid,
+campaignId:c.id,
+campaignTitle:c.title,
+reward:c.reward,
+status:"pending",
+trackingId:trackingId,
+time:Date.now()
+}
+);
+
+await addDoc(
+collection(db,"reports"),
+{
+userId:currentUser.uid,
+offerName:c.title,
+event:"CLICK",
+payout:c.reward,
+status:"pending",
+trackingId:trackingId,
+time:Date.now()
+}
+);
+
+const smartSlug =
+Math.random()
+.toString(36)
+.slice(2,8);
+
+await addDoc(
+collection(db,"smart_links"),
+{
+slug:smartSlug,
+
+campaignId:c.id,
+
+publisherId:currentUser.uid,
+
+title:c.title,
+
+userReward:c.reward,
+
+affiliateCommission:20,
+
+trackingId:trackingId,
+
+offerLink:finalLink,
+
+status:"active",
+
+time:Date.now()
+}
+);
+
+window.open(
+"campaign.html?slug="+smartSlug,
+"_blank"
+);
+
+loadHistory();
+loadReports();
+loadClicks();
+loadSmartLinks();
+
+};
 async function loadHistory(){
 const q=query(collection(db,"applications"),where("userId","==",currentUser.uid));
 const snap=await getDocs(q);
