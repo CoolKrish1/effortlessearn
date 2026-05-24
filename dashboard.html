@@ -10,104 +10,42 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
 body{background:#f4f6fb;color:#111827;display:flex}
-
-.sidebar{
-width:270px;height:100vh;background:#0b1528;color:white;
-position:fixed;left:0;top:0;padding:24px;overflow:auto
-}
+.sidebar{width:270px;height:100vh;background:#0b1528;color:white;position:fixed;left:0;top:0;padding:24px;overflow:auto}
 .logo{font-size:26px;font-weight:800;margin-bottom:4px}
 .logo span{color:#3b82f6}
 .sub{font-size:12px;color:#94a3b8;margin-bottom:28px;text-transform:uppercase}
-
-.wallet-card{
-background:#111f38;border:1px solid #263550;
-border-radius:18px;padding:18px;margin-bottom:24px
-}
+.wallet-card{background:#111f38;border:1px solid #263550;border-radius:18px;padding:18px;margin-bottom:24px}
 .wallet-card p{font-size:12px;color:#94a3b8;text-transform:uppercase}
 .wallet-card h2{font-size:34px;color:#4ade80;margin:8px 0}
 .pubid{font-size:12px;border:1px solid #334155;border-radius:8px;padding:8px;display:inline-block;color:#cbd5e1}
-
-.nav button{
-width:100%;padding:14px;margin:7px 0;border:0;border-radius:12px;
-background:transparent;color:#cbd5e1;text-align:left;font-size:15px;cursor:pointer
-}
+.nav button{width:100%;padding:14px;margin:7px 0;border:0;border-radius:12px;background:transparent;color:#cbd5e1;text-align:left;font-size:15px;cursor:pointer}
 .nav button:hover,.nav button.active{background:#2563eb;color:white}
-
 .main{margin-left:270px;width:100%;padding:26px}
 .section{display:none}.section.active{display:block}
-
-.top-banner{
-background:#2563eb;color:white;padding:18px 22px;border-radius:16px;
-display:flex;justify-content:space-between;align-items:center;margin-bottom:20px
-}
-
-.stats{
-display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-gap:16px;margin-bottom:22px
-}
-.stat{
-background:white;border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.05)
-}
+.top-banner{background:#2563eb;color:white;padding:18px 22px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:22px}
+.stat{background:white;border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
 .stat p{font-size:12px;color:#64748b;text-transform:uppercase}
 .stat h2{font-size:28px;margin-top:8px}
 .green{color:#16a34a}.orange{color:#f97316}.purple{color:#7c3aed}.blue{color:#2563eb}.redText{color:#dc2626}
-
 .search-row{display:flex;gap:16px;margin-bottom:24px}
-.search-row input,.search-row select{
-border:0;background:white;border-radius:18px;padding:18px;font-size:15px;
-box-shadow:0 5px 18px rgba(0,0,0,.04)
-}
+.search-row input,.search-row select{border:0;background:white;border-radius:18px;padding:18px;font-size:15px;box-shadow:0 5px 18px rgba(0,0,0,.04)}
 .search-row input{flex:1}
-
-.offer-grid{
-display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
-gap:22px
-}
-.offer-card{
-background:white;border-radius:26px;padding:22px;box-shadow:0 6px 22px rgba(0,0,0,.06)
-}
+.offer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:22px}
+.offer-card{background:white;border-radius:26px;padding:22px;box-shadow:0 6px 22px rgba(0,0,0,.06)}
 .offer-head{display:flex;gap:16px;align-items:center}
-.offer-logo{
-width:72px;height:72px;border-radius:18px;object-fit:cover;background:#f1f5f9
-}
-.offer-head h3{font-size:20px}
-.offer-head p{font-size:12px;color:#64748b;margin-top:5px}
+.offer-logo{width:72px;height:72px;border-radius:18px;object-fit:cover;background:#f1f5f9}
 .badge{margin-left:auto;background:#dcfce7;color:#15803d;border-radius:20px;padding:7px 12px;font-size:12px;font-weight:700}
-.reward{
-margin-top:22px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:16px;
-padding:16px;display:flex;justify-content:space-between;align-items:center
-}
-.reward span{font-size:12px;color:#166534;text-transform:uppercase}
+.reward{margin-top:22px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center}
 .reward b{font-size:26px;color:#16a34a}
-.start-btn{
-width:100%;margin-top:18px;border:0;background:#000;color:white;border-radius:16px;
-padding:16px;font-weight:800;cursor:pointer
-}
-
-.card{
-background:white;border-radius:18px;padding:18px;margin-bottom:14px;
-box-shadow:0 5px 18px rgba(0,0,0,.05)
-}
+.start-btn{width:100%;margin-top:18px;border:0;background:#000;color:white;border-radius:16px;padding:16px;font-weight:800;cursor:pointer}
+.card{background:white;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
 .card p{margin:7px 0}
-.card input{
-width:100%;padding:14px;margin:8px 0;border:1px solid #e5e7eb;border-radius:12px
-}
-.primary-btn{
-background:#047857;color:white;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;font-weight:700
-}
-.status{
-display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700
-}
-.pending{background:#ffedd5;color:#c2410c}
-.approved{background:#dcfce7;color:#15803d}
-.rejected{background:#fee2e2;color:#b91c1c}
-
-@media(max-width:800px){
-.sidebar{width:220px}
-.main{margin-left:220px;padding:16px}
-.offer-grid{grid-template-columns:1fr}
-.search-row{flex-direction:column}
-}
+.card input{width:100%;padding:14px;margin:8px 0;border:1px solid #e5e7eb;border-radius:12px}
+.primary-btn{background:#047857;color:white;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;font-weight:700}
+.status{display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.pending{background:#ffedd5;color:#c2410c}.approved{background:#dcfce7;color:#15803d}.rejected{background:#fee2e2;color:#b91c1c}
+@media(max-width:800px){.sidebar{width:220px}.main{margin-left:220px;padding:16px}.offer-grid{grid-template-columns:1fr}.search-row{flex-direction:column}}
 </style>
 </head>
 
@@ -129,6 +67,8 @@ display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-wei
 <button onclick="showSection('reports',this)">📄 Reports</button>
 <button onclick="showSection('withdraw',this)">💰 Wallet</button>
 <button onclick="showSection('history',this)">🧾 History</button>
+<button onclick="showSection('profile',this)">👤 Profile</button>
+<button onclick="openTelegram()">📢 Telegram</button>
 <button onclick="logout()">🚪 Logout</button>
 </div>
 </div>
@@ -168,7 +108,6 @@ display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-wei
 <option>Survey</option>
 </select>
 </div>
-
 <div id="campaignList" class="offer-grid"></div>
 </div>
 
@@ -194,14 +133,28 @@ display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-wei
 <div id="historyList"></div>
 </div>
 
+<div id="profile" class="section">
+<h2>Profile</h2><br>
+<div class="card">
+<p><b>Publisher ID:</b> <span id="profilePubId">-</span></p>
+<p><b>Email:</b> <span id="profileEmail">-</span></p>
+<p><b>Balance:</b> ₹<span id="profileBalance">0</span></p>
+<p><b>Status:</b> Active</p>
+</div>
+
+<div class="card">
+<h3>Support</h3>
+<p>Need help? Join Telegram channel for updates and support.</p>
+<button class="primary-btn" onclick="openTelegram()">Join Telegram</button>
+</div>
+</div>
+
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {
-getFirestore,doc,getDoc,collection,getDocs,addDoc,query,where
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore,doc,getDoc,collection,getDocs,addDoc,query,where } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
@@ -215,18 +168,12 @@ appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
-
 let currentUser=null;
 let campaignCache={};
 
 onAuthStateChanged(auth,async(user)=>{
-if(!user){
-window.location.href="login.html";
-return;
-}
-
+if(!user){window.location.href="login.html";return;}
 currentUser=user;
-
 await loadWallet();
 await loadCampaigns();
 await loadHistory();
@@ -238,15 +185,17 @@ await loadClicks();
 async function loadWallet(){
 const snap=await getDoc(doc(db,"users",currentUser.uid));
 let bal=0;
+if(snap.exists()) bal=Number(snap.data().balance||0);
 
-if(snap.exists()){
-bal=Number(snap.data().balance || 0);
-}
+balance.innerText=bal;
+balance2.innerText=bal;
+dashBalance.innerText=bal;
+profileBalance.innerText=bal;
 
-document.getElementById("balance").innerText=bal;
-document.getElementById("balance2").innerText=bal;
-document.getElementById("dashBalance").innerText=bal;
-document.getElementById("pubid").innerText="ID : PUB-"+currentUser.uid.slice(0,6).toUpperCase();
+const pub="PUB-"+currentUser.uid.slice(0,6).toUpperCase();
+pubid.innerText="ID : "+pub;
+profilePubId.innerText=pub;
+profileEmail.innerText=currentUser.email||"-";
 }
 
 async function loadCampaigns(){
@@ -256,53 +205,35 @@ campaignCache={};
 
 snap.forEach(d=>{
 const c=d.data();
-
-const title=c.title || "Untitled";
-const reward=Number(c.reward || 0);
-const status=(c.status || "active").toLowerCase();
+const title=c.title||"Untitled";
+const reward=Number(c.reward||0);
+const status=(c.status||"active").toLowerCase();
 
 if(status!=="active") return;
 
-campaignCache[d.id]={
-id:d.id,
-title:title,
-reward:reward
-};
+campaignCache[d.id]={id:d.id,title,reward};
 
 html+=`
 <div class="offer-card">
 <div class="offer-head">
-<img src="${c.image || 'https://via.placeholder.com/100'}" class="offer-logo">
+<img src="${c.image||'https://via.placeholder.com/100'}" class="offer-logo">
 <div>
 <h3>${title}</h3>
-<p>${c.category || "CPA Offer"}</p>
+<p>${c.category||"CPA Offer"}</p>
 </div>
 <span class="badge">ACTIVE</span>
 </div>
-
-<div class="reward">
-<span>Reward</span>
-<b>₹${reward}</b>
-</div>
-
-<button class="start-btn" onclick="startTracking('${d.id}')">
-START EARNING →
-</button>
-</div>
-`;
+<div class="reward"><span>Reward</span><b>₹${reward}</b></div>
+<button class="start-btn" onclick="startTracking('${d.id}')">START EARNING →</button>
+</div>`;
 });
 
-document.getElementById("campaignList").innerHTML =
-html || "<div class='card'>No campaigns found</div>";
+campaignList.innerHTML=html||"<div class='card'>No campaigns found</div>";
 }
 
 window.startTracking=async function(campaignId){
 const c=campaignCache[campaignId];
-
-if(!c){
-alert("Campaign not found. Refresh page.");
-return;
-}
+if(!c){alert("Campaign not found. Refresh page.");return;}
 
 const trackingId=Math.random().toString(36).slice(2,10);
 
@@ -311,7 +242,7 @@ userId:currentUser.uid,
 campaignId:c.id,
 campaignTitle:c.title,
 reward:c.reward,
-trackingId:trackingId,
+trackingId,
 time:Date.now()
 });
 
@@ -321,7 +252,7 @@ campaignId:c.id,
 campaignTitle:c.title,
 reward:c.reward,
 status:"pending",
-trackingId:trackingId,
+trackingId,
 time:Date.now()
 });
 
@@ -331,12 +262,11 @@ offerName:c.title,
 payout:c.reward,
 status:"pending",
 worker:"P1",
-trackingId:trackingId,
+trackingId,
 time:Date.now()
 });
 
 alert("Application Submitted");
-
 await loadHistory();
 await loadReports();
 await loadClicks();
@@ -347,97 +277,77 @@ const q=query(collection(db,"applications"),where("userId","==",currentUser.uid)
 const snap=await getDocs(q);
 
 let html="";
-let pendingAmount=0;
-let approved=0;
-let pending=0;
-let rejected=0;
+let pendingAmount=0,approved=0,pending=0,rejected=0;
 
 snap.forEach(d=>{
 const h=d.data();
-const status=h.status || "pending";
+const status=h.status||"pending";
 
-if(status==="pending"){
-pendingAmount+=Number(h.reward || 0);
-pending++;
-}
-
+if(status==="pending"){pendingAmount+=Number(h.reward||0);pending++;}
 if(status==="approved") approved++;
 if(status==="rejected") rejected++;
 
 html+=`
 <div class="card">
-<p><b>Offer:</b> ${h.campaignTitle || h.campaignId || "-"}</p>
-<p><b>Reward:</b> ₹${h.reward || 0}</p>
+<p><b>Offer:</b> ${h.campaignTitle||h.campaignId||"-"}</p>
+<p><b>Reward:</b> ₹${h.reward||0}</p>
 <p><b>Status:</b> <span class="status ${status}">${status}</span></p>
-<p><b>Tracking:</b> ${h.trackingId || "-"}</p>
-</div>
-`;
+<p><b>Tracking:</b> ${h.trackingId||"-"}</p>
+</div>`;
 });
 
-document.getElementById("historyList").innerHTML =
-html || "<div class='card'>No applications yet.</div>";
-
-document.getElementById("pendingAmount").innerText=pendingAmount;
-document.getElementById("appCount").innerText=snap.size;
-document.getElementById("approvedCount").innerText=approved;
-document.getElementById("pendingCount").innerText=pending;
-document.getElementById("rejectedCount").innerText=rejected;
+historyList.innerHTML=html||"<div class='card'>No applications yet.</div>";
+pendingAmount.innerText=pendingAmount;
+appCount.innerText=snap.size;
+approvedCount.innerText=approved;
+pendingCount.innerText=pending;
+rejectedCount.innerText=rejected;
 }
 
 async function loadReports(){
 const q=query(collection(db,"reports"),where("userId","==",currentUser.uid));
 const snap=await getDocs(q);
-
 let html="";
 
 snap.forEach(d=>{
 const r=d.data();
-const status=r.status || "pending";
+const status=r.status||"pending";
 
 html+=`
 <div class="card">
-<p><b>Offer:</b> ${r.offerName || "-"}</p>
-<p><b>Payout:</b> ₹${r.payout || 0}</p>
+<p><b>Offer:</b> ${r.offerName||"-"}</p>
+<p><b>Payout:</b> ₹${r.payout||0}</p>
 <p><b>Status:</b> <span class="status ${status}">${status}</span></p>
-<p><b>Worker:</b> ${r.worker || "P1"}</p>
-<p><b>Tracking:</b> ${r.trackingId || "-"}</p>
-</div>
-`;
+<p><b>Worker:</b> ${r.worker||"P1"}</p>
+<p><b>Tracking:</b> ${r.trackingId||"-"}</p>
+</div>`;
 });
 
-document.getElementById("reportList").innerHTML =
-html || "<div class='card'>No reports yet.</div>";
-
-document.getElementById("reportCount").innerText=snap.size;
+reportList.innerHTML=html||"<div class='card'>No reports yet.</div>";
+reportCount.innerText=snap.size;
 }
 
 async function loadClicks(){
 const q=query(collection(db,"clicks"),where("userId","==",currentUser.uid));
 const snap=await getDocs(q);
-document.getElementById("clickCount").innerText=snap.size;
+clickCount.innerText=snap.size;
 }
 
 window.withdrawRequest=async function(){
 const upi=document.getElementById("upi").value.trim();
 const amount=Number(document.getElementById("amount").value);
 
-if(!upi || amount<=0){
-alert("Enter valid UPI and amount");
-return;
-}
+if(!upi||amount<=0){alert("Enter valid UPI and amount");return;}
 
 const snap=await getDoc(doc(db,"users",currentUser.uid));
-const balance=snap.exists() ? Number(snap.data().balance || 0) : 0;
+const balance=snap.exists()?Number(snap.data().balance||0):0;
 
-if(amount>balance){
-alert("Insufficient balance");
-return;
-}
+if(amount>balance){alert("Insufficient balance");return;}
 
 await addDoc(collection(db,"withdrawals"),{
 userId:currentUser.uid,
-upi:upi,
-amount:amount,
+upi,
+amount,
 status:"pending",
 time:Date.now()
 });
@@ -453,10 +363,8 @@ time:Date.now()
 });
 
 alert("Withdraw Sent");
-
 document.getElementById("upi").value="";
 document.getElementById("amount").value="";
-
 await loadWithdrawHistory();
 await loadReports();
 };
@@ -464,47 +372,43 @@ await loadReports();
 async function loadWithdrawHistory(){
 const q=query(collection(db,"withdrawals"),where("userId","==",currentUser.uid));
 const snap=await getDocs(q);
-
 let html="";
 
 snap.forEach(d=>{
 const w=d.data();
-const status=w.status || "pending";
+const status=w.status||"pending";
 
 html+=`
 <div class="card">
-<p><b>Amount:</b> ₹${w.amount || 0}</p>
-<p><b>UPI:</b> ${w.upi || "-"}</p>
+<p><b>Amount:</b> ₹${w.amount||0}</p>
+<p><b>UPI:</b> ${w.upi||"-"}</p>
 <p><b>Status:</b> <span class="status ${status}">${status}</span></p>
-</div>
-`;
+</div>`;
 });
 
-document.getElementById("withdrawList").innerHTML =
-html || "<div class='card'>No withdraw requests.</div>";
+withdrawList.innerHTML=html||"<div class='card'>No withdraw requests.</div>";
 }
 
 window.showSection=function(id,btn){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
-
 document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-if(btn) btn.classList.add("active");
+if(btn)btn.classList.add("active");
 };
 
 window.searchOffers=function(){
-const input=document.getElementById("searchOffer").value.toLowerCase();
-
+const input=searchOffer.value.toLowerCase();
 document.querySelectorAll(".offer-card").forEach(card=>{
-card.style.display =
-card.innerText.toLowerCase().includes(input) ? "block" : "none";
+card.style.display=card.innerText.toLowerCase().includes(input)?"block":"none";
 });
 };
 
+window.openTelegram=function(){
+window.open("https://t.me/effortlessMoneyearning");
+};
+
 window.logout=function(){
-signOut(auth).then(()=>{
-window.location.href="login.html";
-});
+signOut(auth).then(()=>{window.location.href="login.html";});
 };
 </script>
 
