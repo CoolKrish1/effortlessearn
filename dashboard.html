@@ -3,939 +3,423 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publisher Dashboard</title>
 
-<title>CampaignHub Dashboard</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+body{background:#f4f6fb;color:#111827;display:flex}
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Inter,sans-serif;
-}
-
-body{
-background:#f5f7fb;
-display:flex;
-color:#111827;
-}
-
+/* SIDEBAR */
 .sidebar{
-width:260px;
-height:100vh;
-background:#07142d;
-position:fixed;
-left:0;
-top:0;
-padding:20px;
-overflow:auto;
+width:270px;height:100vh;background:#0b1528;color:white;
+position:fixed;left:0;top:0;padding:24px;overflow:auto
 }
-
-.logo{
-margin-bottom:25px;
-}
-
-.logo h1{
-color:white;
-font-size:24px;
-}
-
-.logo p{
-color:#9fb7dd;
-font-size:13px;
-}
+.logo{font-size:26px;font-weight:800;margin-bottom:4px}
+.logo span{color:#3b82f6}
+.sub{font-size:12px;color:#94a3b8;margin-bottom:28px;text-transform:uppercase}
 
 .wallet-card{
-background:#0f2247;
-padding:18px;
-border-radius:20px;
-color:white;
-margin-bottom:25px;
+background:#111f38;border:1px solid #263550;
+border-radius:18px;padding:18px;margin-bottom:24px
 }
+.wallet-card p{font-size:12px;color:#94a3b8;text-transform:uppercase}
+.wallet-card h2{font-size:34px;color:#4ade80;margin:8px 0}
+.pubid{font-size:12px;border:1px solid #334155;border-radius:8px;padding:8px;display:inline-block;color:#cbd5e1}
 
-.wallet-card h2{
-margin-top:10px;
-color:#34d399;
+.nav button{
+width:100%;padding:14px;margin:7px 0;border:0;border-radius:12px;
+background:transparent;color:#cbd5e1;text-align:left;font-size:15px;cursor:pointer
 }
+.nav button:hover,.nav button.active{background:#2563eb;color:white}
 
-.pubid{
-margin-top:10px;
-padding:8px 12px;
-border:1px solid #33558f;
-border-radius:10px;
-display:inline-block;
-font-size:13px;
-}
+/* MAIN */
+.main{margin-left:270px;width:100%;padding:26px}
+.section{display:none}.section.active{display:block}
 
-.sidebar button{
-width:100%;
-padding:14px;
-margin:6px 0;
-border:none;
-border-radius:12px;
-background:transparent;
-color:white;
-cursor:pointer;
-text-align:left;
-font-size:15px;
-}
-
-.sidebar button:hover{
-background:#295cff;
-}
-
-.main{
-margin-left:260px;
-width:100%;
-padding:30px;
-}
-
-.topbar{
-display:flex;
-gap:15px;
-margin-bottom:25px;
-}
-
-.topbar input{
-flex:1;
-padding:16px;
-border:none;
-border-radius:16px;
-background:white;
-}
-
-.topbar select{
-padding:16px;
-border:none;
-border-radius:16px;
-background:white;
-}
-
-.section{
-display:none;
-}
-
-.section.active{
-display:block;
+.top-banner{
+background:#2563eb;color:white;padding:18px 22px;border-radius:16px;
+display:flex;justify-content:space-between;align-items:center;margin-bottom:20px
 }
 
 .stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:20px;
-margin-bottom:25px;
+display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+gap:16px;margin-bottom:22px
 }
-
-.stat-card{
-background:white;
-padding:20px;
-border-radius:20px;
-box-shadow:0 5px 18px rgba(0,0,0,.05);
+.stat{
+background:white;border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.05)
 }
+.stat p{font-size:12px;color:#64748b;text-transform:uppercase}
+.stat h2{font-size:28px;margin-top:8px}
+.green{color:#16a34a}.orange{color:#f97316}.purple{color:#7c3aed}.blue{color:#2563eb}
 
-.stat-card h3{
-font-size:14px;
-color:#6b7280;
+.search-row{display:flex;gap:16px;margin-bottom:24px}
+.search-row input,.search-row select{
+border:0;background:white;border-radius:18px;padding:18px;font-size:15px;
+box-shadow:0 5px 18px rgba(0,0,0,.04)
 }
+.search-row input{flex:1}
 
-.stat-card h2{
-margin-top:10px;
+.offer-grid{
+display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+gap:22px
 }
-
-#campaignList{
-display:grid;
-grid-template-columns:
-repeat(auto-fill,minmax(320px,1fr));
-gap:20px;
-}
-
 .offer-card{
-background:white;
-border-radius:22px;
-padding:20px;
-box-shadow:0 5px 20px rgba(0,0,0,.05);
+background:white;border-radius:26px;padding:22px;box-shadow:0 6px 22px rgba(0,0,0,.06)
 }
-
-.offer-head{
-display:flex;
-gap:15px;
-align-items:center;
-}
-
+.offer-head{display:flex;gap:16px;align-items:center}
 .offer-logo{
-width:70px;
-height:70px;
-object-fit:cover;
-border-radius:16px;
+width:72px;height:72px;border-radius:18px;object-fit:cover;background:#f1f5f9
 }
-
-.badge{
-display:inline-block;
-margin-top:8px;
-background:#dcfce7;
-color:#15803d;
-padding:5px 12px;
-border-radius:30px;
-font-size:12px;
+.offer-head h3{font-size:20px}
+.offer-head p{font-size:12px;color:#64748b;margin-top:5px}
+.badge{margin-left:auto;background:#dcfce7;color:#15803d;border-radius:20px;padding:7px 12px;font-size:12px;font-weight:700}
+.reward{
+margin-top:22px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:16px;
+padding:16px;display:flex;justify-content:space-between;align-items:center
 }
-
-.reward-box{
-margin-top:20px;
-padding:16px;
-background:#effcf5;
-border-radius:16px;
-font-size:28px;
-font-weight:700;
-color:#16a34a;
-text-align:center;
-}
-
+.reward span{font-size:12px;color:#166534;text-transform:uppercase}
+.reward b{font-size:26px;color:#16a34a}
 .start-btn{
-width:100%;
-margin-top:18px;
-padding:15px;
-border:none;
-border-radius:16px;
-background:black;
-color:white;
-cursor:pointer;
-font-weight:600;
+width:100%;margin-top:18px;border:0;background:#000;color:white;border-radius:16px;
+padding:16px;font-weight:800;cursor:pointer
 }
 
+/* CARDS */
 .card{
-background:white;
-padding:18px;
-border-radius:16px;
-margin-top:15px;
-box-shadow:0 5px 18px rgba(0,0,0,.05);
+background:white;border-radius:18px;padding:18px;margin-bottom:14px;
+box-shadow:0 5px 18px rgba(0,0,0,.05)
 }
-
-#withdraw input{
-width:100%;
-padding:14px;
-margin:10px 0;
-border:1px solid #ddd;
-border-radius:12px;
+.card p{margin:7px 0}
+.card input{
+width:100%;padding:14px;margin:8px 0;border:1px solid #e5e7eb;border-radius:12px
 }
-
-#withdraw button{
-padding:14px 20px;
-border:none;
-border-radius:12px;
-background:#2563eb;
-color:white;
-cursor:pointer;
+.primary-btn{
+background:#047857;color:white;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;font-weight:700
 }
-
-.history-item{
-background:white;
-padding:15px;
-border-radius:14px;
-margin-top:10px;
-box-shadow:0 4px 15px rgba(0,0,0,.05);
+.status{
+display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700
 }
+.pending{background:#ffedd5;color:#c2410c}
+.approved{background:#dcfce7;color:#15803d}
+.rejected{background:#fee2e2;color:#b91c1c}
 
+@media(max-width:800px){
+.sidebar{width:220px}
+.main{margin-left:220px;padding:16px}
+.offer-grid{grid-template-columns:1fr}
+.search-row{flex-direction:column}
+}
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-
-<div class="logo">
-<h1>CampaignHub</h1>
-<p>Publisher Dashboard</p>
-</div>
+<div class="logo">PATHAK<span>CPA</span></div>
+<div class="sub">Publisher Panel</div>
 
 <div class="wallet-card">
 <p>Wallet Balance</p>
 <h2>₹<span id="balance">0</span></h2>
-
-<div class="pubid" id="pubid">
-Loading...
-</div>
+<div class="pubid" id="pubid">Loading...</div>
 </div>
 
-<button onclick="showSection('home')">
-📊 Dashboard
-</button>
-
-<button onclick="showSection('campaigns')">
-🎯 Campaigns
-</button>
-
-<button onclick="showSection('history')">
-📄 History
-</button>
-
-<button onclick="showSection('withdraw')">
-💰 Withdraw
-</button>
-
-<button onclick="showSection('reports')">
-📈 Reports
-</button>
-
-<button onclick="logout()">
-🚪 Logout
-</button>
-
+<div class="nav">
+<button class="active" onclick="showSection('dashboard',this)">📊 Dashboard</button>
+<button onclick="showSection('offers',this)">🎯 All Offers</button>
+<button onclick="showSection('reports',this)">📄 Reports</button>
+<button onclick="showSection('withdraw',this)">💰 Wallet</button>
+<button onclick="showSection('history',this)">🧾 History</button>
+<button onclick="logout()">🚪 Logout</button>
+</div>
 </div>
 
 <div class="main">
 
-<div class="topbar">
-
-<input
-id="searchOffer"
-placeholder="Search Campaign..."
-onkeyup="searchOffers()"
->
-
-<select>
-<option>All Offers</option>
-<option>Finance</option>
-<option>Banking</option>
-<option>Survey</option>
-</select>
-
+<div id="dashboard" class="section active">
+<div class="top-banner">
+<b>🚀 JOIN TELEGRAM CHANNEL</b>
+<span>Get latest offers and updates</span>
 </div>
-
-<div id="home" class="section active">
 
 <div class="stats">
-
-<div class="stat-card">
-<h3>Balance</h3>
-<h2>₹<span id="balanceHome">0</span></h2>
+<div class="stat"><p>Revenue</p><h2 class="green">₹<span id="dashBalance">0</span></h2></div>
+<div class="stat"><p>Pending Approval</p><h2 class="orange">₹<span id="pendingAmount">0</span></h2></div>
+<div class="stat"><p>Applications</p><h2 class="purple" id="appCount">0</h2></div>
+<div class="stat"><p>Reports</p><h2 class="blue" id="reportCount">0</h2></div>
 </div>
-
-<div class="stat-card">
-<h3>Total Applications</h3>
-<h2 id="totalApps">0</h2>
-</div>
-
-<div class="stat-card">
-<h3>Total Reports</h3>
-<h2 id="totalReports">0</h2>
-</div>
-
-</div>
-
-</div>
-
-<div id="campaigns" class="section">
-
-<h2>Campaigns</h2>
-
-<br>
-
-<div id="campaignList"></div>
-
-</div>
-
-
-<div id="withdraw" class="section">
-
-<h2>Withdraw Money</h2>
 
 <div class="card">
-
-<p>
-Available Balance :
-₹<span id="balance2">0</span>
-</p>
-
-<br>
-
-<input
-type="text"
-id="upi"
-placeholder="Enter UPI ID"
->
-
-<input
-type="number"
-id="amount"
-placeholder="Enter Amount"
->
-
-<button onclick="withdrawRequest()">
-Request Withdraw
-</button>
-
+<h2>How to Start Earning?</h2>
+<p>Choose an offer, click Start Earning, complete the task, and wait for admin approval.</p>
+</div>
 </div>
 
-<div id="withdrawList"></div>
-
+<div id="offers" class="section">
+<div class="search-row">
+<input id="searchOffer" placeholder="Search High Paying Offers..." onkeyup="searchOffers()">
+<select>
+<option>ALL OFFERS</option>
+<option>Banking</option>
+<option>Finance</option>
+<option>Survey</option>
+</select>
 </div>
 
-<div id="history" class="section">
-
-<h2>Application History</h2>
-
-<div id="historyList"></div>
-
+<div id="campaignList" class="offer-grid"></div>
 </div>
 
 <div id="reports" class="section">
-
-<h2>Tracking Reports</h2>
-
+<h2>Tracking Reports</h2><br>
 <div id="reportList"></div>
+</div>
 
+<div id="withdraw" class="section">
+<h2>Withdraw Money</h2><br>
+<div class="card">
+<p>Available Balance: ₹<span id="balance2">0</span></p>
+<input id="upi" placeholder="Enter UPI ID">
+<input id="amount" type="number" placeholder="Enter Amount">
+<button class="primary-btn" onclick="withdrawRequest()">Request Withdraw</button>
+</div>
+<h3>Withdraw History</h3>
+<div id="withdrawList"></div>
+</div>
+
+<div id="history" class="section">
+<h2>Application History</h2><br>
+<div id="historyList"></div>
 </div>
 
 </div>
 
 <script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {
-getAuth,
-onAuthStateChanged,
-signOut
-}
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+getFirestore,doc,getDoc,collection,getDocs,addDoc,query,where
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-import {
-getFirestore,
-doc,
-getDoc,
-collection,
-getDocs,
-addDoc,
-query,
-where
-}
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-const firebaseConfig = {
-
-apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-
-authDomain:
-"effortless-earn-7f39e..appspot.com",
-
-projectId:
-"effortless-earn-7f39e",
-
-storageBucket:
-"effortless-earn-7f39e.appspot.com",
-
-messagingSenderId:
-"554178513766",
-
-appId:
-"1:554178513766:web:d8d7edf915a95349cb16a7"
-
+const firebaseConfig={
+apiKey:"AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+authDomain:"effortless-earn-7f39e.firebaseapp.com",
+projectId:"effortless-earn-7f39e",
+storageBucket:"effortless-earn-7f39e.appspot.com",
+messagingSenderId:"554178513766",
+appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
-const app = initializeApp(firebaseConfig);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+let currentUser=null;
 
-const auth = getAuth(app);
-
-const db = getFirestore(app);
-
-let currentUser;
-
-/* AUTH */
-
-onAuthStateChanged(auth, async(user)=>{
-
-if(!user){
-
-window.location.href="login.html";
-
-return;
-
-}
-
-currentUser = user;
-
-loadWallet();
-loadCampaigns();
-loadHistory();
-loadReports();
-loadWithdrawHistory();
-
+onAuthStateChanged(auth,async(user)=>{
+if(!user){ window.location.href="login.html"; return; }
+currentUser=user;
+await loadWallet();
+await loadCampaigns();
+await loadHistory();
+await loadReports();
+await loadWithdrawHistory();
 });
-
-/* WALLET */
 
 async function loadWallet(){
+const snap=await getDoc(doc(db,"users",currentUser.uid));
+let bal=0;
+if(snap.exists()) bal=snap.data().balance || 0;
 
-const snap = await getDoc(
-doc(db,"users",currentUser.uid)
-);
-
-if(snap.exists()){
-
-const bal =
-snap.data().balance || 0;
-
-document.getElementById(
-"balance"
-).innerText = bal;
-
-document.getElementById(
-"balance2"
-).innerText = bal;
-
-document.getElementById(
-"balanceHome"
-).innerText = bal;
-
-document.getElementById(
-"pubid"
-).innerText =
-"PUB-" +
-currentUser.uid.slice(0,8);
-
+document.getElementById("balance").innerText=bal;
+document.getElementById("balance2").innerText=bal;
+document.getElementById("dashBalance").innerText=bal;
+document.getElementById("pubid").innerText="ID : PUB-"+currentUser.uid.slice(0,6).toUpperCase();
 }
-
-}
-
-/* CAMPAIGNS */
 
 async function loadCampaigns(){
+const snap=await getDocs(collection(db,"campaigns"));
+let html="";
 
-const snap =
-await getDocs(
-collection(db,"campaigns")
-);
+snap.forEach(d=>{
+const c=d.data();
+const title=c.title || "Untitled Offer";
+const reward=Number(c.reward || 0);
+const status=c.status || "active";
+const img=c.image || "https://via.placeholder.com/120";
 
-let html = "";
+if(status !== "active") return;
 
-snap.forEach(docSnap=>{
-
-const c = docSnap.data();
-
-html += `
-
+html+=`
 <div class="offer-card">
-
 <div class="offer-head">
-
-<img
-src="${
-c.image ||
-'https://via.placeholder.com/100'
-}"
-class="offer-logo"
->
-
+<img class="offer-logo" src="${img}">
 <div>
-
-<h3>${c.title}</h3>
-
-<p>
-${c.category || "CPA Offer"}
-</p>
-
-<span class="badge">
-${c.status || "ACTIVE"}
-</span>
-
+<h3>${title}</h3>
+<p>${c.category || "CPA"} • CPA</p>
+</div>
+<span class="badge">ACTIVE</span>
 </div>
 
+<div class="reward">
+<span>Total Earnings</span>
+<b>₹${reward}</b>
 </div>
 
-<div class="reward-box">
-₹${c.reward}
-</div>
-
-<button
-class="start-btn"
-onclick="
-applyCampaign(
-'${docSnap.id}',
-'${c.title}',
-${c.reward}
-)
-"
->
-
+<button class="start-btn" onclick="applyCampaign('${d.id}','${title}',${reward})">
 START EARNING →
-
 </button>
-
 </div>
-
 `;
-
 });
 
-document.getElementById(
-"campaignList"
-).innerHTML = html;
-
+document.getElementById("campaignList").innerHTML=html || "<div class='card'>No active offers found.</div>";
 }
 
-
-/* APPLY CAMPAIGN */
-
-window.applyCampaign =
-async function(
-campaignId,
-title,
-reward
-){
-
+window.applyCampaign=async function(id,title,reward){
 await addDoc(collection(db,"applications"),{
-userId: currentUser.uid,
-campaignId: id,
-campaignTitle: title,
-reward: reward,
+userId:currentUser.uid,
+campaignId:id,
+campaignTitle:title,
+reward:Number(reward),
 status:"pending",
-time: Date.now()
+time:Date.now()
 });
 
 await addDoc(collection(db,"reports"),{
-userId: currentUser.uid,
-offerName: title,
-payout: reward,
-status: "pending",
-worker: "P1",
-trackingId:
-Math.random()
-.toString(36)
-.slice(2,10),
-ip: "N/A",
-time: Date.now()
-}
-);
+userId:currentUser.uid,
+offerName:title,
+payout:Number(reward),
+status:"pending",
+worker:"P1",
+trackingId:Math.random().toString(36).slice(2,10),
+time:Date.now()
+});
 
-alert("Application Submitted");
-
+alert("Application submitted");
 loadHistory();
 loadReports();
-
 };
 
-/* WITHDRAW */
+async function loadHistory(){
+const q=query(collection(db,"applications"),where("userId","==",currentUser.uid));
+const snap=await getDocs(q);
+let html="";
+let pendingAmount=0;
 
-window.withdrawRequest =
-async function(){
+snap.forEach(d=>{
+const h=d.data();
+if(h.status==="pending") pendingAmount+=Number(h.reward || 0);
 
-const upi =
-document.getElementById("upi")
-.value;
+html+=`
+<div class="card">
+<p><b>Offer:</b> ${h.campaignTitle || h.campaignId}</p>
+<p><b>Reward:</b> ₹${h.reward || 0}</p>
+<p><b>Status:</b> <span class="status ${h.status || 'pending'}">${h.status || "pending"}</span></p>
+</div>
+`;
+});
 
-const amount =
-Number(
-document.getElementById("amount")
-.value
-);
-
-if(!upi || amount <= 0){
-
-alert("Enter Valid Details");
-
-return;
-
+document.getElementById("historyList").innerHTML=html || "<div class='card'>No applications yet.</div>";
+document.getElementById("appCount").innerText=snap.size;
+document.getElementById("pendingAmount").innerText=pendingAmount;
 }
 
-const snap =
-await getDoc(
-doc(db,"users",currentUser.uid)
-);
+async function loadReports(){
+const q=query(collection(db,"reports"),where("userId","==",currentUser.uid));
+const snap=await getDocs(q);
+let html="";
 
-const balance =
-snap.data().balance || 0;
+snap.forEach(d=>{
+const r=d.data();
+html+=`
+<div class="card">
+<p><b>Offer:</b> ${r.offerName || "-"}</p>
+<p><b>Payout:</b> ₹${r.payout || 0}</p>
+<p><b>Status:</b> <span class="status ${r.status || 'pending'}">${r.status || "-"}</span></p>
+<p><b>Worker:</b> ${r.worker || "P1"}</p>
+<p><b>Tracking:</b> ${r.trackingId || "-"}</p>
+</div>
+`;
+});
 
-if(amount > balance){
-
-alert("Insufficient Balance");
-
-return;
-
+document.getElementById("reportList").innerHTML=html || "<div class='card'>No reports yet.</div>";
+document.getElementById("reportCount").innerText=snap.size;
 }
+
+window.withdrawRequest=async function(){
+const upi=document.getElementById("upi").value.trim();
+const amount=Number(document.getElementById("amount").value);
+
+if(!upi || amount<=0){ alert("Enter valid UPI and amount"); return; }
+
+const snap=await getDoc(doc(db,"users",currentUser.uid));
+const balance=snap.exists() ? Number(snap.data().balance || 0) : 0;
+
+if(amount>balance){ alert("Insufficient balance"); return; }
 
 await addDoc(collection(db,"withdrawals"),{
-userId: currentUser.uid,
+userId:currentUser.uid,
 upi,
 amount,
 status:"pending",
-time: Date.now()
+time:Date.now()
 });
 
 await addDoc(collection(db,"reports"),{
-userId: currentUser.uid,
-offerName: "Withdraw Request",
-payout: amount,
-status: "pending",
-worker: "P1",
-trackingId:
-Math.random()
-.toString(36)
-.slice(2,10),
-ip: "N/A",
-time: Date.now()
+userId:currentUser.uid,
+offerName:"Withdraw Request",
+payout:amount,
+status:"pending",
+worker:"P1",
+trackingId:Math.random().toString(36).slice(2,10),
+time:Date.now()
 });
 
-alert("Withdraw Request Sent");
-
+alert("Withdraw request sent");
+document.getElementById("upi").value="";
+document.getElementById("amount").value="";
 loadWithdrawHistory();
 loadReports();
-
 };
 
-/* HISTORY */
+async function loadWithdrawHistory(){
+const q=query(collection(db,"withdrawals"),where("userId","==",currentUser.uid));
+const snap=await getDocs(q);
+let html="";
 
-async function loadHistory(){
-
-const q = query(
-collection(db,"applications"),
-where(
-"userId",
-"==",
-currentUser.uid
-)
-);
-
-const snap =
-await getDocs(q);
-
-document.getElementById(
-"totalApps"
-).innerText = snap.size;
-
-let html = "";
-
-snap.forEach(docSnap=>{
-
-const h = docSnap.data();
-
-html += `
-
-<div class="history-item">
-
-<h3>
-${h.campaignTitle || "Campaign"}
-</h3>
-
-<br>
-
-<p>
-Reward :
-₹${h.reward}
-</p>
-
-<p>
-Status :
-${h.status}
-</p>
-
+snap.forEach(d=>{
+const w=d.data();
+html+=`
+<div class="card">
+<p><b>Amount:</b> ₹${w.amount}</p>
+<p><b>UPI:</b> ${w.upi}</p>
+<p><b>Status:</b> <span class="status ${w.status || 'pending'}">${w.status || "pending"}</span></p>
 </div>
-
 `;
-
 });
 
-document.getElementById(
-"historyList"
-).innerHTML = html;
-
+document.getElementById("withdrawList").innerHTML=html || "<div class='card'>No withdraw requests.</div>";
 }
 
-/* REPORTS */
+window.showSection=function(id,btn){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 
-async function loadReports(){
-
-const q = query(
-collection(db,"reports"),
-where(
-"userId",
-"==",
-currentUser.uid
-)
-);
-
-const snap =
-await getDocs(q);
-
-document.getElementById(
-"totalReports"
-).innerText = snap.size;
-
-let html = "";
-
-snap.forEach(docSnap=>{
-
-const r = docSnap.data();
-
-html += `
-
-<div class="history-item">
-
-<h3>
-${r.offerName}
-</h3>
-
-<br>
-
-<p>
-Payout :
-₹${r.payout}
-</p>
-
-<p>
-Status :
-${r.status}
-</p>
-
-<p>
-Worker :
-${r.worker}
-</p>
-
-<p>
-Tracking :
-${r.trackingId}
-</p>
-
-</div>
-
-`;
-
-});
-
-document.getElementById(
-"reportList"
-).innerHTML = html;
-
-}
-
-/* WITHDRAW HISTORY */
-
-async function
-loadWithdrawHistory(){
-
-const q = query(
-collection(db,"withdrawals"),
-where(
-"userId",
-"==",
-currentUser.uid
-)
-);
-
-const snap =
-await getDocs(q);
-
-let html = "";
-
-snap.forEach(docSnap=>{
-
-const w = docSnap.data();
-
-html += `
-
-<div class="history-item">
-
-<h3>
-₹${w.amount}
-</h3>
-
-<br>
-
-<p>
-UPI :
-${w.upi}
-</p>
-
-<p>
-Status :
-${w.status}
-</p>
-
-</div>
-
-`;
-
-});
-
-document.getElementById(
-"withdrawList"
-).innerHTML = html;
-
-}
-
-/* SEARCH */
-
-window.searchOffers =
-function(){
-
-let input =
-document
-.getElementById(
-"searchOffer"
-)
-.value
-.toLowerCase();
-
-document
-.querySelectorAll(
-".offer-card"
-)
-.forEach(card=>{
-
-card.style.display =
-
-card.innerText
-.toLowerCase()
-.includes(input)
-
-? "block"
-
-: "none";
-
-});
-
+document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+if(btn) btn.classList.add("active");
 };
 
-/* NAVIGATION */
-
-window.showSection =
-function(id){
-
-document
-.querySelectorAll(".section")
-.forEach(section=>{
-
-section.classList
-.remove("active");
-
+window.searchOffers=function(){
+const input=document.getElementById("searchOffer").value.toLowerCase();
+document.querySelectorAll(".offer-card").forEach(card=>{
+card.style.display=card.innerText.toLowerCase().includes(input)?"block":"none";
 });
-
-document
-.getElementById(id)
-.classList
-.add("active");
-
 };
 
-/* LOGOUT */
-
-window.logout =
-function(){
-
-signOut(auth);
-
-window.location.href =
-"login.html";
-
+window.logout=function(){
+signOut(auth).then(()=>window.location.href="login.html");
 };
-
 </script>
 
 </body>
