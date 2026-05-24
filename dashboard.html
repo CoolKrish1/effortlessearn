@@ -590,21 +590,16 @@ title,
 reward
 ){
 
-await addDoc(
-collection(db,"applications"),
-{
+await addDoc(collection(db,"applications"),{
 userId: currentUser.uid,
-campaignId: campaignId,
+campaignId: id,
 campaignTitle: title,
 reward: reward,
-status: "pending",
+status:"pending",
 time: Date.now()
-}
-);
+});
 
-await addDoc(
-collection(db,"reports"),
-{
+await addDoc(collection(db,"reports"),{
 userId: currentUser.uid,
 offerName: title,
 payout: reward,
@@ -665,20 +660,15 @@ return;
 
 }
 
-await addDoc(
-collection(db,"withdrawals"),
-{
+await addDoc(collection(db,"withdrawals"),{
 userId: currentUser.uid,
-upi: upi,
-amount: amount,
-status: "pending",
+upi,
+amount,
+status:"pending",
 time: Date.now()
-}
-);
+});
 
-await addDoc(
-collection(db,"reports"),
-{
+await addDoc(collection(db,"reports"),{
 userId: currentUser.uid,
 offerName: "Withdraw Request",
 payout: amount,
@@ -690,8 +680,7 @@ Math.random()
 .slice(2,10),
 ip: "N/A",
 time: Date.now()
-}
-);
+});
 
 alert("Withdraw Request Sent");
 
