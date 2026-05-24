@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel PRO</title>
+<title>Admin Panel PRO MAX</title>
 
 <style>
 body{
@@ -47,43 +47,69 @@ margin:10px 0;
 border-radius:10px;
 border:1px solid #1f2937;
 }
+
+input{
+padding:8px;
+margin:5px 0;
+width:200px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-<h2>Admin</h2>
+<h2>Admin Panel</h2>
 
 <button onclick="show('dashboard')">Dashboard</button>
 <button onclick="show('users')">Users</button>
 <button onclick="show('withdraw')">Withdraw</button>
 <button onclick="show('campaigns')">Campaigns</button>
+<button onclick="show('applications')">Applications</button>
 <button onclick="show('reports')">Reports</button>
 </div>
 
 <div class="main">
 
+<!-- DASHBOARD -->
 <div id="dashboard" class="section active">
-<h2>📊 Dashboard</h2>
+<h2>Dashboard</h2>
 <div id="stats"></div>
 </div>
 
+<!-- USERS -->
 <div id="users" class="section">
 <h2>Users</h2>
 <div id="userList"></div>
 </div>
 
+<!-- WITHDRAW -->
 <div id="withdraw" class="section">
 <h2>Withdraw Requests</h2>
 <div id="withdrawList"></div>
 </div>
 
+<!-- CAMPAIGNS -->
 <div id="campaigns" class="section">
-<h2>Campaigns</h2>
+<h2>Campaign Management</h2>
+
+<div class="card">
+<h3>Add Campaign</h3>
+<input id="title" placeholder="Title">
+<input id="reward" placeholder="Reward">
+<button onclick="addCampaign()">Add</button>
+</div>
+
 <div id="campaignList"></div>
 </div>
 
+<!-- APPLICATIONS -->
+<div id="applications" class="section">
+<h2>Campaign Applications</h2>
+<div id="appList"></div>
+</div>
+
+<!-- REPORTS -->
 <div id="reports" class="section">
 <h2>Reports</h2>
 <div id="reportList"></div>
@@ -128,6 +154,7 @@ async function loadStats(){
 const users=await getDocs(collection(db,"users"));
 const withdraw=await getDocs(collection(db,"withdrawals"));
 const reports=await getDocs(collection(db,"reports"));
+const apps=await getDocs(collection(db,"campaign_apps"));
 
 let pending=0;
 let payout=0;
@@ -141,6 +168,7 @@ if(x.status==="approved") payout+=Number(x.amount);
 document.getElementById("stats").innerHTML=`
 <div class="card">Users: ${users.size}</div>
 <div class="card">Withdraw: ${withdraw.size}</div>
+<div class="card">Campaign Apps: ${apps.size}</div>
 <div class="card">Reports: ${reports.size}</div>
 <div class="card">Pending: ${pending}</div>
 <div class="card">Payout: ₹${payout}</div>
@@ -172,10 +200,10 @@ html+=`
 <div class="card">
 <p>User: ${w.userId}</p>
 <p>₹${w.amount}</p>
-<p>Status: ${w.status}</p>
+<p>${w.status}</p>
 
-<button onclick="approve('${d.id}','${w.userId}',${w.amount})">Approve</button>
-<button onclick="reject('${d.id}')">Reject</button>
+<button onclick="approveWithdraw('${d.id}','${w.userId}',${w.amount})">Approve</button>
+<button onclick="rejectWithdraw('${d.id}')">Reject</button>
 </div>
 `;
 });
@@ -183,47 +211,104 @@ html+=`
 document.getElementById("withdrawList").innerHTML=html;
 }
 
-/* CAMPAIGNS */
+/* CAMPAIGN ADD */
+window.addCampaign = async function(){
+
+const title=document.getElementById("title").value;
+const reward=document.getElementById("reward").value;
+
+await addDoc(collection(db,"campaigns"),{
+title,
+reward,
+status:"active",
+time:Date.now()
+});
+
+alert("Campaign Added");
+loadCampaigns();
+};
+
+/* CAMPAIGN LIST */
 async function loadCampaigns(){
+
 const snap=await getDocs(collection(db,"campaigns"));
 
 let html="";
 
 snap.forEach(d=>{
-html+=`<div class="card">${d.data().title}</div>`;
+html+=`<div class="card">${d.data().title} - ₹${d.data().reward}</div>`;
 });
 
 document.getElementById("campaignList").innerHTML=html;
 }
 
-/* REPORTS */
-async function loadReports(){
-const snap=await getDocs(collection(db,"reports"));
+/* USER APPLICATIONS */
+async function loadApplications(){
+
+const snap=await getDocs(collection(db,"campaign_apps"));
 
 let html="";
 
 snap.forEach(d=>{
-let r=d.data();
+let a=d.data();
 
 html+=`
 <div class="card">
-<p>Type: ${r.type}</p>
-<p>User: ${r.userId || ""}</p>
-<p>Amount: ₹${r.amount || 0}</p>
-<p>Status: ${r.status}</p>
+<p>User: ${a.userId}</p>
+<p>Campaign: ${a.campaignTitle}</p>
+<p>Status: ${a.status}</p>
+
+<button onclick="approveApp('${d.id}','${a.userId}',${a.reward})">Approve</button>
+<button onclick="rejectApp('${d.id}')">Reject</button>
 </div>
 `;
 });
 
-document.getElementById("reportList").innerHTML=html;
+document.getElementById("appList").innerHTML=html;
 }
 
-/* =========================
-   🔥 CORE SYSTEM (FIXED)
-========================= */
+/* APPROVE CAMPAIGN */
+window.approveApp = async function(id,userId,reward){
 
-/* APPROVE + AUTO BALANCE CUT */
-window.approve = async function(id,userId,amount){
+await updateDoc(doc(db,"campaign_apps",id),{
+status:"approved"
+});
+
+await updateDoc(doc(db,"users",userId),{
+balance: increment(reward)
+});
+
+await addDoc(collection(db,"reports"),{
+type:"CAMPAIGN_APPROVED",
+userId,
+amount:reward,
+status:"success",
+time:Date.now()
+});
+
+loadApplications();
+loadStats();
+};
+
+/* REJECT CAMPAIGN */
+window.rejectApp = async function(id){
+
+await updateDoc(doc(db,"campaign_apps",id),{
+status:"rejected"
+});
+
+await addDoc(collection(db,"reports"),{
+type:"CAMPAIGN_REJECTED",
+appId:id,
+status:"failed",
+time:Date.now()
+});
+
+loadApplications();
+};
+
+/* WITHDRAW APPROVE */
+window.approveWithdraw = async function(id,userId,amount){
 
 await updateDoc(doc(db,"withdrawals",id),{
 status:"approved"
@@ -241,14 +326,12 @@ status:"success",
 time:Date.now()
 });
 
-alert("Approved");
 loadWithdraw();
 loadStats();
-loadReports();
 };
 
-/* REJECT */
-window.reject = async function(id){
+/* WITHDRAW REJECT */
+window.rejectWithdraw = async function(id){
 
 await updateDoc(doc(db,"withdrawals",id),{
 status:"rejected"
@@ -261,28 +344,38 @@ status:"failed",
 time:Date.now()
 });
 
-alert("Rejected");
 loadWithdraw();
-loadReports();
 };
 
-/* FRAUD LOG (SAFE) */
-async function logFraud(userId,reason){
+/* REPORTS */
+async function loadReports(){
 
-await addDoc(collection(db,"fraud_logs"),{
-userId,
-reason,
-time:Date.now(),
-status:"flagged"
+const snap=await getDocs(collection(db,"reports"));
+
+let html="";
+
+snap.forEach(d=>{
+let r=d.data();
+
+html+=`
+<div class="card">
+<p>${r.type}</p>
+<p>${r.userId || ""}</p>
+<p>₹${r.amount || 0}</p>
+<p>${r.status}</p>
+</div>
+`;
 });
 
+document.getElementById("reportList").innerHTML=html;
 }
 
-/* AUTO INIT */
+/* INIT */
 loadStats();
 loadUsers();
 loadWithdraw();
 loadCampaigns();
+loadApplications();
 loadReports();
 
 </script>
