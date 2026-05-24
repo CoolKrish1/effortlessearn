@@ -47,12 +47,6 @@ margin:10px 0;
 border-radius:10px;
 border:1px solid #1f2937;
 }
-
-.btn{
-padding:6px 10px;
-margin-right:5px;
-cursor:pointer;
-}
 </style>
 </head>
 
@@ -176,9 +170,9 @@ let w=d.data();
 
 html+=`
 <div class="card">
-<p>${w.userId}</p>
+<p>User: ${w.userId}</p>
 <p>₹${w.amount}</p>
-<p>${w.status}</p>
+<p>Status: ${w.status}</p>
 
 <button onclick="approve('${d.id}','${w.userId}',${w.amount})">Approve</button>
 <button onclick="reject('${d.id}')">Reject</button>
@@ -188,75 +182,6 @@ html+=`
 
 document.getElementById("withdrawList").innerHTML=html;
 }
-
-/* =========================
-   🔥 PATCH ADDED (IMPORTANT)
-========================= */
-
-/* FRAUD LOG (SAFE ADD) */
-async function logFraud(userId,reason){
-
-try{
-await addDoc(collection(db,"fraud_logs"),{
-userId,
-reason,
-time:Date.now(),
-status:"flagged"
-});
-}catch(e){
-console.log("fraud log error",e);
-}
-
-}
-
-/* APPROVE */
-window.approve=async function(id,userId,amount){
-
-await updateDoc(doc(db,"withdrawals",id),{
-status:"approved"
-});
-
-/* balance cut */
-await updateDoc(doc(db,"users",userId),{
-balance: increment(-amount)
-});
-
-/* report add */
-await addDoc(collection(db,"reports"),{
-type:"WITHDRAW_APPROVED",
-userId,
-amount,
-status:"success",
-time:Date.now()
-});
-
-/* optional fraud check */
-logFraud(userId,"withdraw approved");
-
-alert("Approved");
-loadWithdraw();
-loadStats();
-loadReports();
-};
-
-/* REJECT */
-window.reject=async function(id){
-
-await updateDoc(doc(db,"withdrawals",id),{
-status:"rejected"
-});
-
-await addDoc(collection(db,"reports"),{
-type:"WITHDRAW_REJECTED",
-withdrawId:id,
-status:"failed",
-time:Date.now()
-});
-
-alert("Rejected");
-loadWithdraw();
-loadReports();
-};
 
 /* CAMPAIGNS */
 async function loadCampaigns(){
@@ -282,11 +207,10 @@ let r=d.data();
 
 html+=`
 <div class="card">
-<p>${r.type}</p>
-<p>${r.offerName || ""}</p>
-<p>${r.userId || ""}</p>
-<p>₹${r.amount || r.payout || 0}</p>
-<p>${r.status}</p>
+<p>Type: ${r.type}</p>
+<p>User: ${r.userId || ""}</p>
+<p>Amount: ₹${r.amount || 0}</p>
+<p>Status: ${r.status}</p>
 </div>
 `;
 });
@@ -294,20 +218,72 @@ html+=`
 document.getElementById("reportList").innerHTML=html;
 }
 
-/* INIT */
+/* =========================
+   🔥 CORE SYSTEM (FIXED)
+========================= */
+
+/* APPROVE + AUTO BALANCE CUT */
+window.approve = async function(id,userId,amount){
+
+await updateDoc(doc(db,"withdrawals",id),{
+status:"approved"
+});
+
+await updateDoc(doc(db,"users",userId),{
+balance: increment(-amount)
+});
+
+await addDoc(collection(db,"reports"),{
+type:"WITHDRAW_APPROVED",
+userId,
+amount,
+status:"success",
+time:Date.now()
+});
+
+alert("Approved");
+loadWithdraw();
+loadStats();
+loadReports();
+};
+
+/* REJECT */
+window.reject = async function(id){
+
+await updateDoc(doc(db,"withdrawals",id),{
+status:"rejected"
+});
+
+await addDoc(collection(db,"reports"),{
+type:"WITHDRAW_REJECTED",
+withdrawId:id,
+status:"failed",
+time:Date.now()
+});
+
+alert("Rejected");
+loadWithdraw();
+loadReports();
+};
+
+/* FRAUD LOG (SAFE) */
+async function logFraud(userId,reason){
+
+await addDoc(collection(db,"fraud_logs"),{
+userId,
+reason,
+time:Date.now(),
+status:"flagged"
+});
+
+}
+
+/* AUTO INIT */
 loadStats();
 loadUsers();
 loadWithdraw();
 loadCampaigns();
 loadReports();
-
-/* 👇 YAHAN ADD KARNA HAI */
-
-await addDoc(collection(db,"fraud_logs"),{
-userId:"test123",
-reason:"manual test",
-time:Date.now()
-});
 
 </script>
 
