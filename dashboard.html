@@ -1,24 +1,153 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard</title>
+<title>User Dashboard</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+display:flex;
+background:#0b1220;
+color:white;
+}
+
+/* SIDEBAR */
+.sidebar{
+width:240px;
+height:100vh;
+background:#111827;
+padding:20px;
+position:fixed;
+left:0;
+top:0;
+}
+
+.sidebar h2{
+color:#38bdf8;
+margin-bottom:20px;
+}
+
+.sidebar button{
+width:100%;
+padding:10px;
+margin:8px 0;
+background:#1f2937;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.sidebar button:hover{
+background:#38bdf8;
+color:black;
+}
+
+/* MAIN */
+.main{
+margin-left:260px;
+padding:20px;
+width:100%;
+}
+
+/* SECTIONS */
+.section{display:none;}
+.active{display:block;}
+
+/* CARDS */
+.card{
+background:#111827;
+padding:15px;
+border-radius:10px;
+margin:10px 0;
+border:1px solid #1f2937;
+}
+
+/* WALLET */
+.wallet{
+background:#0f172a;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+border:1px solid #1f2937;
+}
+
+.wallet h1{
+color:#38bdf8;
+}
+
+/* BUTTON */
+.btn{
+padding:8px 12px;
+background:#38bdf8;
+border:none;
+border-radius:6px;
+cursor:pointer;
+color:black;
+}
+</style>
 </head>
 
 <body>
 
-<h2>User Dashboard</h2>
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>⚡ Dashboard</h2>
 
-<button onclick="loadCampaigns()">Load Campaigns</button>
+<button onclick="show('home')">Home</button>
+<button onclick="show('campaigns')">Campaigns</button>
+<button onclick="show('history')">History</button>
+<button onclick="logout()">Logout</button>
+</div>
 
+<!-- MAIN -->
+<div class="main">
+
+<!-- HOME -->
+<div id="home" class="section active">
+
+<div class="wallet">
+<h3>💰 Wallet Balance</h3>
+<h1 id="balance">₹0</h1>
+</div>
+
+<h3>Welcome 👋</h3>
+
+</div>
+
+<!-- CAMPAIGNS -->
+<div id="campaigns" class="section">
+<h2>📢 Campaigns</h2>
 <div id="campaignList"></div>
+</div>
+
+<!-- HISTORY -->
+<div id="history" class="section">
+<h2>📜 My Applications</h2>
+<div id="historyList"></div>
+</div>
+
+</div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, addDoc } 
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
+import { 
+getFirestore, 
+doc, 
+getDoc, 
+collection, 
+getDocs, 
+addDoc,
+query,
+where
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
   authDomain: "effortless-earn-7f39e.firebaseapp.com",
@@ -32,46 +161,121 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* LOAD CAMPAIGNS */
-window.loadCampaigns = async function(){
+let currentUser;
+
+/* AUTH CHECK */
+onAuthStateChanged(auth, async (user)=>{
+
+if(!user){
+window.location.href="login.html";
+return;
+}
+
+currentUser = user;
+
+/* LOAD WALLET */
+loadWallet();
+
+/* LOAD DATA */
+loadCampaigns();
+loadHistory();
+
+});
+
+/* WALLET */
+async function loadWallet(){
+
+const snap = await getDoc(doc(db,"users",currentUser.uid));
+
+if(snap.exists()){
+document.getElementById("balance").innerText =
+"₹" + (snap.data().balance || 0);
+}
+
+}
+
+/* CAMPAIGNS */
+async function loadCampaigns(){
 
 const snap = await getDocs(collection(db,"campaigns"));
 
 let html="";
 
-snap.forEach(docSnap=>{
-const c = docSnap.data();
+snap.forEach(d=>{
+
+const c = d.data();
 
 html += `
-  <div style="border:1px solid #ccc;padding:10px;margin:10px">
-    <h3>${c.title}</h3>
-    <p>Reward: ₹${c.reward}</p>
+<div class="card">
+<h3>${c.title}</h3>
+<p>Reward: ₹${c.reward}</p>
 
-    <button onclick="apply('${docSnap.id}',${c.reward})">
-      Apply
-    </button>
-  </div>
+<button class="btn" onclick="apply('${d.id}',${c.reward})">
+Apply
+</button>
+
+</div>
 `;
+
 });
 
 document.getElementById("campaignList").innerHTML = html;
 
-};
+}
 
 /* APPLY */
 window.apply = async function(id,reward){
 
-const user = auth.currentUser;
-
 await addDoc(collection(db,"applications"),{
-  userId:user.uid,
-  campaignId:id,
-  reward:reward,
-  status:"pending"
+userId: currentUser.uid,
+campaignId: id,
+reward: reward,
+status: "pending"
 });
 
 alert("Applied Successfully");
 
+loadHistory();
+
+};
+
+/* HISTORY */
+async function loadHistory(){
+
+const q = query(collection(db,"applications"), where("userId","==",currentUser.uid));
+
+const snap = await getDocs(q);
+
+let html="";
+
+snap.forEach(d=>{
+
+const h = d.data();
+
+html += `
+<div class="card">
+<p>Campaign: ${h.campaignId}</p>
+<p>Reward: ₹${h.reward}</p>
+<p>Status: ${h.status}</p>
+</div>
+`;
+
+});
+
+document.getElementById("historyList").innerHTML = html;
+
+}
+
+/* NAV */
+window.show = function(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+};
+
+/* LOGOUT */
+window.logout = function(){
+signOut(auth);
+window.location.href="login.html";
 };
 
 </script>
