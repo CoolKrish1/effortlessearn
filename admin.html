@@ -2,22 +2,122 @@
 <html>
 <head>
 <title>Admin Panel</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+display:flex;
+background:#0b1220;
+color:white;
+}
+
+.sidebar{
+width:240px;
+height:100vh;
+background:#111827;
+padding:20px;
+position:fixed;
+}
+
+.sidebar h2{
+color:#38bdf8;
+}
+
+.sidebar button{
+width:100%;
+padding:10px;
+margin:8px 0;
+background:#1f2937;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.main{
+margin-left:260px;
+padding:20px;
+width:100%;
+}
+
+.section{display:none;}
+.active{display:block;}
+
+.card{
+background:#111827;
+padding:15px;
+margin:10px 0;
+border-radius:10px;
+border:1px solid #1f2937;
+}
+
+input,button{
+padding:10px;
+margin:5px 0;
+width:100%;
+border-radius:6px;
+border:none;
+}
+
+.btn{
+background:#38bdf8;
+cursor:pointer;
+}
+</style>
 </head>
 
 <body>
 
-<h2>Admin Panel</h2>
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>⚡ Admin</h2>
 
-<button onclick="loadApps()">Load Applications</button>
+<button onclick="show('create')">Create Campaign</button>
+<button onclick="show('apps')">Applications</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- CREATE CAMPAIGN -->
+<div id="create" class="section active">
+
+<h2>Create Campaign</h2>
+
+<input id="title" placeholder="Campaign Title">
+<input id="reward" type="number" placeholder="Reward">
+
+<button class="btn" onclick="createCampaign()">Create</button>
+
+</div>
+
+<!-- APPLICATIONS -->
+<div id="apps" class="section">
+
+<h2>Applications</h2>
 
 <div id="appList"></div>
+
+</div>
+
+</div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, increment } 
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { 
+getFirestore,
+collection,
+addDoc,
+getDocs,
+doc,
+getDoc,
+updateDoc,
+increment
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
   authDomain: "effortless-earn-7f39e.firebaseapp.com",
@@ -30,31 +130,55 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* NAV */
+window.show = function(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+};
+
+/* CREATE CAMPAIGN */
+window.createCampaign = async function(){
+
+const title = document.getElementById("title").value;
+const reward = Number(document.getElementById("reward").value);
+
+await addDoc(collection(db,"campaigns"),{
+title,
+reward
+});
+
+alert("Campaign Created");
+
+};
+
 /* LOAD APPLICATIONS */
-window.loadApps = async function(){
+async function loadApps(){
 
 const snap = await getDocs(collection(db,"applications"));
 
 let html="";
 
-snap.forEach(docSnap=>{
-const a = docSnap.data();
+snap.forEach(d=>{
+
+const a = d.data();
 
 html += `
-  <div style="border:1px solid black;padding:10px;margin:10px">
-    <p>User: ${a.userId}</p>
-    <p>Reward: ₹${a.reward}</p>
-    <p>Status: ${a.status}</p>
+<div class="card">
+<p>User: ${a.userId}</p>
+<p>Campaign: ${a.campaignId}</p>
+<p>Reward: ₹${a.reward}</p>
+<p>Status: ${a.status}</p>
 
-    <button onclick="approve('${docSnap.id}')">Approve</button>
-    <button onclick="reject('${docSnap.id}')">Reject</button>
-  </div>
+<button onclick="approve('${d.id}')">Approve</button>
+<button onclick="reject('${d.id}')">Reject</button>
+</div>
 `;
+
 });
 
 document.getElementById("appList").innerHTML = html;
 
-};
+}
 
 /* APPROVE */
 window.approve = async function(id){
@@ -68,6 +192,7 @@ await updateDoc(ref,{
 status:"approved"
 });
 
+/* 💰 ADD MONEY TO USER */
 const userRef = doc(db,"users",data.userId);
 
 await updateDoc(userRef,{
@@ -75,6 +200,8 @@ balance: increment(data.reward)
 });
 
 alert("Approved + Money Added");
+
+loadApps();
 
 };
 
@@ -87,7 +214,11 @@ status:"rejected"
 
 alert("Rejected");
 
+loadApps();
+
 };
+
+loadApps();
 
 </script>
 
