@@ -1131,32 +1131,23 @@ card.innerText
 
 /* TELEGRAM */
 window.openTelegram = function(){
-
-window.open(
-"https://t.me/effortlessMoneyearning",
-);
-
+window.open("https://t.me/effortlessMoneyearning","_blank");
 };
 
 /* COPY REF */
 window.copyRef = function(){
-
-navigator.clipboard.writeText(
-el("refLink").value
-);
-
+navigator.clipboard.writeText(el("refLink").value);
 alert("Referral link copied");
-
 };
 
 /* LOGOUT */
 window.logout = function(){
-
-signOut(auth)
-.then(()=>{
+signOut(auth).then(()=>{
 window.location.href="login.html";
 });
+};
 
+</script>
 
 </body>
-</html>  
+</html>
