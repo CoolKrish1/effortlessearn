@@ -719,7 +719,8 @@ if(status !== "active") return;
 campaignCache[d.id] = {
 id:d.id,
 title,
-reward
+reward,
+offerLink:c.offerLink || ""
 };
 
 html += `
@@ -818,6 +819,10 @@ time:Date.now()
 );
 
 alert("Application Submitted");
+
+if(c.offerLink){
+window.open(c.offerLink,"_blank");
+}
 
 await loadHistory();
 await loadReports();
