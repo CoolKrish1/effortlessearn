@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard Pro</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CampaignHub Dashboard</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -9,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+
 *{
 margin:0;
 padding:0;
@@ -17,59 +21,69 @@ font-family:Inter,sans-serif;
 }
 
 body{
-display:flex;
 background:#f5f7fb;
-color:#111;
+display:flex;
+color:#111827;
 }
 
 .sidebar{
 width:260px;
 height:100vh;
 background:#07142d;
-padding:20px;
 position:fixed;
+left:0;
+top:0;
+padding:20px;
 overflow:auto;
+}
+
+.logo{
+margin-bottom:25px;
 }
 
 .logo h1{
 color:white;
+font-size:24px;
 }
 
 .logo p{
-color:#8aa4d4;
-margin-bottom:25px;
+color:#9fb7dd;
+font-size:13px;
 }
 
 .wallet-card{
-background:#0d2247;
-padding:20px;
+background:#0f2247;
+padding:18px;
 border-radius:20px;
 color:white;
 margin-bottom:25px;
 }
 
 .wallet-card h2{
+margin-top:10px;
 color:#34d399;
-margin:10px 0;
 }
 
 .pubid{
-border:1px solid #2f4c82;
-padding:8px;
+margin-top:10px;
+padding:8px 12px;
+border:1px solid #33558f;
 border-radius:10px;
 display:inline-block;
+font-size:13px;
 }
 
 .sidebar button{
 width:100%;
 padding:14px;
-margin:8px 0;
+margin:6px 0;
 border:none;
 border-radius:12px;
 background:transparent;
 color:white;
-text-align:left;
 cursor:pointer;
+text-align:left;
+font-size:15px;
 }
 
 .sidebar button:hover{
@@ -84,46 +98,68 @@ padding:30px;
 
 .topbar{
 display:flex;
-gap:20px;
-margin-bottom:30px;
+gap:15px;
+margin-bottom:25px;
 }
 
 .topbar input{
 flex:1;
-padding:18px;
+padding:16px;
 border:none;
-border-radius:20px;
+border-radius:16px;
 background:white;
 }
 
 .topbar select{
-padding:18px;
+padding:16px;
 border:none;
-border-radius:20px;
+border-radius:16px;
 background:white;
-}
-
-.section.active{
-display:block;
 }
 
 .section{
 display:none;
 }
 
+.section.active{
+display:block;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+margin-bottom:25px;
+}
+
+.stat-card{
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 5px 18px rgba(0,0,0,.05);
+}
+
+.stat-card h3{
+font-size:14px;
+color:#6b7280;
+}
+
+.stat-card h2{
+margin-top:10px;
+}
+
 #campaignList{
 display:grid;
 grid-template-columns:
 repeat(auto-fill,minmax(320px,1fr));
-gap:25px;
+gap:20px;
 }
 
 .offer-card{
 background:white;
+border-radius:22px;
 padding:20px;
-border-radius:24px;
-box-shadow:
-0 4px 20px rgba(0,0,0,.05);
+box-shadow:0 5px 20px rgba(0,0,0,.05);
 }
 
 .offer-head{
@@ -135,47 +171,49 @@ align-items:center;
 .offer-logo{
 width:70px;
 height:70px;
-border-radius:16px;
 object-fit:cover;
-}
-
-.card{
-background:white;
-padding:15px;
 border-radius:16px;
-margin:10px 0;
-box-shadow:0 4px 15px rgba(0,0,0,.05);
-color:black;
 }
 
 .badge{
+display:inline-block;
+margin-top:8px;
 background:#dcfce7;
-color:#16a34a;
+color:#15803d;
 padding:5px 12px;
-border-radius:20px;
+border-radius:30px;
 font-size:12px;
 }
 
 .reward-box{
 margin-top:20px;
-padding:18px;
+padding:16px;
 background:#effcf5;
 border-radius:16px;
-font-size:30px;
-font-weight:bold;
+font-size:28px;
+font-weight:700;
 color:#16a34a;
+text-align:center;
 }
 
 .start-btn{
 width:100%;
-margin-top:20px;
-padding:16px;
+margin-top:18px;
+padding:15px;
 border:none;
 border-radius:16px;
 background:black;
 color:white;
 cursor:pointer;
-font-weight:bold;
+font-weight:600;
+}
+
+.card{
+background:white;
+padding:18px;
+border-radius:16px;
+margin-top:15px;
+box-shadow:0 5px 18px rgba(0,0,0,.05);
 }
 
 #withdraw input{
@@ -195,106 +233,178 @@ color:white;
 cursor:pointer;
 }
 
+.history-item{
+background:white;
+padding:15px;
+border-radius:14px;
+margin-top:10px;
+box-shadow:0 4px 15px rgba(0,0,0,.05);
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
 
 <div class="logo">
 <h1>CampaignHub</h1>
-<p>Publisher Panel</p>
+<p>Publisher Dashboard</p>
 </div>
 
 <div class="wallet-card">
 <p>Wallet Balance</p>
 <h2>₹<span id="balance">0</span></h2>
-  
+
 <div class="pubid" id="pubid">
 Loading...
 </div>
-  
 </div>
-  
-<button onclick="show('home')">📊 Dashboard</button>
-<button onclick="show('campaigns')">🎯 All Offers</button>
-<button onclick="show('history')">📄 Reports</button>
-<button onclick="show('withdraw')">💰 Wallet</button>
-<button onclick="show('reports')">📈 Tracking</button>
-<button onclick="logout()">🚪 Logout</button>
-  
-<!-- MAIN -->
+
+<button onclick="showSection('home')">
+📊 Dashboard
+</button>
+
+<button onclick="showSection('campaigns')">
+🎯 Campaigns
+</button>
+
+<button onclick="showSection('history')">
+📄 History
+</button>
+
+<button onclick="showSection('withdraw')">
+💰 Withdraw
+</button>
+
+<button onclick="showSection('reports')">
+📈 Reports
+</button>
+
+<button onclick="logout()">
+🚪 Logout
+</button>
+
+</div>
+
 <div class="main">
+
 <div class="topbar">
 
 <input
 id="searchOffer"
-placeholder="Search High Paying Offers..."
+placeholder="Search Campaign..."
 onkeyup="searchOffers()"
 >
 
 <select>
-<option>ALL OFFERS</option>
-<option>Banking</option>
+<option>All Offers</option>
 <option>Finance</option>
+<option>Banking</option>
 <option>Survey</option>
 </select>
 
 </div>
 
-<!-- HOME -->
 <div id="home" class="section active">
-<h2>Welcome</h2>
-<h3>Current Balance: ₹<span id="balanceHome">0</span></h3>
+
+<div class="stats">
+
+<div class="stat-card">
+<h3>Balance</h3>
+<h2>₹<span id="balanceHome">0</span></h2>
 </div>
 
-<!-- CAMPAIGNS -->
+<div class="stat-card">
+<h3>Total Applications</h3>
+<h2 id="totalApps">0</h2>
+</div>
+
+<div class="stat-card">
+<h3>Total Reports</h3>
+<h2 id="totalReports">0</h2>
+</div>
+
+</div>
+
+</div>
+
 <div id="campaigns" class="section">
+
 <h2>Campaigns</h2>
+
+<br>
+
 <div id="campaignList"></div>
+
 </div>
 
-<!-- WITHDRAW -->
+
 <div id="withdraw" class="section">
 
 <h2>Withdraw Money</h2>
 
 <div class="card">
-<p>Balance: ₹<span id="balance2">0</span></p>
 
-<input id="upi" placeholder="UPI ID"><br>
-<input id="amount" type="number" placeholder="Amount"><br>
-<button onclick="withdraw()">Request Withdraw</button>
+<p>
+Available Balance :
+₹<span id="balance2">0</span>
+</p>
+
+<br>
+
+<input
+type="text"
+id="upi"
+placeholder="Enter UPI ID"
+>
+
+<input
+type="number"
+id="amount"
+placeholder="Enter Amount"
+>
+
+<button onclick="withdrawRequest()">
+Request Withdraw
+</button>
+
 </div>
 
 <div id="withdrawList"></div>
 
 </div>
 
-<!-- HISTORY -->
 <div id="history" class="section">
-<h2>History</h2>
+
+<h2>Application History</h2>
+
 <div id="historyList"></div>
+
 </div>
 
-<!-- REPORTS -->
 <div id="reports" class="section">
-<h2>Reports</h2>
+
+<h2>Tracking Reports</h2>
+
 <div id="reportList"></div>
+
 </div>
 
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
 import {
 getAuth,
 onAuthStateChanged,
 signOut
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 import {
 getFirestore,
@@ -305,30 +415,48 @@ getDocs,
 addDoc,
 query,
 where
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-/* FIREBASE */
 const firebaseConfig = {
+
 apiKey: "AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-authDomain: "effortless-earn-7f39e.firebaseapp.com",
-projectId: "effortless-earn-7f39e",
-storageBucket: "effortless-earn-7f39e.appspot.com",
-messagingSenderId: "554178513766",
-appId: "1:554178513766:web:d8d7edf915a95349cb16a7"
+
+authDomain:
+"effortless-earn-7f39e..appspot.com",
+
+projectId:
+"effortless-earn-7f39e",
+
+storageBucket:
+"effortless-earn-7f39e.appspot.com",
+
+messagingSenderId:
+"554178513766",
+
+appId:
+"1:554178513766:web:d8d7edf915a95349cb16a7"
+
 };
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
+
 const db = getFirestore(app);
 
 let currentUser;
 
 /* AUTH */
-onAuthStateChanged(auth, async (user)=>{
+
+onAuthStateChanged(auth, async(user)=>{
 
 if(!user){
+
 window.location.href="login.html";
+
 return;
+
 }
 
 currentUser = user;
@@ -342,6 +470,7 @@ loadWithdrawHistory();
 });
 
 /* WALLET */
+
 async function loadWallet(){
 
 const snap = await getDoc(
@@ -350,42 +479,72 @@ doc(db,"users",currentUser.uid)
 
 if(snap.exists()){
 
-const bal = snap.data().balance || 0;
+const bal =
+snap.data().balance || 0;
 
-document.getElementById("balance").innerText = bal;
-document.getElementById("balance2").innerText = bal;
-document.getElementById("balanceHome").innerText = bal;
+document.getElementById(
+"balance"
+).innerText = bal;
 
-document.getElementById("pubid").innerText =
-"PUB-" + currentUser.uid.slice(0,8);
+document.getElementById(
+"balance2"
+).innerText = bal;
+
+document.getElementById(
+"balanceHome"
+).innerText = bal;
+
+document.getElementById(
+"pubid"
+).innerText =
+"PUB-" +
+currentUser.uid.slice(0,8);
 
 }
 
 }
 
 /* CAMPAIGNS */
+
 async function loadCampaigns(){
-const snap = await getDocs(collection(db,"campaigns"));
 
-let html="";
+const snap =
+await getDocs(
+collection(db,"campaigns")
+);
 
-snap.forEach(d=>{
-const c = d.data();
+let html = "";
+
+snap.forEach(docSnap=>{
+
+const c = docSnap.data();
 
 html += `
+
 <div class="offer-card">
 
 <div class="offer-head">
 
 <img
-src="${c.image || 'https://via.placeholder.com/80'}"
+src="${
+c.image ||
+'https://via.placeholder.com/100'
+}"
 class="offer-logo"
 >
 
 <div>
+
 <h3>${c.title}</h3>
-<p>${c.category || 'CPA Offer'}</p>
-<span class="badge">ACTIVE</span>
+
+<p>
+${c.category || "CPA Offer"}
+</p>
+
+<span class="badge">
+${c.status || "ACTIVE"}
+</span>
+
 </div>
 
 </div>
@@ -396,190 +555,395 @@ class="offer-logo"
 
 <button
 class="start-btn"
-onclick="apply('${d.id}','${c.title}',${c.reward})"
+onclick="
+applyCampaign(
+'${docSnap.id}',
+'${c.title}',
+${c.reward}
+)
+"
 >
+
 START EARNING →
+
 </button>
 
 </div>
+
 `;
+
 });
 
-document.getElementById("campaignList").innerHTML = html;
+document.getElementById(
+"campaignList"
+).innerHTML = html;
+
 }
 
-/* APPLY */
-window.apply = async function(id,title,reward){
 
-await addDoc(collection(db,"applications"),{
+/* APPLY CAMPAIGN */
+
+window.applyCampaign =
+async function(
+campaignId,
+title,
+reward
+){
+
+await addDoc(
+collection(db,"applications"),
+{
 userId: currentUser.uid,
-campaignId: id,
-reward,
-status:"pending",
+campaignId: campaignId,
+campaignTitle: title,
+reward: reward,
+status: "pending",
 time: Date.now()
-});
+}
+);
 
-/* REPORT */
-await addDoc(collection(db,"reports"),{
+await addDoc(
+collection(db,"reports"),
+{
 userId: currentUser.uid,
 offerName: title,
 payout: reward,
-status:"pending",
-ip: "N/A",
+status: "pending",
 worker: "P1",
-trackingId: Math.random().toString(36).slice(2,10),
+trackingId:
+Math.random()
+.toString(36)
+.slice(2,10),
+ip: "N/A",
 time: Date.now()
-});
+}
+);
 
-alert("Applied");
+alert("Application Submitted");
+
 loadHistory();
 loadReports();
+
 };
 
 /* WITHDRAW */
-window.withdraw = async function(){
 
-const upi = document.getElementById("upi").value;
-const amount = Number(document.getElementById("amount").value);
+window.withdrawRequest =
+async function(){
 
-const snap = await getDoc(doc(db,"users",currentUser.uid));
-const balance = snap.data().balance || 0;
+const upi =
+document.getElementById("upi")
+.value;
 
-if(amount > balance){
-alert("Insufficient Balance");
+const amount =
+Number(
+document.getElementById("amount")
+.value
+);
+
+if(!upi || amount <= 0){
+
+alert("Enter Valid Details");
+
 return;
+
 }
 
-await addDoc(collection(db,"applications"),{
-userId: currentUser.uid,
-campaignId:id,
-campaignTitle:title,
-reward,
-status:"pending",
-time:Date.now()
-});
+const snap =
+await getDoc(
+doc(db,"users",currentUser.uid)
+);
 
-/* REPORT */
-  
-await addDoc(collection(db,"reports"),{
+const balance =
+snap.data().balance || 0;
+
+if(amount > balance){
+
+alert("Insufficient Balance");
+
+return;
+
+}
+
+await addDoc(
+collection(db,"withdrawals"),
+{
 userId: currentUser.uid,
-offerName:"Withdraw Request",
-payout:amount,
-status:"pending",
-ip:"N/A",
-worker:"P1",
-trackingId:Math.random().toString(36).slice(2,10),
-time:Date.now()
-});
-  
+upi: upi,
+amount: amount,
+status: "pending",
+time: Date.now()
+}
+);
+
+await addDoc(
+collection(db,"reports"),
+{
+userId: currentUser.uid,
+offerName: "Withdraw Request",
+payout: amount,
+status: "pending",
+worker: "P1",
+trackingId:
+Math.random()
+.toString(36)
+.slice(2,10),
+ip: "N/A",
+time: Date.now()
+}
+);
+
+alert("Withdraw Request Sent");
+
+loadWithdrawHistory();
+loadReports();
+
+};
+
 /* HISTORY */
+
 async function loadHistory(){
 
-const q = query(collection(db,"applications"),where("userId","==",currentUser.uid));
+const q = query(
+collection(db,"applications"),
+where(
+"userId",
+"==",
+currentUser.uid
+)
+);
 
-const snap = await getDocs(q);
+const snap =
+await getDocs(q);
 
-let html="";
+document.getElementById(
+"totalApps"
+).innerText = snap.size;
 
-snap.forEach(d=>{
-const h=d.data();
+let html = "";
+
+snap.forEach(docSnap=>{
+
+const h = docSnap.data();
 
 html += `
-<div class="card">
-<p>Campaign: ${h.campaignTitle}</p>
-<p>Reward: ₹${h.reward}</p>
-<p>Status: ${h.status}</p>
+
+<div class="history-item">
+
+<h3>
+${h.campaignTitle || "Campaign"}
+</h3>
+
+<br>
+
+<p>
+Reward :
+₹${h.reward}
+</p>
+
+<p>
+Status :
+${h.status}
+</p>
+
 </div>
+
 `;
+
 });
 
-document.getElementById("historyList").innerHTML = html;
+document.getElementById(
+"historyList"
+).innerHTML = html;
+
 }
 
 /* REPORTS */
+
 async function loadReports(){
 
 const q = query(
 collection(db,"reports"),
-where("userId","==",currentUser.uid)
+where(
+"userId",
+"==",
+currentUser.uid
+)
 );
 
-const snap = await getDocs(q);
+const snap =
+await getDocs(q);
 
-let html="";
+document.getElementById(
+"totalReports"
+).innerText = snap.size;
 
-snap.forEach(d=>{
-const r=d.data();
+let html = "";
+
+snap.forEach(docSnap=>{
+
+const r = docSnap.data();
 
 html += `
-<div class="card">
-<p>${r.offerName}</p>
-<p>₹${r.payout}</p>
-<p>${r.status}</p>
-<p>${r.userId}</p>
-<p>${r.worker}</p>
-<p>${r.time}</p>
+
+<div class="history-item">
+
+<h3>
+${r.offerName}
+</h3>
+
+<br>
+
+<p>
+Payout :
+₹${r.payout}
+</p>
+
+<p>
+Status :
+${r.status}
+</p>
+
+<p>
+Worker :
+${r.worker}
+</p>
+
+<p>
+Tracking :
+${r.trackingId}
+</p>
+
 </div>
+
 `;
+
 });
 
-document.getElementById("reportList").innerHTML = html;
+document.getElementById(
+"reportList"
+).innerHTML = html;
+
 }
 
 /* WITHDRAW HISTORY */
-async function loadWithdrawHistory(){
 
-const q = query(collection(db,"withdrawals"),where("userId","==",currentUser.uid));
+async function
+loadWithdrawHistory(){
 
-const snap = await getDocs(q);
+const q = query(
+collection(db,"withdrawals"),
+where(
+"userId",
+"==",
+currentUser.uid
+)
+);
 
-let html="";
+const snap =
+await getDocs(q);
 
-snap.forEach(d=>{
-const w=d.data();
+let html = "";
+
+snap.forEach(docSnap=>{
+
+const w = docSnap.data();
 
 html += `
-<div class="card">
-<p>₹${w.amount}</p>
-<p>${w.upi}</p>
-<p>${w.status}</p>
+
+<div class="history-item">
+
+<h3>
+₹${w.amount}
+</h3>
+
+<br>
+
+<p>
+UPI :
+${w.upi}
+</p>
+
+<p>
+Status :
+${w.status}
+</p>
+
 </div>
+
 `;
+
 });
 
-document.getElementById("withdrawList").innerHTML = html;
+document.getElementById(
+"withdrawList"
+).innerHTML = html;
+
 }
 
-/* NAV */
-window.show=function(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-};
+/* SEARCH */
 
-/* LOGOUT */
-window.logout=function(){
-signOut(auth);
-window.location.href="login.html";
-};
-
-window.searchOffers = function(){
+window.searchOffers =
+function(){
 
 let input =
-document.getElementById("searchOffer")
+document
+.getElementById(
+"searchOffer"
+)
 .value
 .toLowerCase();
 
 document
-.querySelectorAll(".offer-card")
+.querySelectorAll(
+".offer-card"
+)
 .forEach(card=>{
 
 card.style.display =
-card.innerText.toLowerCase()
+
+card.innerText
+.toLowerCase()
 .includes(input)
+
 ? "block"
+
 : "none";
 
 });
+
+};
+
+/* NAVIGATION */
+
+window.showSection =
+function(id){
+
+document
+.querySelectorAll(".section")
+.forEach(section=>{
+
+section.classList
+.remove("active");
+
+});
+
+document
+.getElementById(id)
+.classList
+.add("active");
+
+};
+
+/* LOGOUT */
+
+window.logout =
+function(){
+
+signOut(auth);
+
+window.location.href =
+"login.html";
 
 };
 
