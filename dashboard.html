@@ -346,6 +346,8 @@ onclick="showSection('referral',this)"
 
 </button>
 
+<button onclick="showSection('smartlinks',this)">🔗 Smart Links</button>
+
 </div>
 
 </div>
@@ -581,6 +583,28 @@ Copy Referral Link
 </h2>
 </div>
 
+<div id="smartlinks" class="section">
+
+<h2>Smart Link Generator</h2>
+<br>
+
+<div class="card">
+<p><b>Select Campaign</b></p>
+<select id="smartCampaign"></select>
+
+<p><b>User Cashback Amount</b></p>
+<input id="smartUserReward" type="number" placeholder="Example: 150">
+
+<p><b>Your Commission</b></p>
+<input id="smartAffiliateCommission" type="number" placeholder="Example: 20">
+
+<button class="primary-btn" onclick="createSmartLink()">
+Generate Smart Link
+</button>
+</div>
+
+<div id="smartLinkList"></div>
+
 </div>
 
 </div>
@@ -764,6 +788,8 @@ html || "<div class='card'>No campaigns found</div>";
 
 }
 
+loadSmartCampaignOptions();
+
 /* START TRACKING */
 window.startTracking = async function(campaignId){
 
@@ -827,6 +853,7 @@ window.open(c.offerLink,"_blank");
 await loadHistory();
 await loadReports();
 await loadClicks();
+await loadSmartLinks();
 
 };
 
@@ -1150,6 +1177,113 @@ window.logout = function(){
 signOut(auth).then(()=>{
 window.location.href="login.html";
 });
+};
+
+function randomSlug(){
+return Math.random().toString(36).slice(2,8);
+}
+
+function loadSmartCampaignOptions(){
+
+const select = el("smartCampaign");
+if(!select) return;
+
+let html = "";
+
+for(const id in campaignCache){
+const c = campaignCache[id];
+
+html += `
+<option value="${id}">
+${c.title} - ₹${c.reward}
+</option>
+`;
+}
+
+select.innerHTML = html || `<option>No campaign found</option>`;
+
+}
+
+window.createSmartLink = async function(){
+
+const campaignId = el("smartCampaign").value;
+const userReward = Number(el("smartUserReward").value);
+const affiliateCommission = Number(el("smartAffiliateCommission").value);
+
+const c = campaignCache[campaignId];
+
+if(!c){
+alert("Campaign select karo");
+return;
+}
+
+if(!userReward || !affiliateCommission){
+alert("Cashback aur commission enter karo");
+return;
+}
+
+const slug = randomSlug();
+
+await addDoc(collection(db,"smart_links"),{
+slug: slug,
+campaignId: campaignId,
+publisherId: currentUser.uid,
+affiliateId: currentUser.uid,
+title: c.title,
+userReward: userReward,
+affiliateCommission: affiliateCommission,
+offerLink: c.offerLink || "",
+status: "active",
+time: Date.now()
+});
+
+alert("Smart Link Created");
+
+el("smartUserReward").value = "";
+el("smartAffiliateCommission").value = "";
+
+loadSmartLinks();
+
+};
+
+async function loadSmartLinks(){
+
+const q = query(
+collection(db,"smart_links"),
+where("publisherId","==",currentUser.uid)
+);
+
+const snap = await getDocs(q);
+
+let html = "";
+
+snap.forEach(d=>{
+const s = d.data();
+
+const link =
+window.location.origin + "/campaign.html?slug=" + s.slug;
+
+html += `
+<div class="card">
+<h3>${s.title}</h3>
+<p><b>User Cashback:</b> ₹${s.userReward}</p>
+<p><b>Your Commission:</b> ₹${s.affiliateCommission}</p>
+<input value="${link}" readonly style="width:100%;padding:12px;margin:8px 0;">
+<button class="primary-btn" onclick="copyText('${link}')">
+Copy Link
+</button>
+</div>
+`;
+});
+
+el("smartLinkList").innerHTML =
+html || "<div class='card'>No smart links created yet.</div>";
+
+}
+
+window.copyText = function(text){
+navigator.clipboard.writeText(text);
+alert("Link copied");
 };
 
 </script>
