@@ -301,6 +301,14 @@ loadWithdraw();
 loadCampaigns();
 loadReports();
 
+/* 👇 YAHAN ADD KARNA HAI */
+
+await addDoc(collection(db,"fraud_logs"),{
+userId:"test123",
+reason:"manual test",
+time:Date.now()
+});
+
 </script>
 
 </body>
