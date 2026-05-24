@@ -34,7 +34,31 @@ button.action{padding:10px 14px;margin:5px;border:0;border-radius:8px;cursor:poi
 <button onclick="show('reports')">📄 Reports</button>
 <button onclick="show('fraud')">🛡 Fraud Logs</button>
 <button onclick="show('clicks')">🖱 Clicks</button>
+<button onclick="show('postback')">🔗 Postback</button>
 </div>
+
+<div id="postback" class="section">
+<h2>Postback URL</h2>
+
+<div class="card">
+<p><b>Your Postback URL:</b></p>
+
+<input
+id="postbackUrl"
+readonly
+value="https://campaign-reward-hub.vercel.app/api/postback?trackingId={click_id}&payout={payout}&status=approved"
+>
+
+<button class="action blue" onclick="copyPostback()">Copy Postback</button>
+</div>
+
+<div class="card">
+<p><b>Use this in CPA network:</b></p>
+<p>trackingId = click id</p>
+<p>payout = payout amount</p>
+<p>status = approved</p>
+</div>
+</div>  
 
 <div class="main">
 
@@ -52,19 +76,31 @@ button.action{padding:10px 14px;margin:5px;border:0;border-radius:8px;cursor:poi
 <h2>Campaign Manager</h2>
 
 <div class="card">
+<div class="card">
 <h3>Add Campaign</h3>
+
 <input id="title" placeholder="Campaign Title">
 <input id="reward" type="number" placeholder="Reward">
 <input id="image" placeholder="Image URL optional">
 <input id="category" placeholder="Category optional">
-<input id="offerLink" placeholder="Offer Link">
+
+<input
+id="offerLink"
+placeholder="CPA Offer Link, example: https://offer.com/?click_id={trackingId}"
+>
+
+<p style="color:#94a3b8;font-size:13px;">
+Use {trackingId} in offer link.
+</p>
+
 <select id="status">
 <option value="active">Active</option>
 <option value="paused">Paused</option>
 </select>
+
 <button class="action blue" onclick="addCampaign()">Add Campaign</button>
 </div>
-
+  
 <div id="campaignList"></div>
 </div>
 
@@ -526,6 +562,13 @@ loadReports();
 loadFraud();
 loadClicks();
 }
+
+window.copyPostback=function(){
+navigator.clipboard.writeText(
+document.getElementById("postbackUrl").value
+);
+alert("Postback copied");
+};
 
 refreshAll();
 </script>
