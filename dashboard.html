@@ -2,151 +2,529 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Publisher Dashboard</title>
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>EFFORTLESS EARN</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
-body{background:#f4f6fb;color:#111827;display:flex}
-.sidebar{width:270px;height:100vh;background:#0b1528;color:white;position:fixed;left:0;top:0;padding:24px;overflow:auto}
-.logo{font-size:26px;font-weight:800;margin-bottom:4px}
-.logo span{color:#3b82f6}
-.sub{font-size:12px;color:#94a3b8;margin-bottom:28px;text-transform:uppercase}
-.wallet-card{background:#111f38;border:1px solid #263550;border-radius:18px;padding:18px;margin-bottom:24px}
-.wallet-card p{font-size:12px;color:#94a3b8;text-transform:uppercase}
-.wallet-card h2{font-size:34px;color:#4ade80;margin:8px 0}
-.pubid{font-size:12px;border:1px solid #334155;border-radius:8px;padding:8px;display:inline-block;color:#cbd5e1}
-.nav button{width:100%;padding:14px;margin:7px 0;border:0;border-radius:12px;background:transparent;color:#cbd5e1;text-align:left;font-size:15px;cursor:pointer}
-.nav button:hover,.nav button.active{background:#2563eb;color:white}
-.main{margin-left:270px;width:100%;padding:26px}
-.section{display:none}.section.active{display:block}
-.top-banner{background:#2563eb;color:white;padding:18px 22px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:22px}
-.stat{background:white;border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
-.stat p{font-size:12px;color:#64748b;text-transform:uppercase}
-.stat h2{font-size:28px;margin-top:8px}
-.green{color:#16a34a}.orange{color:#f97316}.purple{color:#7c3aed}.blue{color:#2563eb}.redText{color:#dc2626}
-.search-row{display:flex;gap:16px;margin-bottom:24px}
-.search-row input,.search-row select{border:0;background:white;border-radius:18px;padding:18px;font-size:15px;box-shadow:0 5px 18px rgba(0,0,0,.04)}
-.search-row input{flex:1}
-.offer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:22px}
-.offer-card{background:white;border-radius:26px;padding:22px;box-shadow:0 6px 22px rgba(0,0,0,.06)}
-.offer-head{display:flex;gap:16px;align-items:center}
-.offer-logo{width:72px;height:72px;border-radius:18px;object-fit:cover;background:#f1f5f9}
-.badge{margin-left:auto;background:#dcfce7;color:#15803d;border-radius:20px;padding:7px 12px;font-size:12px;font-weight:700}
-.reward{margin-top:22px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center}
-.reward b{font-size:26px;color:#16a34a}
-.start-btn{width:100%;margin-top:18px;border:0;background:#000;color:white;border-radius:16px;padding:16px;font-weight:800;cursor:pointer}
-.card{background:white;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
-.card p{margin:7px 0}
-.card input{width:100%;padding:14px;margin:8px 0;border:1px solid #e5e7eb;border-radius:12px}
-.primary-btn{background:#047857;color:white;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;font-weight:700}
-.status{display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700}
-.pending{background:#ffedd5;color:#c2410c}.approved{background:#dcfce7;color:#15803d}.rejected{background:#fee2e2;color:#b91c1c}
-@media(max-width:800px){.sidebar{width:220px}.main{margin-left:220px;padding:16px}.offer-grid{grid-template-columns:1fr}.search-row{flex-direction:column}}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter,sans-serif;
+}
+
+body{
+display:flex;
+background:#f5f7fb;
+color:#111827;
+}
+
+.sidebar{
+width:270px;
+height:100vh;
+background:#0b1528;
+position:fixed;
+padding:24px;
+overflow:auto;
+color:white;
+}
+
+.logo{
+font-size:28px;
+font-weight:800;
+}
+
+.logo span{
+color:#3b82f6;
+}
+
+.sub{
+font-size:12px;
+margin-bottom:25px;
+color:#94a3b8;
+}
+
+.wallet-card{
+background:#111f38;
+padding:18px;
+border-radius:18px;
+margin-bottom:25px;
+border:1px solid #263550;
+}
+
+.wallet-card h2{
+color:#4ade80;
+font-size:32px;
+margin:8px 0;
+}
+
+.pubid{
+padding:8px;
+border-radius:10px;
+border:1px solid #334155;
+display:inline-block;
+font-size:12px;
+}
+
+.nav button{
+width:100%;
+padding:14px;
+margin:7px 0;
+border:none;
+border-radius:12px;
+background:transparent;
+color:white;
+text-align:left;
+cursor:pointer;
+}
+
+.nav button:hover,
+.nav button.active{
+background:#2563eb;
+}
+
+.main{
+margin-left:270px;
+padding:25px;
+width:100%;
+}
+
+.section{
+display:none;
+}
+
+.section.active{
+display:block;
+}
+
+.top-banner{
+background:#2563eb;
+color:white;
+padding:18px;
+border-radius:18px;
+margin-bottom:20px;
+display:flex;
+justify-content:space-between;
+cursor:pointer;
+}
+
+.stats{
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+margin-bottom:20px;
+}
+
+.stat{
+background:white;
+padding:18px;
+border-radius:18px;
+box-shadow:
+0 5px 18px rgba(0,0,0,.05);
+}
+
+.green{
+color:#16a34a;
+}
+
+.orange{
+color:#ea580c;
+}
+
+.blue{
+color:#2563eb;
+}
+
+.purple{
+color:#7c3aed;
+}
+
+.offer-grid{
+display:grid;
+grid-template-columns:
+repeat(auto-fill,minmax(300px,1fr));
+gap:20px;
+}
+
+.offer-card{
+background:white;
+padding:20px;
+border-radius:22px;
+box-shadow:
+0 6px 22px rgba(0,0,0,.05);
+}
+
+.offer-head{
+display:flex;
+gap:15px;
+align-items:center;
+}
+
+.offer-logo{
+width:70px;
+height:70px;
+border-radius:16px;
+object-fit:cover;
+}
+
+.badge{
+background:#dcfce7;
+padding:6px 10px;
+border-radius:20px;
+font-size:12px;
+color:#15803d;
+}
+
+.reward{
+margin-top:20px;
+padding:16px;
+border-radius:14px;
+background:#f0fdf4;
+display:flex;
+justify-content:space-between;
+}
+
+.start-btn{
+width:100%;
+padding:15px;
+margin-top:15px;
+border:none;
+border-radius:14px;
+background:black;
+color:white;
+cursor:pointer;
+}
+
+.card{
+background:white;
+padding:18px;
+border-radius:18px;
+margin-bottom:15px;
+box-shadow:
+0 5px 18px rgba(0,0,0,.05);
+}
+
+.primary-btn{
+padding:14px;
+border:none;
+border-radius:12px;
+background:#047857;
+color:white;
+cursor:pointer;
+}
+
+.report-table{
+width:100%;
+border-collapse:collapse;
+}
+
+.report-table th,
+.report-table td{
+padding:14px;
+border-bottom:1px solid #eee;
+text-align:left;
+}
+
+.status{
+padding:5px 10px;
+border-radius:20px;
+font-size:12px;
+}
+
+.pending{
+background:#ffedd5;
+color:#c2410c;
+}
+
+.approved{
+background:#dcfce7;
+color:#15803d;
+}
+
+.rejected{
+background:#fee2e2;
+color:#b91c1c;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-<div class="logo">EFFORTLESS<span>EARN</span></div>
-<div class="sub">Publisher Panel</div>
+
+<div class="logo">
+EFFORTLESS
+<span>EARN</span>
+</div>
+
+<div class="sub">
+Publisher Panel
+</div>
 
 <div class="wallet-card">
-<p>Wallet Balance</p>
-<h2>₹<span id="balance">0</span></h2>
-<div class="pubid" id="pubid">Loading...</div>
+
+<p>
+Wallet Balance
+</p>
+
+<h2>
+₹<span id="balance">0</span>
+</h2>
+
+<div class="pubid"
+id="pubid">
+
+Loading...
+
+</div>
+
 </div>
 
 <div class="nav">
-<button class="active" onclick="showSection('dashboard',this)">📊 Dashboard</button>
-<button onclick="showSection('offers',this)">🎯 All Offers</button>
-<button onclick="showSection('reports',this)">📄 Reports</button>
-<button onclick="showSection('withdraw',this)">💰 Wallet</button>
-<button onclick="showSection('history',this)">🧾 History</button>
-<button onclick="showSection('profile',this)">👤 Profile</button>
-<button onclick="showSection('referral',this)">👥 Referral</button>
-<button onclick="logout()">🚪 Logout</button>
+
+<button
+class="active"
+onclick="showSection('dashboard',this)"
+>
+
+📊 Dashboard
+
+</button>
+
+<button
+onclick="showSection('offers',this)"
+>
+
+🎯 Offers
+
+</button>
+
+<button
+onclick="showSection('reports',this)"
+>
+
+📄 Reports
+
+</button>
+
+<button
+onclick="showSection('withdraw',this)"
+>
+
+💰 Wallet
+
+</button>
+
+<button
+onclick="showSection('history',this)"
+>
+
+🧾 History
+
+</button>
+
+<button
+onclick="showSection('profile',this)"
+>
+
+👤 Profile
+
+</button>
+
+<button
+onclick="showSection('referral',this)"
+>
+
+👥 Referral
+
+</button>
+
 </div>
+
 </div>
 
 <div class="main">
 
-<div id="dashboard" class="section active">
-<div class="top-banner"
+<div
+id="dashboard"
+class="section active"
+>
+
+<div
+class="top-banner"
 onclick="openTelegram()"
-style="cursor:pointer;">
+>
 
 <div>
-<b>🚀 JOIN TELEGRAM CHANNEL</b><br>
-<span>
-Get latest offers and updates
-</span>
+
+<b>
+🚀 JOIN TELEGRAM
+</b>
+
+<br>
+
+Get latest offers
+
 </div>
 
 <div>
-👉 JOIN NOW
+
+JOIN NOW →
+
 </div>
 
 </div>
 
 <div class="stats">
-<div class="stat"><p>Revenue</p><h2 class="green">₹<span id="dashBalance">0</span></h2></div>
-<div class="stat"><p>Pending Amount</p><h2 class="orange">₹<span id="pendingAmount">0</span></h2></div>
-<div class="stat"><p>Applications</p><h2 class="purple" id="appCount">0</h2></div>
-<div class="stat"><p>Reports</p><h2 class="blue" id="reportCount">0</h2></div>
-<div class="stat"><p>Approved</p><h2 class="green" id="approvedCount">0</h2></div>
-<div class="stat"><p>Pending</p><h2 class="orange" id="pendingCount">0</h2></div>
-<div class="stat"><p>Rejected</p><h2 class="redText" id="rejectedCount">0</h2></div>
-<div class="stat"><p>Total Clicks</p><h2 class="blue" id="clickCount">0</h2></div>
+
+<div class="stat">
+<p>Revenue</p>
+<h2 class="green">
+₹<span id="dashBalance">0</span>
+</h2>
+</div>
+
+<div class="stat">
+<p>Pending Amount</p>
+<h2 class="orange">
+₹<span id="pendingAmount">0</span>
+</h2>
+</div>
+
+<div class="stat">
+<p>Applications</p>
+<h2 class="purple" id="appCount">
+0
+</h2>
+</div>
+
+<div class="stat">
+<p>Reports</p>
+<h2 class="blue" id="reportCount">
+0
+</h2>
+</div>
+
+<div class="stat">
+<p>Total Clicks</p>
+<h2 class="blue" id="clickCount">
+0
+</h2>
+</div>
+
 </div>
 
 <div class="card">
 <h2>How to Start Earning?</h2>
-<p>Choose an offer, click Start Earning, complete the task, and wait for admin approval.</p>
+<p>
+Choose an offer, click Start Earning, complete the task,
+and wait for admin approval.
+</p>
 </div>
+
 </div>
 
 <div id="offers" class="section">
-<div class="search-row">
-<input id="searchOffer" placeholder="Search High Paying Offers..." onkeyup="searchOffers()">
-<select>
-<option>ALL OFFERS</option>
-<option>Banking</option>
-<option>Finance</option>
-<option>Survey</option>
-</select>
-</div>
+
+<h2>All Offers</h2>
+<br>
+
 <div id="campaignList" class="offer-grid"></div>
+
 </div>
 
 <div id="reports" class="section">
-<h2>Tracking Reports</h2><br>
-<div id="reportList"></div>
+
+<h2>Tracking History</h2>
+<br>
+
+<div class="card">
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>Time</th>
+<th>Click ID</th>
+<th>Offer</th>
+<th>Event</th>
+<th>Payout</th>
+<th>Status</th>
+<th>P1</th>
+</tr>
+</thead>
+
+<tbody id="reportTable"></tbody>
+
+</table>
+
+</div>
+
 </div>
 
 <div id="withdraw" class="section">
-<h2>Withdraw Money</h2><br>
+
+<h2>Withdraw Money</h2>
+<br>
+
 <div class="card">
-<p>Available Balance: ₹<span id="balance2">0</span></p>
-<input id="upi" placeholder="Enter UPI ID">
-<input id="amount" type="number" placeholder="Enter Amount">
-<button class="primary-btn" onclick="withdrawRequest()">Request Withdraw</button>
+
+<p>
+Available Balance:
+₹<span id="balance2">0</span>
+</p>
+
+<br>
+
+<input
+id="upi"
+placeholder="Enter UPI ID"
+style="width:100%;padding:12px;margin:8px 0;"
+>
+
+<input
+id="amount"
+type="number"
+placeholder="Enter Amount"
+style="width:100%;padding:12px;margin:8px 0;"
+>
+
+<button
+class="primary-btn"
+onclick="withdrawRequest()"
+>
+Request Withdraw
+</button>
+
 </div>
-<h3>Withdraw History</h3><br>
+
+<h3>Withdraw History</h3>
+<br>
+
 <div id="withdrawList"></div>
+
 </div>
 
 <div id="history" class="section">
-<h2>Application History</h2><br>
+
+<h2>Application History</h2>
+<br>
+
 <div id="historyList"></div>
+
 </div>
 
 <div id="profile" class="section">
-<h2>Profile</h2><br>
+
+<h2>Profile</h2>
+<br>
 
 <div class="card">
 <p><b>Publisher ID:</b> <span id="profilePubId">-</span></p>
@@ -157,21 +535,40 @@ Get latest offers and updates
 
 <div class="card">
 <h3>Support</h3>
-<p>Need help? Join Telegram channel for updates and support.</p>
-<button class="primary-btn" onclick="openTelegram()">Join Telegram</button>
+<p>Need help? Join Telegram channel for updates.</p>
+<br>
+<button class="primary-btn" onclick="openTelegram()">
+Join Telegram
+</button>
 </div>
+
 </div>
 
 <div id="referral" class="section">
-<h2>Referral Program</h2><br>
+
+<h2>Referral Program</h2>
+<br>
 
 <div class="card">
 <p><b>Your Referral Link</b></p>
-<input id="refLink" readonly>
-<button class="primary-btn" onclick="copyRef()">Copy Referral Link</button>
+
+<input
+id="refLink"
+readonly
+style="width:100%;padding:12px;margin:8px 0;"
+>
+
+<button
+class="primary-btn"
+onclick="copyRef()"
+>
+Copy Referral Link
+</button>
+
 </div>
 
 <div class="stats">
+
 <div class="stat">
 <p>Total Referrals</p>
 <h2 class="blue" id="refCount">0</h2>
@@ -179,17 +576,43 @@ Get latest offers and updates
 
 <div class="stat">
 <p>Referral Earnings</p>
-<h2 class="green">₹<span id="refEarn">0</span></h2>
+<h2 class="green">
+₹<span id="refEarn">0</span>
+</h2>
 </div>
+
 </div>
+
 </div>
+
+</div>
+
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { getFirestore,doc,getDoc,collection,getDocs,addDoc,query,where } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const firebaseConfig={
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+import {
+getAuth,
+onAuthStateChanged,
+signOut
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+getDoc,
+collection,
+getDocs,
+addDoc,
+query,
+where
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
 apiKey:"AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
 authDomain:"effortless-earn-7f39e.firebaseapp.com",
 projectId:"effortless-earn-7f39e",
@@ -198,90 +621,178 @@ messagingSenderId:"554178513766",
 appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-let currentUser=null;
-let campaignCache={};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-onAuthStateChanged(auth,async(user)=>{
-if(!user){window.location.href="login.html";return;}
-currentUser=user;
+let currentUser = null;
+let campaignCache = {};
+
+function el(id){
+return document.getElementById(id);
+}
+
+onAuthStateChanged(auth, async(user)=>{
+
+if(!user){
+window.location.href = "login.html";
+return;
+}
+
+currentUser = user;
+
 await loadWallet();
 await loadCampaigns();
 await loadHistory();
 await loadReports();
 await loadWithdrawHistory();
 await loadClicks();
+
 });
 
+/* WALLET */
 async function loadWallet(){
-const snap=await getDoc(doc(db,"users",currentUser.uid));
-let bal=0;
-if(snap.exists()) bal=Number(snap.data().balance||0);
 
-balance.innerText=bal;
-balance2.innerText=bal;
-dashBalance.innerText=bal;
-profileBalance.innerText=bal;
+const snap = await getDoc(
+doc(db,"users",currentUser.uid)
+);
 
-const pub="PUB-"+currentUser.uid.slice(0,6).toUpperCase();
-pubid.innerText="ID : "+pub;
-profilePubId.innerText=pub;
-profileEmail.innerText=currentUser.email||"-";
-refLink.value =
-window.location.origin + "/login.html?ref=" + currentUser.uid;
+let bal = 0;
+
+if(snap.exists()){
+bal = Number(snap.data().balance || 0);
 }
 
+el("balance").innerText = bal;
+el("balance2").innerText = bal;
+el("dashBalance").innerText = bal;
+el("profileBalance").innerText = bal;
+
+const pub =
+"PUB-" +
+currentUser.uid
+.slice(0,6)
+.toUpperCase();
+
+el("pubid").innerText =
+"ID : " + pub;
+
+el("profilePubId").innerText = pub;
+
+el("profileEmail").innerText =
+currentUser.email || "-";
+
+el("refLink").value =
+window.location.origin +
+"/login.html?ref=" +
+currentUser.uid;
+
+}
+
+/* CAMPAIGNS */
 async function loadCampaigns(){
-const snap=await getDocs(collection(db,"campaigns"));
-let html="";
-campaignCache={};
+
+const snap =
+await getDocs(
+collection(db,"campaigns")
+);
+
+let html = "";
+campaignCache = {};
 
 snap.forEach(d=>{
-const c=d.data();
-const title=c.title||"Untitled";
-const reward=Number(c.reward||0);
-const status=(c.status||"active").toLowerCase();
 
-if(status!=="active") return;
+const c = d.data();
 
-campaignCache[d.id]={id:d.id,title,reward};
+const title =
+c.title || "Untitled";
 
-html+=`
+const reward =
+Number(c.reward || 0);
+
+const status =
+(c.status || "active")
+.toLowerCase();
+
+if(status !== "active") return;
+
+campaignCache[d.id] = {
+id:d.id,
+title,
+reward
+};
+
+html += `
 <div class="offer-card">
+
 <div class="offer-head">
-<img src="${c.image||'https://via.placeholder.com/100'}" class="offer-logo">
+
+<img
+src="${c.image || 'https://via.placeholder.com/100'}"
+class="offer-logo"
+>
+
 <div>
 <h3>${title}</h3>
-<p>${c.category||"CPA Offer"}</p>
+<p>${c.category || "CPA Offer"}</p>
 </div>
+
 <span class="badge">ACTIVE</span>
+
 </div>
-<div class="reward"><span>Reward</span><b>₹${reward}</b></div>
-<button class="start-btn" onclick="startTracking('${d.id}')">START EARNING →</button>
-</div>`;
+
+<div class="reward">
+<span>Reward</span>
+<b>₹${reward}</b>
+</div>
+
+<button
+class="start-btn"
+onclick="startTracking('${d.id}')"
+>
+START EARNING →
+</button>
+
+</div>
+`;
+
 });
 
-campaignList.innerHTML=html||"<div class='card'>No campaigns found</div>";
+el("campaignList").innerHTML =
+html || "<div class='card'>No campaigns found</div>";
+
 }
 
-window.startTracking=async function(campaignId){
-const c=campaignCache[campaignId];
-if(!c){alert("Campaign not found. Refresh page.");return;}
+/* START TRACKING */
+window.startTracking = async function(campaignId){
 
-const trackingId=Math.random().toString(36).slice(2,10);
+const c = campaignCache[campaignId];
 
-await addDoc(collection(db,"clicks"),{
+if(!c){
+alert("Campaign not found. Refresh page.");
+return;
+}
+
+const trackingId =
+Math.random()
+.toString(36)
+.slice(2,10);
+
+await addDoc(
+collection(db,"clicks"),
+{
 userId:currentUser.uid,
 campaignId:c.id,
 campaignTitle:c.title,
 reward:c.reward,
 trackingId,
 time:Date.now()
-});
+}
+);
 
-await addDoc(collection(db,"applications"),{
+await addDoc(
+collection(db,"applications"),
+{
 userId:currentUser.uid,
 campaignId:c.id,
 campaignTitle:c.title,
@@ -289,168 +800,363 @@ reward:c.reward,
 status:"pending",
 trackingId,
 time:Date.now()
-});
+}
+);
 
-await addDoc(collection(db,"reports"),{
+await addDoc(
+collection(db,"reports"),
+{
 userId:currentUser.uid,
 offerName:c.title,
+event:"Install & Login",
 payout:c.reward,
 status:"pending",
 worker:"P1",
 trackingId,
 time:Date.now()
-});
+}
+);
 
 alert("Application Submitted");
+
 await loadHistory();
 await loadReports();
 await loadClicks();
+
 };
 
+/* HISTORY */
 async function loadHistory(){
-const q=query(collection(db,"applications"),where("userId","==",currentUser.uid));
-const snap=await getDocs(q);
 
-let html="";
-let pendingAmount=0,approved=0,pending=0,rejected=0;
+const q =
+query(
+collection(db,"applications"),
+where("userId","==",currentUser.uid)
+);
+
+const snap =
+await getDocs(q);
+
+let html = "";
+let pendingAmount = 0;
 
 snap.forEach(d=>{
-const h=d.data();
-const status=h.status||"pending";
 
-if(status==="pending"){pendingAmount+=Number(h.reward||0);pending++;}
-if(status==="approved") approved++;
-if(status==="rejected") rejected++;
+const h = d.data();
 
-html+=`
-<div class="card">
-<p><b>Offer:</b> ${h.campaignTitle||h.campaignId||"-"}</p>
-<p><b>Reward:</b> ₹${h.reward||0}</p>
-<p><b>Status:</b> <span class="status ${status}">${status}</span></p>
-<p><b>Tracking:</b> ${h.trackingId||"-"}</p>
-</div>`;
-});
+const status =
+h.status || "pending";
 
-historyList.innerHTML=html||"<div class='card'>No applications yet.</div>";
-pendingAmount.innerText=pendingAmount;
-appCount.innerText=snap.size;
-approvedCount.innerText=approved;
-pendingCount.innerText=pending;
-rejectedCount.innerText=rejected;
+if(status === "pending"){
+pendingAmount += Number(h.reward || 0);
 }
 
+html += `
+<div class="card">
+
+<p><b>Offer:</b> ${h.campaignTitle || h.campaignId || "-"}</p>
+
+<p><b>Reward:</b> ₹${h.reward || 0}</p>
+
+<p>
+<b>Status:</b>
+<span class="status ${status}">
+${status}
+</span>
+</p>
+
+<p><b>Tracking:</b> ${h.trackingId || "-"}</p>
+
+</div>
+`;
+
+});
+
+el("historyList").innerHTML =
+html || "<div class='card'>No applications yet.</div>";
+
+el("pendingAmount").innerText =
+pendingAmount;
+
+el("appCount").innerText =
+snap.size;
+
+}
+
+/* REPORTS */
 async function loadReports(){
-const q=query(collection(db,"reports"),where("userId","==",currentUser.uid));
-const snap=await getDocs(q);
-let html="";
+
+const q =
+query(
+collection(db,"reports"),
+where("userId","==",currentUser.uid)
+);
+
+const snap =
+await getDocs(q);
+
+let html = "";
 
 snap.forEach(d=>{
-const r=d.data();
-const status=r.status||"pending";
 
-html+=`
-<div class="card">
-<p><b>Offer:</b> ${r.offerName||"-"}</p>
-<p><b>Payout:</b> ₹${r.payout||0}</p>
-<p><b>Status:</b> <span class="status ${status}">${status}</span></p>
-<p><b>Worker:</b> ${r.worker||"P1"}</p>
-<p><b>Tracking:</b> ${r.trackingId||"-"}</p>
-</div>`;
+const r = d.data();
+
+const status =
+r.status || "pending";
+
+const time =
+r.time
+? new Date(r.time).toLocaleString()
+: "-";
+
+html += `
+<tr>
+
+<td>${time}</td>
+
+<td>${r.trackingId || "-"}</td>
+
+<td><b>${r.offerName || "-"}</b></td>
+
+<td>${r.event || "Install & Login"}</td>
+
+<td><b>₹${r.payout || r.amount || 0}</b></td>
+
+<td>
+<span class="status ${status}">
+${status}
+</span>
+</td>
+
+<td>${r.worker || "P1"}</td>
+
+</tr>
+`;
+
 });
 
-reportList.innerHTML=html||"<div class='card'>No reports yet.</div>";
-reportCount.innerText=snap.size;
+el("reportTable").innerHTML =
+html ||
+`
+<tr>
+<td colspan="7">
+No Tracking Found. Start an offer first.
+</td>
+</tr>
+`;
+
+el("reportCount").innerText =
+snap.size;
+
 }
 
+/* CLICKS */
 async function loadClicks(){
-const q=query(collection(db,"clicks"),where("userId","==",currentUser.uid));
-const snap=await getDocs(q);
-clickCount.innerText=snap.size;
+
+const q =
+query(
+collection(db,"clicks"),
+where("userId","==",currentUser.uid)
+);
+
+const snap =
+await getDocs(q);
+
+el("clickCount").innerText =
+snap.size;
+
 }
 
-window.withdrawRequest=async function(){
-const upi=document.getElementById("upi").value.trim();
-const amount=Number(document.getElementById("amount").value);
+/* WITHDRAW */
+window.withdrawRequest = async function(){
 
-if(!upi||amount<=0){alert("Enter valid UPI and amount");return;}
+const upi =
+el("upi").value.trim();
 
-const snap=await getDoc(doc(db,"users",currentUser.uid));
-const balance=snap.exists()?Number(snap.data().balance||0):0;
+const amount =
+Number(
+el("amount").value
+);
 
-if(amount>balance){alert("Insufficient balance");return;}
+if(!upi || amount <= 0){
+alert("Enter valid UPI and amount");
+return;
+}
 
-await addDoc(collection(db,"withdrawals"),{
+const snap =
+await getDoc(
+doc(db,"users",currentUser.uid)
+);
+
+const balance =
+snap.exists()
+? Number(snap.data().balance || 0)
+: 0;
+
+if(amount > balance){
+alert("Insufficient balance");
+return;
+}
+
+const trackingId =
+Math.random()
+.toString(36)
+.slice(2,10);
+
+await addDoc(
+collection(db,"withdrawals"),
+{
 userId:currentUser.uid,
 upi,
 amount,
 status:"pending",
 time:Date.now()
-});
+}
+);
 
-await addDoc(collection(db,"reports"),{
+await addDoc(
+collection(db,"reports"),
+{
 userId:currentUser.uid,
 offerName:"Withdraw Request",
+event:"Withdraw",
 payout:amount,
 status:"pending",
 worker:"P1",
-trackingId:Math.random().toString(36).slice(2,10),
+trackingId,
 time:Date.now()
-});
+}
+);
 
 alert("Withdraw Sent");
-document.getElementById("upi").value="";
-document.getElementById("amount").value="";
+
+el("upi").value = "";
+el("amount").value = "";
+
 await loadWithdrawHistory();
 await loadReports();
+
 };
 
+/* WITHDRAW HISTORY */
 async function loadWithdrawHistory(){
-const q=query(collection(db,"withdrawals"),where("userId","==",currentUser.uid));
-const snap=await getDocs(q);
-let html="";
+
+const q =
+query(
+collection(db,"withdrawals"),
+where("userId","==",currentUser.uid)
+);
+
+const snap =
+await getDocs(q);
+
+let html = "";
 
 snap.forEach(d=>{
-const w=d.data();
-const status=w.status||"pending";
 
-html+=`
+const w = d.data();
+
+const status =
+w.status || "pending";
+
+html += `
 <div class="card">
-<p><b>Amount:</b> ₹${w.amount||0}</p>
-<p><b>UPI:</b> ${w.upi||"-"}</p>
-<p><b>Status:</b> <span class="status ${status}">${status}</span></p>
-</div>`;
+
+<p><b>Amount:</b> ₹${w.amount || 0}</p>
+
+<p><b>UPI:</b> ${w.upi || "-"}</p>
+
+<p>
+<b>Status:</b>
+<span class="status ${status}">
+${status}
+</span>
+</p>
+
+</div>
+`;
+
 });
 
-withdrawList.innerHTML=html||"<div class='card'>No withdraw requests.</div>";
+el("withdrawList").innerHTML =
+html || "<div class='card'>No withdraw requests.</div>";
+
 }
 
-window.showSection=function(id,btn){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-if(btn)btn.classList.add("active");
-};
+/* NAV */
+window.showSection = function(id,btn){
 
-window.searchOffers=function(){
-const input=searchOffer.value.toLowerCase();
-document.querySelectorAll(".offer-card").forEach(card=>{
-card.style.display=card.innerText.toLowerCase().includes(input)?"block":"none";
+document
+.querySelectorAll(".section")
+.forEach(s=>{
+s.classList.remove("active");
 });
+
+el(id).classList.add("active");
+
+document
+.querySelectorAll(".nav button")
+.forEach(b=>{
+b.classList.remove("active");
+});
+
+if(btn){
+btn.classList.add("active");
+}
+
 };
 
-window.openTelegram=function(){
-window.open("https://t.me/effortlessMoneyearning");
+/* SEARCH */
+window.searchOffers = function(){
+
+const input =
+el("searchOffer")
+? el("searchOffer").value.toLowerCase()
+: "";
+
+document
+.querySelectorAll(".offer-card")
+.forEach(card=>{
+
+card.style.display =
+card.innerText
+.toLowerCase()
+.includes(input)
+? "block"
+: "none";
+
+});
+
 };
 
-window.logout=function(){
-signOut(auth).then(()=>{window.location.href="login.html";});
+/* TELEGRAM */
+window.openTelegram = function(){
+
+window.open(
+"https://t.me/effortlessMoneyearning",
+);
+
 };
 
-window.copyRef=function(){
-navigator.clipboard.writeText(refLink.value);
+/* COPY REF */
+window.copyRef = function(){
+
+navigator.clipboard.writeText(
+el("refLink").value
+);
+
 alert("Referral link copied");
+
 };
-</script>
+
+/* LOGOUT */
+window.logout = function(){
+
+signOut(auth)
+.then(()=>{
+window.location.href="login.html";
+});
+
 
 </body>
-</html>
+</html>  
