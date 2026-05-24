@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>User Dashboard</title>
+<title>User Dashboard PRO</title>
 
 <style>
 body{
@@ -19,14 +19,9 @@ height:100vh;
 background:#111827;
 padding:20px;
 position:fixed;
-left:0;
-top:0;
 }
 
-.sidebar h2{
-color:#38bdf8;
-margin-bottom:20px;
-}
+.sidebar h2{color:#38bdf8;}
 
 .sidebar button{
 width:100%;
@@ -59,8 +54,8 @@ width:100%;
 .card{
 background:#111827;
 padding:15px;
-border-radius:10px;
 margin:10px 0;
+border-radius:10px;
 border:1px solid #1f2937;
 }
 
@@ -73,11 +68,8 @@ margin-bottom:20px;
 border:1px solid #1f2937;
 }
 
-.wallet h1{
-color:#38bdf8;
-}
+.wallet h1{color:#38bdf8;}
 
-/* BUTTON */
 .btn{
 padding:8px 12px;
 background:#38bdf8;
@@ -98,6 +90,7 @@ color:black;
 <button onclick="show('home')">Home</button>
 <button onclick="show('campaigns')">Campaigns</button>
 <button onclick="show('history')">History</button>
+<button onclick="show('reports')">Reports</button>
 <button onclick="logout()">Logout</button>
 </div>
 
@@ -124,8 +117,14 @@ color:black;
 
 <!-- HISTORY -->
 <div id="history" class="section">
-<h2>📜 My Applications</h2>
+<h2>📜 History</h2>
 <div id="historyList"></div>
+</div>
+
+<!-- REPORTS -->
+<div id="reports" class="section">
+<h2>📊 Tracking Reports</h2>
+<div id="reportList"></div>
 </div>
 
 </div>
@@ -136,12 +135,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebas
 import { getAuth, onAuthStateChanged, signOut } 
 from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-import { 
-getFirestore, 
-doc, 
-getDoc, 
-collection, 
-getDocs, 
+import {
+getFirestore,
+doc,
+getDoc,
+collection,
+getDocs,
 addDoc,
 query,
 where
@@ -163,7 +162,7 @@ const db = getFirestore(app);
 
 let currentUser;
 
-/* AUTH CHECK */
+/* AUTH */
 onAuthStateChanged(auth, async (user)=>{
 
 if(!user){
@@ -173,36 +172,29 @@ return;
 
 currentUser = user;
 
-/* LOAD WALLET */
 loadWallet();
-
-/* LOAD DATA */
 loadCampaigns();
 loadHistory();
+loadReports();
 
 });
 
 /* WALLET */
 async function loadWallet(){
-
 const snap = await getDoc(doc(db,"users",currentUser.uid));
-
 if(snap.exists()){
 document.getElementById("balance").innerText =
 "₹" + (snap.data().balance || 0);
 }
-
 }
 
 /* CAMPAIGNS */
 async function loadCampaigns(){
-
 const snap = await getDocs(collection(db,"campaigns"));
 
 let html="";
 
 snap.forEach(d=>{
-
 const c = d.data();
 
 html += `
@@ -210,33 +202,47 @@ html += `
 <h3>${c.title}</h3>
 <p>Reward: ₹${c.reward}</p>
 
-<button class="btn" onclick="apply('${d.id}',${c.reward})">
+<button class="btn" onclick="apply('${d.id}',${c.reward},'${c.title}')">
 Apply
 </button>
 
 </div>
 `;
-
 });
 
 document.getElementById("campaignList").innerHTML = html;
-
 }
 
-/* APPLY */
-window.apply = async function(id,reward){
+/* APPLY + REPORT */
+window.apply = async function(id,reward,title){
+
+const ip = await fetch("https://api.ipify.org?format=json")
+.then(r=>r.json())
+.then(d=>d.ip);
 
 await addDoc(collection(db,"applications"),{
 userId: currentUser.uid,
 campaignId: id,
-reward: reward,
-status: "pending"
+reward,
+status:"pending"
+});
+
+/* REPORT */
+await addDoc(collection(db,"reports"),{
+userId: currentUser.uid,
+offerName: title,
+payout: reward,
+status:"pending",
+ip: ip,
+time: Date.now(),
+worker: "P1",
+trackingId: Math.random().toString(36).substring(2,10)
 });
 
 alert("Applied Successfully");
 
 loadHistory();
-
+loadReports();
 };
 
 /* HISTORY */
@@ -249,7 +255,6 @@ const snap = await getDocs(q);
 let html="";
 
 snap.forEach(d=>{
-
 const h = d.data();
 
 html += `
@@ -259,21 +264,46 @@ html += `
 <p>Status: ${h.status}</p>
 </div>
 `;
-
 });
 
 document.getElementById("historyList").innerHTML = html;
+}
 
+/* REPORTS */
+async function loadReports(){
+
+const snap = await getDocs(collection(db,"reports"));
+
+let html="";
+
+snap.forEach(d=>{
+const r = d.data();
+
+html += `
+<div class="card">
+<p><b>Offer:</b> ${r.offerName}</p>
+<p><b>Payout:</b> ₹${r.payout}</p>
+<p><b>Status:</b> ${r.status}</p>
+<p><b>User:</b> ${r.userId}</p>
+<p><b>Worker:</b> ${r.worker}</p>
+<p><b>IP:</b> ${r.ip}</p>
+<p><b>Time:</b> ${new Date(r.time).toLocaleString()}</p>
+<p><b>ID:</b> ${r.trackingId}</p>
+</div>
+`;
+});
+
+document.getElementById("reportList").innerHTML = html;
 }
 
 /* NAV */
-window.show = function(id){
+window.show=function(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 };
 
 /* LOGOUT */
-window.logout = function(){
+window.logout=function(){
 signOut(auth);
 window.location.href="login.html";
 };
