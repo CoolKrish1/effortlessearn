@@ -4,66 +4,173 @@
 <title>Dashboard Pro</title>
 
 <style>
-body{
+*{
 margin:0;
-font-family:Arial;
+padding:0;
+box-sizing:border-box;
+font-family:Inter,sans-serif;
+}
+
+body{
 display:flex;
-background:#0b1220;
+background:#f5f7fb;
+color:#111;
+}
+
+.sidebar{
+width:260px;
+height:100vh;
+background:#07142d;
+padding:20px;
+position:fixed;
+overflow:auto;
+}
+
+.logo h1{
 color:white;
 }
 
-/* SIDEBAR */
-.sidebar{
-width:240px;
-height:100vh;
-background:#111827;
-padding:20px;
-position:fixed;
+.logo p{
+color:#8aa4d4;
+margin-bottom:25px;
 }
 
-.sidebar h2{color:#38bdf8;}
+.wallet-card{
+background:#0d2247;
+padding:20px;
+border-radius:20px;
+color:white;
+margin-bottom:25px;
+}
+
+.wallet-card h2{
+color:#34d399;
+margin:10px 0;
+}
+
+.pubid{
+border:1px solid #2f4c82;
+padding:8px;
+border-radius:10px;
+display:inline-block;
+}
 
 .sidebar button{
 width:100%;
-padding:10px;
+padding:14px;
 margin:8px 0;
-background:#1f2937;
-color:white;
 border:none;
-border-radius:8px;
+border-radius:12px;
+background:transparent;
+color:white;
+text-align:left;
 cursor:pointer;
 }
 
 .sidebar button:hover{
-background:#38bdf8;
+background:#295cff;
+}
+
+.main{
+margin-left:260px;
+width:100%;
+padding:30px;
+}
+
+.topbar{
+display:flex;
+gap:20px;
+margin-bottom:30px;
+}
+
+.topbar input{
+flex:1;
+padding:18px;
+border:none;
+border-radius:20px;
+background:white;
+}
+
+.topbar select{
+padding:18px;
+border:none;
+border-radius:20px;
+background:white;
+}
+
+.section.active{
+display:block;
+}
+
+.section{
+display:none;
+}
+
+#campaignList{
+display:grid;
+grid-template-columns:
+repeat(auto-fill,minmax(320px,1fr));
+gap:25px;
+}
+
+.offer-card{
+background:white;
+padding:20px;
+border-radius:24px;
+box-shadow:
+0 4px 20px rgba(0,0,0,.05);
+}
+
+.offer-head{
+display:flex;
+gap:15px;
+align-items:center;
+}
+
+.offer-logo{
+width:70px;
+height:70px;
+border-radius:16px;
+object-fit:cover;
+}
+
+.card{
+background:white;
+padding:15px;
+border-radius:16px;
+margin:10px 0;
+box-shadow:0 4px 15px rgba(0,0,0,.05);
 color:black;
 }
 
-/* MAIN */
-.main{
-margin-left:260px;
-padding:20px;
+.badge{
+background:#dcfce7;
+color:#16a34a;
+padding:5px 12px;
+border-radius:20px;
+font-size:12px;
+}
+
+.reward-box{
+margin-top:20px;
+padding:18px;
+background:#effcf5;
+border-radius:16px;
+font-size:30px;
+font-weight:bold;
+color:#16a34a;
+}
+
+.start-btn{
 width:100%;
-}
-
-/* SECTION */
-.section{display:none;}
-.active{display:block;}
-
-/* CARD */
-.card{
-background:#111827;
-padding:15px;
-margin:10px 0;
-border-radius:10px;
-border:1px solid #1f2937;
-}
-
-/* INPUT */
-input{
-padding:8px;
-margin:5px 0;
-width:200px;
+margin-top:20px;
+padding:16px;
+border:none;
+border-radius:16px;
+background:black;
+color:white;
+cursor:pointer;
+font-weight:bold;
 }
 </style>
 </head>
@@ -72,23 +179,51 @@ width:200px;
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-<h2>⚡ Dashboard</h2>
 
-<button onclick="show('home')">Home</button>
-<button onclick="show('campaigns')">Campaigns</button>
-<button onclick="show('withdraw')">Withdraw</button>
-<button onclick="show('history')">History</button>
-<button onclick="show('reports')">Reports</button>
-<button onclick="logout()">Logout</button>
+<div class="logo">
+<h1>CampaignHub</h1>
+<p>Publisher Panel</p>
 </div>
 
+<div class="wallet-card">
+<p>Wallet Balance</p>
+<h2>₹<span id="balance">0</span></h2>
+<div class="pubid" id="pubid">
+Loading...
+</div>
+
+<button onclick="show('home')">📊 Dashboard</button>
+<button onclick="show('campaigns')">🎯 All Offers</button>
+<button onclick="show('history')">📄 Reports</button>
+<button onclick="show('withdraw')">💰 Wallet</button>
+<button onclick="show('reports')">📈 Tracking</button>
+<button onclick="logout()">🚪 Logout</button>
+
+</div>
+  
 <!-- MAIN -->
 <div class="main">
+<div class="topbar">
+
+<input
+id="searchOffer"
+placeholder="Search High Paying Offers..."
+onkeyup="searchOffers()"
+>
+
+<select>
+<option>ALL OFFERS</option>
+<option>Banking</option>
+<option>Finance</option>
+<option>Survey</option>
+</select>
+
+</div>
 
 <!-- HOME -->
 <div id="home" class="section active">
 <h2>Welcome</h2>
-<h3>Balance: ₹<span id="balance">0</span></h3>
+<h3>Current Balance: ₹<span id="balanceHome">0</span></h3>
 </div>
 
 <!-- CAMPAIGNS -->
@@ -184,10 +319,17 @@ loadWithdrawHistory();
 
 /* WALLET */
 async function loadWallet(){
+async function loadWallet(){
 const snap = await getDoc(doc(db,"users",currentUser.uid));
+
 if(snap.exists()){
-document.getElementById("balance").innerText = snap.data().balance || 0;
-document.getElementById("balance2").innerText = snap.data().balance || 0;
+
+const bal = snap.data().balance || 0;
+
+document.getElementById("balance").innerText = bal;
+document.getElementById("balance2").innerText = bal;
+document.getElementById("balanceHome").innerText = bal;
+
 }
 }
 
@@ -201,12 +343,32 @@ snap.forEach(d=>{
 const c = d.data();
 
 html += `
-<div class="card">
-<h3>${c.title}</h3>
-<p>Reward: ₹${c.reward}</p>
+<div class="offer-card">
 
-<button onclick="apply('${d.id}','${c.title}',${c.reward})">
-Apply
+<div class="offer-head">
+
+<img
+src="${c.image || 'https://via.placeholder.com/80'}"
+class="offer-logo"
+>
+
+<div>
+<h3>${c.title}</h3>
+<p>${c.category || 'CPA Offer'}</p>
+<span class="badge">ACTIVE</span>
+</div>
+
+</div>
+
+<div class="reward-box">
+₹${c.reward}
+</div>
+
+<button
+class="start-btn"
+onclick="apply('${d.id}','${c.title}',${c.reward})"
+>
+START EARNING →
 </button>
 
 </div>
@@ -267,7 +429,12 @@ time: Date.now()
 });
 
 /* REPORT */
-await addDoc(collection(db,"reports"),{
+const q = query(
+collection(db,"reports"),
+where("userId","==",currentUser.uid)
+);
+
+const snap = await getDocs(q);
 userId: currentUser.uid,
 offerName:"Withdraw Request",
 payout:amount,
@@ -311,7 +478,12 @@ document.getElementById("historyList").innerHTML = html;
 /* REPORTS */
 async function loadReports(){
 
-const snap = await getDocs(collection(db,"reports"));
+const q = query(
+collection(db,"reports"),
+where("userId","==",currentUser.uid)
+);
+
+const snap = await getDocs(q);
 
 let html="";
 
@@ -367,6 +539,27 @@ document.getElementById(id).classList.add("active");
 window.logout=function(){
 signOut(auth);
 window.location.href="login.html";
+};
+
+window.searchOffers = function(){
+
+let input =onkeyup="searchOffers()"
+document.getElementById("searchOffer")
+.value
+.toLowerCase();
+
+document
+.querySelectorAll(".offer-card")
+.forEach(card=>{
+
+card.style.display =
+card.innerText.toLowerCase()
+.includes(input)
+? "block"
+: "none";
+
+});
+
 };
 
 </script>
