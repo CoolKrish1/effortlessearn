@@ -266,7 +266,7 @@ html+=`
 <b>₹${reward}</b>
 </div>
 
-<button class="start-btn" onclick="applyCampaign('${d.id}','${title}',${reward})">
+<button class="start-btn" onclick="startTracking('${d.id}','${title}',${reward})">
 START EARNING →
 </button>
 </div>
@@ -285,6 +285,46 @@ reward:Number(reward),
 status:"pending",
 time:Date.now()
 });
+
+window.startTracking = async function(campaignId, title, reward){
+
+const trackingId = Math.random().toString(36).slice(2,10);
+
+await addDoc(collection(db,"clicks"),{
+userId: currentUser.uid,
+campaignId: campaignId,
+campaignTitle: title,
+reward: reward,
+trackingId: trackingId,
+time: Date.now()
+});
+
+await addDoc(collection(db,"applications"),{
+userId: currentUser.uid,
+campaignId: campaignId,
+campaignTitle: title,
+reward: reward,
+status: "pending",
+trackingId: trackingId,
+time: Date.now()
+});
+
+await addDoc(collection(db,"reports"),{
+userId: currentUser.uid,
+offerName: title,
+payout: reward,
+status: "pending",
+worker: "P1",
+trackingId: trackingId,
+time: Date.now()
+});
+
+alert("Tracking Started: " + trackingId);
+
+loadHistory();
+loadReports();
+
+};
 
 await addDoc(collection(db,"reports"),{
 userId:currentUser.uid,
