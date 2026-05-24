@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Campaign</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#eef3fb;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.box{
+width:100%;
+max-width:430px;
+background:white;
+border-radius:28px;
+overflow:hidden;
+box-shadow:0 15px 40px rgba(0,0,0,.12);
+}
+
+.header{
+background:linear-gradient(135deg,#10b981,#065f46);
+padding:35px 20px;
+text-align:center;
+color:white;
+}
+
+.header h1{
+font-size:24px;
+margin-bottom:10px;
+}
+
+.reward{
+font-size:52px;
+font-weight:bold;
+color:#fde047;
+}
+
+.content{
+padding:25px;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+padding:12px 0;
+border-bottom:1px solid #eee;
+}
+
+input{
+width:100%;
+padding:16px;
+margin:18px 0;
+border:1px solid #ddd;
+border-radius:14px;
+font-size:16px;
+}
+
+.note{
+background:#ecfdf5;
+color:#065f46;
+padding:14px;
+border-radius:14px;
+font-size:14px;
+margin-bottom:18px;
+}
+
+button{
+width:100%;
+padding:18px;
+border:none;
+border-radius:16px;
+background:#065f46;
+color:white;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:disabled{
+background:#999;
+}
+
+.error{
+color:red;
+font-size:14px;
+margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="header">
+<h1 id="campaignTitle">Loading...</h1>
+<p>Total Cashback</p>
+<div class="reward">₹<span id="userReward">0</span></div>
+</div>
+
+<div class="content">
+
+<div class="row">
+<span>Campaign</span>
+<b id="campaignName">-</b>
+</div>
+
+<div class="row">
+<span>Cashback</span>
+<b>₹<span id="cashback">0</span></b>
+</div>
+
+<input id="upi" placeholder="Enter your UPI ID">
+
+<div class="note">
+Submit your UPI ID and start the task. Cashback/payment will be handled by the campaign company.
+</div>
+
+<button id="startBtn" onclick="startTask()">
+CONFIRM & START TASK ✨
+</button>
+
+<div class="error" id="error"></div>
+
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+query,
+where,
+getDocs,
+addDoc
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
+authDomain:"effortless-earn-7f39e.firebaseapp.com",
+projectId:"effortless-earn-7f39e",
+storageBucket:"effortless-earn-7f39e.appspot.com",
+messagingSenderId:"554178513766",
+appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+let smartLink=null;
+
+function el(id){
+return document.getElementById(id);
+}
+
+function getSlug(){
+const params=new URLSearchParams(window.location.search);
+return params.get("slug");
+}
+
+async function loadCampaign(){
+
+const slug=getSlug();
+
+if(!slug){
+el("error").innerText="Invalid campaign link";
+el("startBtn").disabled=true;
+return;
+}
+
+const q=query(
+collection(db,"smart_links"),
+where("slug","==",slug)
+);
+
+const snap=await getDocs(q);
+
+if(snap.empty){
+el("error").innerText="Campaign not found";
+el("startBtn").disabled=true;
+return;
+}
+
+snap.forEach(d=>{
+smartLink={
+id:d.id,
+...d.data()
+};
+});
+
+el("campaignTitle").innerText=smartLink.title || "Campaign";
+el("campaignName").innerText=smartLink.title || "-";
+el("userReward").innerText=smartLink.userReward || 0;
+el("cashback").innerText=smartLink.userReward || 0;
+
+}
+
+window.startTask=async function(){
+
+const upi=el("upi").value.trim();
+
+if(!upi || !upi.includes("@")){
+el("error").innerText="Enter valid UPI ID";
+return;
+}
+
+if(!smartLink){
+el("error").innerText="Campaign not loaded";
+return;
+}
+
+el("startBtn").disabled=true;
+el("startBtn").innerText="PLEASE WAIT...";
+
+const trackingId=Math.random().toString(36).slice(2,10);
+
+await addDoc(collection(db,"lead_submissions"),{
+slug:smartLink.slug,
+campaignId:smartLink.campaignId || "",
+publisherId:smartLink.publisherId || "",
+affiliateId:smartLink.affiliateId || "",
+title:smartLink.title || "",
+upi:upi,
+trackingId:trackingId,
+userReward:Number(smartLink.userReward || 0),
+affiliateCommission:Number(smartLink.affiliateCommission || 0),
+status:"clicked",
+time:Date.now()
+});
+
+await addDoc(collection(db,"affiliate_reports"),{
+slug:smartLink.slug,
+campaignId:smartLink.campaignId || "",
+publisherId:smartLink.publisherId || "",
+affiliateId:smartLink.affiliateId || "",
+offerName:smartLink.title || "",
+trackingId:trackingId,
+upi:upi,
+userReward:Number(smartLink.userReward || 0),
+affiliateCommission:Number(smartLink.affiliateCommission || 0),
+status:"clicked",
+time:Date.now()
+});
+
+let finalLink=smartLink.offerLink || "";
+
+if(finalLink){
+finalLink=finalLink.replace("{trackingId}",trackingId);
+finalLink=finalLink.replace("{upi}",encodeURIComponent(upi));
+window.location.href=finalLink;
+}else{
+el("error").innerText="Offer link missing";
+el("startBtn").disabled=false;
+el("startBtn").innerText="CONFIRM & START TASK ✨";
+}
+
+};
+
+loadCampaign();
+
+</script>
+
+</body>
+</html>
