@@ -368,42 +368,6 @@ alert("Rejected");
 loadAffiliateWithdrawals();
 };
 
-window.markAffiliatePaid=
-async function(id){
-
-await updateDoc(
-doc(
-db,
-"affiliate_withdrawals",
-id
-),
-{
-status:"paid",
-paidAt:Date.now()
-}
-);
-
-loadAffiliateWithdrawals();
-
-};
-
-window.rejectAffiliateWithdraw=
-async function(id){
-
-await updateDoc(
-doc(
-db,
-"affiliate_withdrawals",
-id
-),
-{
-status:"rejected"
-}
-);
-
-loadAffiliateWithdrawals();
-
-};
 
 async function loadSmartLeads(){
 const snap=await getDocs(collection(db,"lead_submissions"));
