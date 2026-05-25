@@ -182,24 +182,51 @@ alert("Smart link copied");
 };
 
 window.startTask=async function(){
+
 const upi=el("upi").value.trim();
 
-if(!upi||!upi.includes("@")){
-el("error").innerText="Enter valid UPI ID";
+if(!upi || !upi.includes("@")){
+el("error").innerText="Valid UPI dalo";
 return;
 }
 
 if(!smartLink){
-el("error").innerText="Campaign not loaded";
+el("error").innerText="Offer load nahi hua";
 return;
 }
 
 el("startBtn").disabled=true;
-el("startBtn").innerText="PLEASE WAIT...";
+el("startBtn").innerText="CHECKING...";
 
-const trackingId=smartLink.trackingId || Math.random().toString(36).slice(2,10);
+const checkQuery=query(
+collection(db,"lead_submissions"),
+where("campaignId","==",smartLink.campaignId||""),
+where("upi","==",upi)
+);
 
-await addDoc(collection(db,"lead_submissions"),{
+const oldLead=await getDocs(checkQuery);
+
+if(!oldLead.empty){
+
+el("error").innerText=
+"Is UPI se pehle submit ho chuka hai";
+
+el("startBtn").disabled=false;
+el("startBtn").innerText=
+"CONFIRM & START TASK ✨";
+
+return;
+
+}
+
+const trackingId=
+Math.random()
+.toString(36)
+.slice(2,10);
+
+await addDoc(
+collection(db,"lead_submissions"),
+{
 slug:smartLink.slug||"",
 campaignId:smartLink.campaignId||"",
 publisherId:smartLink.publisherId||"",
@@ -207,37 +234,62 @@ affiliateId:smartLink.affiliateId||"",
 title:smartLink.title||"",
 upi,
 trackingId,
-userReward:Number(smartLink.userReward||0),
-affiliateCommission:Number(smartLink.affiliateCommission||0),
-status:"clicked",
-time:Date.now()
-});
 
-await addDoc(collection(db,"affiliate_reports"),{
-slug:smartLink.slug||"",
-campaignId:smartLink.campaignId||"",
-publisherId:smartLink.publisherId||"",
-affiliateId:smartLink.affiliateId||"",
-offerName:smartLink.title||"",
-trackingId,
-upi,
-userReward:Number(smartLink.userReward||0),
-affiliateCommission:Number(smartLink.affiliateCommission||0),
-status:"clicked",
-time:Date.now()
-});
+userReward:Number(
+smartLink.userReward||0
+),
 
-let finalLink=smartLink.offerLink||"";
+affiliateCommission:Number(
+smartLink.affiliateCommission||0
+),
+
+companyPayout:Number(
+smartLink.companyPayout||0
+),
+
+status:"pending",
+
+proofRequired:true,
+
+verified:false,
+
+time:Date.now()
+
+}
+);
+
+let finalLink=
+smartLink.offerLink||"";
 
 if(finalLink){
-finalLink=finalLink.replace("{trackingId}",trackingId);
-finalLink=finalLink.replace("{upi}",encodeURIComponent(upi));
-window.location.href=finalLink;
-}else{
-el("error").innerText="Offer link missing";
-el("startBtn").disabled=false;
-el("startBtn").innerText="CONFIRM & START TASK ✨";
+
+finalLink=
+finalLink.replace(
+"{trackingId}",
+trackingId
+);
+
+finalLink=
+finalLink.replace(
+"{upi}",
+encodeURIComponent(upi)
+);
+
+window.location.href=
+finalLink;
+
+return;
+
 }
+
+el("error").innerText=
+"Offer link missing";
+
+el("startBtn").disabled=false;
+
+el("startBtn").innerText=
+"CONFIRM & START TASK ✨";
+
 };
 
 loadCampaign();
