@@ -92,6 +92,28 @@ input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-r
 
 <div id="reports" class="section">
 <h2>Tracking History</h2><br>
+<div class="stats">
+
+<div class="stat"
+onclick="filterReports('all')">
+📊 ALL REPORTS
+</div>
+
+<div class="stat"
+onclick="filterReports('approved')">
+🎯 PAID / APPROVED
+</div>
+
+<div class="stat"
+onclick="filterReports('pending')">
+⏳ PENDING CHECK
+</div>
+
+</div>
+
+<br>
+
+
 <div class="card">
 <table class="report-table">
 <thead>
@@ -569,6 +591,7 @@ all.sort(
 (b.time||0)-
 (a.time||0)
 );
+reportCache=all;
 
 let total = 0;
 let approved = 0;
@@ -707,7 +730,7 @@ el(
 "pendingAmount"
 ).innerText =
 pending;
-
+renderReports(all);
 }
 
 async function loadClicks(){
@@ -857,6 +880,95 @@ document.getElementById("popupLink").value
 );
 alert("Tracking link copied");
 };
+let reportCache=[];
+
+window.filterReports=function(type){
+
+let data=reportCache;
+
+if(type==="approved"){
+data=
+reportCache.filter(
+x=>x.status==="approved"
+);
+}
+
+if(type==="pending"){
+data=
+reportCache.filter(
+x=>x.status!=="approved"
+);
+}
+
+renderReports(data);
+
+};
+
+function renderReports(all){
+
+let html="";
+
+all.forEach(r=>{
+
+html+=`
+<tr>
+
+<td>${
+r.time
+?new Date(
+r.time
+).toLocaleString()
+:"-"
+}</td>
+
+<td>${r.trackingId||"-"}</td>
+
+<td>${
+r.offerName||
+r.title||
+"-"
+}</td>
+
+<td>${
+r.event||
+"CPA"
+}</td>
+
+<td>
+₹${
+r.payout||
+r.userReward||
+0
+}
+</td>
+
+<td>
+${r.status||
+"pending"}
+</td>
+
+<td>
+₹${
+r.affiliateCommission||
+0
+}
+</td>
+
+<td>
+₹${
+r.refReward||
+0
+}
+</td>
+
+</tr>
+`;
+
+});
+
+el("reportTable").innerHTML=html;
+
+}
 
 </script>
 
