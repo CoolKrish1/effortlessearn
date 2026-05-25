@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EFFORTLESS EARN</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
 body{display:flex;background:#f5f7fb;color:#111827}
@@ -24,18 +25,19 @@ body{display:flex;background:#f5f7fb;color:#111827}
 .offer-head{display:flex;gap:15px;align-items:center}
 .offer-logo{width:70px;height:70px;border-radius:16px;object-fit:cover}
 .badge{background:#eef2ff;padding:6px 10px;border-radius:20px;font-size:12px;color:#3730a3}
-.reward{margin-top:20px;padding:16px;border-radius:14px;background:#f8fafc;display:flex;justify-content:space-between}
+.reward{margin-top:14px;padding:14px;border-radius:14px;background:#f8fafc;display:flex;justify-content:space-between}
 .start-btn,.primary-btn{padding:14px;border:0;border-radius:12px;color:white;cursor:pointer}
-.start-btn{width:100%;margin-top:15px;background:#111827}.primary-btn{background:#047857}
-.danger-btn{background:#7f1d1d}
+.start-btn{width:100%;margin-top:15px;background:#111827}
+.primary-btn{background:#047857}
+.danger-btn{background:#7f1d1d;margin-top:8px}
 input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:12px}
 .report-table{width:100%;border-collapse:collapse;background:white}
 .report-table th,.report-table td{padding:14px;border-bottom:1px solid #eee;text-align:left}
 .status{padding:5px 10px;border-radius:20px;font-size:12px;background:#f1f5f9;color:#334155}
 .green{color:#16a34a}.orange{color:#ea580c}.blue{color:#2563eb}.purple{color:#7c3aed}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow:auto;padding:20px}
-.modal-box{max-width:760px;margin:auto;background:white;border-radius:28px;padding:24px;position:relative}
-.close{position:absolute;right:20px;top:20px;width:42px;height:42px;border-radius:50%;border:0;background:#eee;font-size:20px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;padding:20px}
+.modal-box{max-width:650px;margin:60px auto;background:white;border-radius:28px;padding:25px;position:relative}
+.close{position:absolute;right:18px;top:18px;width:40px;height:40px;border:0;border-radius:50%;font-size:20px}
 </style>
 </head>
 
@@ -72,7 +74,7 @@ input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-r
 </div>
 <div class="card">
 <h2>How it works</h2>
-<p>Offer select karo, tracking link banao, user link open karke UPI dalega, task complete hone ke baad admin approval se commission milega.</p>
+<p>Offer select karo, smart tracking link banao, user UPI dalega, task complete hone ke baad admin/postback approval se commission milega.</p>
 </div>
 </div>
 
@@ -141,7 +143,7 @@ input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-r
 <div class="modal-box">
 <button class="close" onclick="closeOfferPopup()">✕</button>
 <h2 id="popupTitle">Offer</h2>
-<p>Copy this tracking page link and share with user.</p>
+<p>Copy this tracking link and share with users.</p>
 <input id="popupLink" readonly>
 <button class="primary-btn" onclick="copyModalLink()">Copy Link</button>
 </div>
@@ -176,6 +178,8 @@ if(!user){location.href="login.html";return;}
 currentUser=user;
 await loadWallet();
 await loadCampaigns();
+await loadReports();
+await loadSmartLinks();
 });
 
 async function loadWallet(){
@@ -194,7 +198,14 @@ el("profileEmail").innerText=currentUser.email||"-";
 }
 
 async function loadCampaigns(){
-const snap=await getDocs(query(collection(db,"campaigns"),where("status","==","active"),limit(50)));
+const snap=await getDocs(
+query(
+collection(db,"campaigns"),
+where("status","==","active"),
+limit(50)
+)
+);
+
 let html="";
 campaignCache={};
 
@@ -206,17 +217,23 @@ html+=`
 <div class="offer-card">
 <div class="offer-head">
 <img src="${c.image||'https://via.placeholder.com/100'}" class="offer-logo">
-<div><h3>${c.title||"Untitled"}</h3><p>${c.category||"CPA Offer"}</p></div>
+<div>
+<h3>${c.title||"Untitled"}</h3>
+<p>${c.category||"CPA Offer"}</p>
+</div>
 <span class="badge">ACTIVE</span>
 </div>
+
 <div class="reward">
 <span>User Reward</span>
 <b>₹${c.userReward||c.reward||0}</b>
 </div>
+
 <div class="reward">
 <span>Commission</span>
 <b>₹${c.affiliateCommission||0}</b>
 </div>
+
 <button class="start-btn" onclick="openTrackingPopup('${d.id}')">START EARNING →</button>
 </div>`;
 });
@@ -227,7 +244,11 @@ loadSmartCampaignOptions();
 
 window.openTrackingPopup=async function(campaignId){
 const c=campaignCache[campaignId];
-if(!c){alert("Campaign not found");return;}
+
+if(!c){
+alert("Campaign not found");
+return;
+}
 
 const slug=Math.random().toString(36).slice(2,8);
 
@@ -263,7 +284,10 @@ window.createSmartLink=async function(){
 const campaignId=el("smartCampaign").value;
 const c=campaignCache[campaignId];
 
-if(!c){alert("Campaign select karo");return;}
+if(!c){
+alert("Campaign select karo");
+return;
+}
 
 const userReward=Number(el("smartUserReward").value||c.userReward||c.reward||0);
 const affiliateCommission=Number(el("smartAffiliateCommission").value||c.affiliateCommission||0);
@@ -291,17 +315,20 @@ time:Date.now()
 
 el("smartUserReward").value="";
 el("smartAffiliateCommission").value="";
+
 alert("Smart link created");
 loadSmartLinks();
 };
 
 async function loadSmartLinks(){
-const snap=await getDocs(query(
+const snap=await getDocs(
+query(
 collection(db,"smart_links"),
 where("publisherId","==",currentUser.uid),
 orderBy("time","desc"),
 limit(20)
-));
+)
+);
 
 let html="";
 let count=0;
@@ -333,12 +360,14 @@ loadSmartLinks();
 };
 
 async function loadReports(){
-const snap=await getDocs(query(
+const snap=await getDocs(
+query(
 collection(db,"affiliate_reports"),
 where("publisherId","==",currentUser.uid),
 orderBy("time","desc"),
 limit(30)
-));
+)
+);
 
 let html="";
 let count=0;
@@ -346,6 +375,7 @@ let count=0;
 snap.forEach(d=>{
 count++;
 const r=d.data();
+
 html+=`
 <tr>
 <td>${r.time?new Date(r.time).toLocaleString():"-"}</td>
@@ -365,7 +395,10 @@ window.withdrawRequest=async function(){
 const upi=el("upi").value.trim();
 const amount=Number(el("amount").value);
 
-if(!upi||amount<=0){alert("Enter valid UPI and amount");return;}
+if(!upi||amount<=0){
+alert("Enter valid UPI and amount");
+return;
+}
 
 const snap=await getDoc(doc(db,"users",currentUser.uid));
 const balance=snap.exists()?Number(snap.data().balance||0):0;
@@ -383,23 +416,27 @@ status:"pending",
 time:Date.now()
 });
 
-alert("Withdraw request sent. Balance will deduct after admin approval.");
+alert("Withdraw request sent. Balance admin approve ke baad deduct hoga.");
 el("upi").value="";
 el("amount").value="";
 loadWithdrawHistory();
 };
 
 async function loadWithdrawHistory(){
-const snap=await getDocs(query(
+const snap=await getDocs(
+query(
 collection(db,"withdrawals"),
 where("userId","==",currentUser.uid),
 orderBy("time","desc"),
 limit(20)
-));
+)
+);
 
 let html="";
+
 snap.forEach(d=>{
 const w=d.data();
+
 html+=`
 <div class="card">
 <p><b>Amount:</b> ₹${w.amount||0}</p>
@@ -414,13 +451,24 @@ el("withdrawList").innerHTML=html||"<div class='card'>No withdraw requests</div>
 window.showSection=function(id,btn){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+
 el(id).classList.add("active");
 if(btn)btn.classList.add("active");
 
-if(id==="dashboard"){loadWallet();loadReports();loadSmartLinks();}
+if(id==="dashboard"){
+loadWallet();
+loadReports();
+loadSmartLinks();
+}
+
 if(id==="reports")loadReports();
+
 if(id==="withdraw")loadWithdrawHistory();
-if(id==="smartlinks"){loadSmartCampaignOptions();loadSmartLinks();}
+
+if(id==="smartlinks"){
+loadSmartCampaignOptions();
+loadSmartLinks();
+}
 };
 
 function loadSmartCampaignOptions(){
@@ -428,28 +476,30 @@ const select=el("smartCampaign");
 if(!select)return;
 
 let html="";
+
 for(const id in campaignCache){
 const c=campaignCache[id];
 html+=`<option value="${id}">${c.title||"Offer"} - ₹${c.userReward||c.reward||0}</option>`;
 }
+
 select.innerHTML=html||"<option>No Campaign</option>";
 }
 
-window.copyText=text=>{
+window.copyText=function(text){
 navigator.clipboard.writeText(text);
 alert("Copied");
 };
 
-window.copyModalLink=()=>{
+window.copyModalLink=function(){
 navigator.clipboard.writeText(el("popupLink").value);
 alert("Tracking link copied");
 };
 
-window.closeOfferPopup=()=>{
+window.closeOfferPopup=function(){
 el("offerPopup").style.display="none";
 };
 
-window.logout=()=>{
+window.logout=function(){
 signOut(auth).then(()=>location.href="login.html");
 };
 </script>
