@@ -225,9 +225,21 @@ cursor:pointer;
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
-getFirestore,collection,getDocs,doc,updateDoc,
-increment,addDoc,deleteDoc
+getFirestore,
+collection,
+getDocs,
+doc,
+updateDoc,
+increment,
+addDoc,
+deleteDoc,
+getDoc
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+import {
+getAuth,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
@@ -239,9 +251,88 @@ appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
 };
 
 const app=initializeApp(firebaseConfig);
+
 const db=getFirestore(app);
 
+const auth=getAuth(app);
+
 function el(id){return document.getElementById(id);}
+
+const app=initializeApp(firebaseConfig);
+
+const db=getFirestore(app);
+
+const auth=getAuth(app);
+
+function el(id){
+return document.getElementById(id);
+}
+
+/* YAHI NICHE ADD KARO */
+
+onAuthStateChanged(auth,async(user)=>{
+
+if(!user){
+
+window.location.href="login.html";
+return;
+
+}
+
+try{
+
+const snap=await getDoc(
+doc(db,"users",user.uid)
+);
+
+if(!snap.exists()){
+
+window.location.href="login.html";
+return;
+
+}
+
+const data=snap.data();
+
+if(data.role!=="admin"){
+
+alert("Access denied");
+
+window.location.href="dashboard.html";
+
+return;
+
+}
+
+console.log("Admin verified");
+
+refreshAll();
+
+}
+
+catch(err){
+
+console.log(err);
+
+window.location.href="login.html";
+
+}
+
+});
+
+/* FIR NICHE YE REHEGA */
+
+window.show=function(id){
+
+document.querySelectorAll(".section")
+.forEach(s=>s.classList.remove("active"));
+
+const section=el(id);
+
+if(section)
+section.classList.add("active");
+
+};
 
 window.show=function(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
@@ -609,7 +700,6 @@ await loadSmartLeads();
 await loadRevenueShare();
 }
 
-refreshAll();
 </script>
 </body>
 </html>
