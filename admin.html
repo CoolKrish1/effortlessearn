@@ -7,7 +7,32 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{display:flex;background:#0b1220;color:white}
-.sidebar{width:250px;height:100vh;background:#111827;padding:20px;position:fixed;overflow:auto}
+.sidebar{
+width:260px;
+height:100vh;
+background:#111827;
+padding:20px;
+position:fixed;
+
+overflow-y:auto;
+overflow-x:hidden;
+
+scrollbar-width:thin;
+scrollbar-color:#2563eb #111827;
+}
+
+.sidebar::-webkit-scrollbar{
+width:8px;
+}
+
+.sidebar::-webkit-scrollbar-track{
+background:#111827;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+background:#2563eb;
+border-radius:20px;
+}
 .sidebar h2{color:#38bdf8;margin-bottom:20px}
 .sidebar button{width:100%;padding:12px;margin:7px 0;background:#1f2937;color:white;border:0;border-radius:10px;cursor:pointer;text-align:left}
 .sidebar button:hover{background:#2563eb}
