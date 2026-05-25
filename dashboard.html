@@ -837,39 +837,21 @@ html+=`
 el("withdrawList").innerHTML=html||"<div class='card'>No withdraw requests.</div>";
 }
 
-let loadedSections={};
-
 window.showSection=function(id,btn){
 
-document.querySelectorAll(".section")
-.forEach(
-s=>s.classList.remove("active")
-);
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 
 el(id).classList.add("active");
 
-document.querySelectorAll(".nav button")
-.forEach(
-b=>b.classList.remove("active")
-);
+document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
 
 if(btn)btn.classList.add("active");
 
-if(loadedSections[id])return;
+if(id==="reports") loadReports();
 
-loadedSections[id]=true;
+if(id==="withdraw") loadWithdrawHistory();
 
-if(id==="reports"){
-loadReports();
-}
-
-if(id==="withdraw"){
-loadWithdrawHistory();
-}
-
-if(id==="history"){
-loadHistory();
-}
+if(id==="history") loadHistory();
 
 if(id==="smartlinks"){
 loadSmartCampaignOptions();
