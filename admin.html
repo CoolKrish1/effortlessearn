@@ -158,7 +158,12 @@ const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 const auth=getAuth(app);
 const el=id=>document.getElementById(id);
-
+const MAX_DOCS={
+clicks:100,
+reports:50,
+fraud_logs:30
+};
+  
 let loaded={};
 let isAdmin=false;
 
@@ -207,6 +212,45 @@ limit(max)
 )
 );
 }
+}
+
+async function trimCollection(col,maxKeep){
+
+try{
+
+const snap=await getDocs(
+query(
+collection(db,col),
+orderBy("time","desc")
+)
+);
+
+if(snap.size<=maxKeep)return;
+
+const docs=snap.docs;
+
+for(
+let i=maxKeep;
+i<docs.length;
+i++
+){
+
+await deleteDoc(
+doc(
+db,
+col,
+docs[i].id
+)
+);
+
+}
+
+}catch(e){
+
+console.log(e);
+
+}
+
 }
 
 window.show=function(id,btn){
@@ -656,6 +700,31 @@ window.copyPostback=()=>{
 navigator.clipboard.writeText(el("postbackUrl").value);
 alert("Postback copied");
 };
+
+async function autoClean(){
+
+await trimCollection(
+"clicks",
+MAX_DOCS.clicks
+);
+
+await trimCollection(
+"reports",
+MAX_DOCS.reports
+);
+
+await trimCollection(
+"fraud_logs",
+MAX_DOCS.fraud_logs
+);
+
+}
+
+setTimeout(()=>{
+
+autoClean();
+
+},5000); 
 
 </script>
 
