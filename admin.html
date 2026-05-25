@@ -6,7 +6,13 @@
 <title>Admin Panel</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{display:flex;background:#0b1220;color:white}
+body{
+display:flex;
+background:#0b1220;
+color:white;
+
+overflow:hidden;
+}
 .sidebar{
 width:270px;
 height:100vh;
@@ -16,30 +22,34 @@ background:#111827;
 padding:20px;
 
 position:fixed;
-left:0;
 top:0;
+left:0;
 
-overflow-y:auto;
+overflow-y:scroll;
 overflow-x:hidden;
 
-scroll-behavior:smooth;
+scrollbar-width:thin;
 
-border-right:1px solid #1f2937;
+padding-right:8px;
 }
 
-/* SCROLLBAR */
+/* CHOTA SLIDER */
 
 .sidebar::-webkit-scrollbar{
-width:6px;
-}
-
-.sidebar::-webkit-scrollbar-thumb{
-background:#2563eb;
-border-radius:20px;
+width:4px;
 }
 
 .sidebar::-webkit-scrollbar-track{
-background:#111827;
+background:transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+background:#3b82f6;
+border-radius:50px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover{
+background:#60a5fa;
 }
 
 /* TITLE */
@@ -88,7 +98,17 @@ transform:translateX(3px);
 .sidebar h2{color:#38bdf8;margin-bottom:20px}
 .sidebar button{width:100%;padding:12px;margin:7px 0;background:#1f2937;color:white;border:0;border-radius:10px;cursor:pointer;text-align:left}
 .sidebar button:hover{background:#2563eb}
-.main{margin-left:250px;padding:25px;width:100%}
+.main{
+margin-left:270px;
+
+width:calc(100% - 270px);
+
+height:100vh;
+
+overflow-y:auto;
+
+padding:25px;
+}
 .section{display:none}.active{display:block}
 .card{background:#111827;border:1px solid #1f2937;border-radius:14px;padding:15px;margin:12px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
