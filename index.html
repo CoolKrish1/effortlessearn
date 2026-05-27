@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TaskCPA Panel</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+font-family:Arial;
+background:#f4f6fb;
+display:flex;
+}
+
+.sidebar{
+width:260px;
+background:#111827;
+height:100vh;
+color:white;
+padding:20px;
+position:fixed;
+}
+
+.logo{
+font-size:28px;
+font-weight:bold;
+margin-bottom:25px;
+}
+
+.logo span{
+color:#3b82f6;
+}
+
+.wallet{
+background:#1f2937;
+padding:20px;
+border-radius:16px;
+margin-bottom:25px;
+}
+
+.wallet h1{
+color:#22c55e;
+margin-top:10px;
+}
+
+.menu a{
+display:block;
+padding:14px;
+color:white;
+text-decoration:none;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+.menu a:hover{
+background:#2563eb;
+}
+
+.main{
+margin-left:260px;
+padding:25px;
+width:100%;
+}
+
+.banner{
+background:#2563eb;
+padding:20px;
+border-radius:15px;
+color:white;
+margin-bottom:20px;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:15px;
+margin-bottom:25px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+.card h2{
+margin-top:10px;
+}
+
+.offers{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+gap:20px;
+}
+
+.offer{
+background:white;
+padding:20px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+
+.offer img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:12px;
+}
+
+.reward{
+color:green;
+font-size:24px;
+font-weight:bold;
+margin-top:10px;
+}
+
+button{
+width:100%;
+padding:14px;
+background:black;
+color:white;
+border:none;
+border-radius:10px;
+margin-top:10px;
+}
+
+@media(max-width:900px){
+
+body{
+display:block;
+}
+
+.sidebar{
+position:relative;
+width:100%;
+height:auto;
+}
+
+.main{
+margin:0;
+}
+
+.stats{
+grid-template-columns:1fr;
+}
+
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<div class="logo">
+TASK<span>CPA</span>
+</div>
+
+<div class="wallet">
+
+Wallet Balance
+
+<h1>
+₹0.00
+</h1>
+
+</div>
+
+<div class="menu">
+
+<a href="#">
+Dashboard
+</a>
+
+<a href="#">
+All Offers
+</a>
+
+<a href="#">
+Smart Links
+</a>
+
+<a href="#">
+Reports
+</a>
+
+<a href="#">
+Wallet
+</a>
+
+<a href="#">
+Postback
+</a>
+
+<a href="#">
+Profile
+</a>
+
+<a href="#">
+Support
+</a>
+
+<a href="#">
+Admin Panel
+</a>
+
+</div>
+
+</div>
+
+<div class="main">
+
+<div class="banner">
+
+JOIN TELEGRAM CHANNEL
+
+</div>
+
+<div class="stats">
+
+<div class="card">
+Revenue
+<h2>
+₹0
+</h2>
+</div>
+
+<div class="card">
+Pending
+<h2>
+₹0
+</h2>
+</div>
+
+<div class="card">
+Clicks
+<h2>
+0
+</h2>
+</div>
+
+<div class="card">
+Conversion
+<h2>
+0
+</h2>
+</div>
+
+</div>
+
+<h2>
+Top Offers
+</h2>
+
+<br>
+
+<div class="offers">
+
+<div class="offer">
+
+<img src="https://via.placeholder.com/500">
+
+<h3>
+Kotak811
+</h3>
+
+<div class="reward">
+₹500
+</div>
+
+<button>
+START EARNING
+</button>
+
+</div>
+
+<div class="offer">
+
+<img src="https://via.placeholder.com/500">
+
+<h3>
+Pi42
+</h3>
+
+<div class="reward">
+₹500
+</div>
+
+<button>
+START EARNING
+</button>
+
+</div>
+
+<div class="offer">
+
+<img src="https://via.placeholder.com/500">
+
+<h3>
+Stocko
+</h3>
+
+<div class="reward">
+₹150
+</div>
+
+<button>
+START EARNING
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
