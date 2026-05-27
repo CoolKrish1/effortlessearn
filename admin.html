@@ -4,602 +4,458 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin Panel</title>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#0b1220;color:#e5e7eb;display:flex;height:100vh;overflow:hidden}
-.sidebar{width:280px;height:100vh;background:#111827;position:fixed;left:0;top:0;padding:18px;overflow-y:auto;border-right:1px solid #253044}
-.sidebar h2{color:#e5e7eb;margin-bottom:18px}
-.menu-title{font-size:11px;color:#94a3b8;margin:20px 0 8px;letter-spacing:1px}
-.sidebar button{width:100%;padding:13px;margin:6px 0;background:#182235;color:#e5e7eb;border:1px solid #263244;border-radius:12px;cursor:pointer;text-align:left}
-.sidebar button:hover,.sidebar button.active{background:#243147}
-.main{margin-left:280px;width:calc(100% - 280px);height:100vh;overflow-y:auto;padding:24px}
-.section{display:none}.section.active{display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.card{background:#111827;border:1px solid #253044;border-radius:16px;padding:16px;margin:12px 0}
-input,select,textarea{width:100%;padding:12px;margin:7px 0;background:#182235;color:#fff;border:1px solid #263244;border-radius:10px}
-textarea{min-height:90px}
-button.action{padding:10px 14px;margin:4px;border:1px solid #334155;border-radius:10px;background:#1f2937;color:white;cursor:pointer}
-button.action:hover{background:#334155}
-.primary{background:#2563eb!important}
-.danger{background:#7f1d1d!important}
-.muted{color:#94a3b8;font-size:13px}
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-.badge{display:inline-block;padding:5px 10px;border-radius:999px;background:#1f2937;color:#cbd5e1;font-size:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial;background:#f4f6fb;display:flex}
+
+.sidebar{
+width:260px;
+background:#111827;
+height:100vh;
+padding:20px;
+color:white;
+position:fixed;
+}
+
+.logo{
+font-size:28px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+.logo span{color:#3b82f6}
+
+.menu button{
+width:100%;
+padding:14px;
+margin-bottom:10px;
+background:#1f2937;
+border:0;
+color:white;
+border-radius:10px;
+cursor:pointer;
+}
+
+.menu button:hover{
+background:#2563eb;
+}
+
+.main{
+margin-left:260px;
+padding:25px;
+width:100%;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:15px;
+margin-bottom:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:16px;
+box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+
+input,select,textarea{
+width:100%;
+padding:12px;
+margin-top:10px;
+margin-bottom:12px;
+border:1px solid #ddd;
+border-radius:10px;
+}
+
+.btn{
+padding:14px;
+background:#111;
+color:white;
+border:0;
+border-radius:10px;
+width:100%;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.list{
+margin-top:20px;
+display:grid;
+gap:15px;
+}
+
+.item{
+background:white;
+padding:15px;
+border-radius:14px;
+}
+
+.item img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:10px;
+}
+
+.hide{display:none}
 </style>
 </head>
+
 <body>
 
 <div class="sidebar">
-<h2>Admin Panel</h2>
 
-<div class="menu-title">MAIN</div>
-<button class="active" onclick="show('dashboard',this)">Dashboard</button>
-<button onclick="show('approvals',this)">Task Approvals</button>
-<button onclick="show('campaigns',this)">Campaigns</button>
-<button onclick="show('users',this)">Users</button>
+<div class="logo">
+TASK<span>CPA</span>
+</div>
 
-<div class="menu-title">PAYMENTS</div>
-<button onclick="show('withdraws',this)">User Withdraw</button>
-<button onclick="show('affwithdraws',this)">Affiliate Withdraw</button>
+<div class="menu">
 
-<div class="menu-title">TRACKING</div>
-<button onclick="show('leads',this)">All Leads</button>
-<button onclick="show('reports',this)">Reports</button>
-<button onclick="show('revenue',this)">Revenue Share</button>
+<button onclick="show('dash')">
+Dashboard
+</button>
 
-<div class="menu-title">SYSTEM</div>
-<button onclick="show('postback',this)">Postback URL</button>
+<button onclick="show('campaign')">
+Campaigns
+</button>
+
+<button onclick="show('withdraw')">
+Withdraw
+</button>
+
+<button onclick="show('users')">
+Users
+</button>
+
+<button onclick="show('reports')">
+Reports
+</button>
+
+</div>
+
 </div>
 
 <div class="main">
 
-<div id="dashboard" class="section active">
-<h2>Dashboard</h2>
-<div class="grid" id="stats"></div>
-</div>
-
-<div id="approvals" class="section">
-<h2>Pending Task Approvals</h2>
-<div id="approvalList"></div>
-</div>
-
-<div id="campaigns" class="section">
-<h2>Campaign Manager</h2>
+<div class="stats">
 
 <div class="card">
-<h3>Add Task / Campaign</h3>
-
-<div class="row">
-<input id="title" placeholder="Campaign title">
-<input id="image" placeholder="Image URL">
+<h3>Total Campaign</h3>
+<h1 id="campaignCount">
+0
+</h1>
 </div>
 
-<div class="row">
-<input id="category" placeholder="Category">
-<select id="taskType">
-<option value="signup">Signup</option>
-<option value="install">Install</option>
-<option value="kyc">KYC</option>
-<option value="deposit">Deposit</option>
-<option value="custom">Custom Task</option>
-</select>
-</div>
-
-<input id="offerLink" placeholder="Company offer link with {trackingId} and optional {upi}">
-
-<div class="row">
-<input id="eventName" placeholder="Event name e.g. Signup Complete">
-<input id="companyPayout" type="number" placeholder="Company payout">
-</div>
-
-<div class="row">
-<input id="userReward" type="number" placeholder="User cashback">
-<input id="affiliateCommission" type="number" placeholder="Publisher commission">
-</div>
-
-<textarea id="instructions" placeholder="Instructions for user"></textarea>
-<textarea id="terms" placeholder="Terms and conditions"></textarea>
-
-<select id="status">
-<option value="active">Active</option>
-<option value="paused">Paused</option>
-</select>
-
-<button class="action primary" onclick="addCampaign()">Add Campaign</button>
-</div>
-
-<div id="campaignList"></div>
-</div>
-
-<div id="users" class="section">
-<h2>Users</h2>
-<div id="userList"></div>
-</div>
-
-<div id="withdraws" class="section">
-<h2>User Withdraw Requests</h2>
-<div id="withdrawList"></div>
-</div>
-
-<div id="affwithdraws" class="section">
-<h2>Affiliate Withdraw Requests</h2>
-<div id="affWithdrawList"></div>
-</div>
-
-<div id="leads" class="section">
-<h2>All Leads</h2>
-<div id="leadList"></div>
-</div>
-
-<div id="reports" class="section">
-<h2>Reports</h2>
-<div id="reportList"></div>
-</div>
-
-<div id="revenue" class="section">
-<h2>Revenue Share</h2>
-<div id="revenueList"></div>
-</div>
-
-<div id="postback" class="section">
-<h2>Postback URL</h2>
 <div class="card">
-<input id="postbackUrl" readonly value="https://campaign-reward-hub.vercel.app/api/postback?trackingId={click_id}&payout={payout}&status=approved">
-<button class="action primary" onclick="copyPostback()">Copy</button>
-<p class="muted">CPA network me click_id ko trackingId se map karo.</p>
+<h3>Users</h3>
+<h1 id="userCount">
+0
+</h1>
 </div>
+
+<div class="card">
+<h3>Pending</h3>
+<h1 id="pendingCount">
+0
+</h1>
+</div>
+
+<div class="card">
+<h3>Withdraw</h3>
+<h1 id="withdrawCount">
+0
+</h1>
+</div>
+
+</div>
+
+<div id="campaign">
+
+<div class="grid">
+
+<div class="card">
+
+<h2>Add Campaign</h2>
+
+<input id="title"
+placeholder="Title">
+
+<input id="reward"
+type="number"
+placeholder="Reward">
+
+<select id="category">
+<option>Banking</option>
+<option>Survey</option>
+<option>Crypto</option>
+<option>Install</option>
+</select>
+
+<textarea id="steps"
+placeholder="Steps">
+</textarea>
+
+<input
+type="file"
+id="image">
+
+<button
+class="btn"
+onclick="addCampaign()">
+
+ADD
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Quick Actions</h2>
+
+<button class="btn">
+Approve Leads
+</button>
+
+<br><br>
+
+<button class="btn">
+Approve Withdraw
+</button>
+
+<br><br>
+
+<button class="btn">
+Send Notice
+</button>
+
+</div>
+
+</div>
+
+<div id="campaignList"
+class="list">
+
+</div>
+
+</div>
+
+<div id="withdraw"
+class="hide">
+
+<div class="card">
+
+<h2>
+Withdraw Requests
+</h2>
+
+<div id="withdrawList">
+
+</div>
+
+</div>
+
+</div>
+
+<div id="users"
+class="hide">
+
+<div class="card">
+
+<h2>
+Users
+</h2>
+
+<div id="userList">
+
+</div>
+
+</div>
+
+</div>
+
+<div id="reports"
+class="hide">
+
+<div class="card">
+
+<h2>
+Task Reports
+</h2>
+
+<div id="reportList">
+
+</div>
+
+</div>
+
 </div>
 
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
 import {
-getFirestore,collection,getDocs,doc,getDoc,updateDoc,increment,addDoc,deleteDoc,
-query,where,orderBy,limit,getCountFromServer
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+db,
+storage
+}
+from "./firebase.js";
 
-const firebaseConfig={
-apiKey:"AIzaSyDxdJ6f2WtbfIzjBjQDybxCSYYYEkTgc0E",
-authDomain:"effortless-earn-7f39e.firebaseapp.com",
-projectId:"effortless-earn-7f39e",
-storageBucket:"effortless-earn-7f39e.appspot.com",
-messagingSenderId:"554178513766",
-appId:"1:554178513766:web:d8d7edf915a95349cb16a7"
-};
+import {
+collection,
+addDoc,
+getDocs
+}
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-const auth=getAuth(app);
-const el=id=>document.getElementById(id);
+import {
+ref,
+uploadBytes,
+getDownloadURL
+}
+from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-let isAdmin=false;
-let loaded={};
+window.show=(id)=>{
 
-onAuthStateChanged(auth,async user=>{
-if(!user){location.href="login.html";return;}
+[
+campaign,
+withdraw,
+users,
+reports
+]
 
-const snap=await getDoc(doc(db,"users",user.uid));
+.forEach(
+x=>x.classList.add(
+"hide"
+)
+);
 
-if(!snap.exists()||snap.data().role!=="admin"){
-alert("Access denied");
-location.href="dashboard.html";
-return;
+document
+.getElementById(id)
+.classList.remove(
+"hide"
+);
+
 }
 
-isAdmin=true;
-loadStats();
-});
+window.addCampaign=
+async()=>{
 
-async function countCol(name){
-try{
-const s=await getCountFromServer(collection(db,name));
-return s.data().count||0;
-}catch(e){
-return 0;
+let file=
+image.files[0];
+
+let r=
+ref(
+storage,
+"campaigns/"+Date.now()
+);
+
+await uploadBytes(
+r,
+file
+);
+
+let url=
+await getDownloadURL(
+r
+);
+
+await addDoc(
+collection(
+db,
+"campaigns"
+),
+{
+title:title.value,
+reward:Number(
+reward.value
+),
+category:
+category.value,
+steps:
+steps.value,
+image:url,
+status:"active",
+createdAt:
+Date.now()
 }
-}
+);
 
-async function latestDocs(name,max=30){
-try{
-return await getDocs(query(collection(db,name),orderBy("time","desc"),limit(max)));
-}catch(e){
-return await getDocs(query(collection(db,name),limit(max)));
-}
-}
+alert(
+"Added"
+);
 
-async function latestWhere(name,field,value,max=30){
-try{
-return await getDocs(query(collection(db,name),where(field,"==",value),orderBy("time","desc"),limit(max)));
-}catch(e){
-return await getDocs(query(collection(db,name),where(field,"==",value),limit(max)));
-}
-}
+load();
 
-window.show=function(id,btn){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.querySelectorAll(".sidebar button").forEach(b=>b.classList.remove("active"));
-el(id).classList.add("active");
-if(btn)btn.classList.add("active");
-loadSection(id);
-};
-
-function loadSection(id){
-if(!isAdmin)return;
-
-if(id==="dashboard"){loadStats();return;}
-if(loaded[id])return;
-loaded[id]=true;
-
-if(id==="approvals")loadApprovals();
-if(id==="campaigns")loadCampaigns();
-if(id==="users")loadUsers();
-if(id==="withdraws")loadWithdraws();
-if(id==="affwithdraws")loadAffiliateWithdraws();
-if(id==="leads")loadLeads();
-if(id==="reports")loadReports();
-if(id==="revenue")loadRevenue();
 }
 
-function reload(id){
-loaded[id]=false;
-loadSection(id);
-}
+async function load(){
 
-async function loadStats(){
-const users=await countCol("users");
-const campaigns=await countCol("campaigns");
-const leads=await countCol("lead_submissions");
-const withdraws=await countCol("withdrawals");
-const affw=await countCol("affiliate_withdrawals");
-const reports=await countCol("affiliate_reports");
-const revenue=await countCol("revenue_share");
+const c=
+await getDocs(
+collection(
+db,
+"campaigns"
+)
+);
 
-el("stats").innerHTML=`
-<div class="card"><p class="muted">Users</p><h1>${users}</h1></div>
-<div class="card"><p class="muted">Campaigns</p><h1>${campaigns}</h1></div>
-<div class="card"><p class="muted">Leads</p><h1>${leads}</h1></div>
-<div class="card"><p class="muted">User Withdraw</p><h1>${withdraws}</h1></div>
-<div class="card"><p class="muted">Affiliate Withdraw</p><h1>${affw}</h1></div>
-<div class="card"><p class="muted">Reports</p><h1>${reports}</h1></div>
-<div class="card"><p class="muted">Revenue Logs</p><h1>${revenue}</h1></div>
+campaignCount.innerText=
+c.size;
+
+let html="";
+
+c.forEach(doc=>{
+
+let d=
+doc.data();
+
+html+=`
+
+<div class="item">
+
+<img src="${d.image}">
+
+<h3>
+
+${d.title}
+
+</h3>
+
+<p>
+
+${d.category}
+
+</p>
+
+<b>
+
+₹${d.reward}
+
+</b>
+
+</div>
+
 `;
+
+});
+
+campaignList.innerHTML=
+html;
+
 }
 
-/* CAMPAIGNS */
-window.addCampaign=async function(){
-const title=el("title").value.trim();
-const image=el("image").value.trim();
-const category=el("category").value.trim();
-const taskType=el("taskType").value;
-const offerLink=el("offerLink").value.trim();
-const eventName=el("eventName").value.trim();
-const companyPayout=Number(el("companyPayout").value||0);
-const userReward=Number(el("userReward").value||0);
-const affiliateCommission=Number(el("affiliateCommission").value||0);
-const instructions=el("instructions").value.trim();
-const terms=el("terms").value.trim();
-const status=el("status").value;
+load();
 
-if(!title||!offerLink){
-alert("Title aur offer link required hai");
-return;
-}
-
-await addDoc(collection(db,"campaigns"),{
-title,image,category,taskType,offerLink,eventName,
-companyPayout,userReward,affiliateCommission,
-instructions,terms,status,time:Date.now()
-});
-
-["title","image","category","offerLink","eventName","companyPayout","userReward","affiliateCommission","instructions","terms"].forEach(id=>el(id).value="");
-
-alert("Campaign added");
-reload("campaigns");
-loadStats();
-};
-
-async function loadCampaigns(){
-const snap=await latestDocs("campaigns",30);
-let html="";
-
-snap.forEach(d=>{
-const c=d.data();
-html+=`
-<div class="card">
-<h3>${c.title||"-"}</h3>
-<p class="muted">${c.category||"-"} | ${c.taskType||"-"} | ${c.status||"active"}</p>
-<p><b>Company Payout:</b> ₹${c.companyPayout||0}</p>
-<p><b>User Reward:</b> ₹${c.userReward||c.reward||0}</p>
-<p><b>Publisher Commission:</b> ₹${c.affiliateCommission||0}</p>
-<p><b>Event:</b> ${c.eventName||c.event||"-"}</p>
-<p class="muted">${c.offerLink||"-"}</p>
-<button class="action" onclick="setCampaignStatus('${d.id}','active')">Active</button>
-<button class="action" onclick="setCampaignStatus('${d.id}','paused')">Pause</button>
-<button class="action danger" onclick="deleteCampaign('${d.id}')">Delete</button>
-</div>`;
-});
-
-el("campaignList").innerHTML=html||"<div class='card'>No campaigns</div>";
-}
-
-window.setCampaignStatus=async function(id,status){
-await updateDoc(doc(db,"campaigns",id),{status});
-reload("campaigns");
-};
-
-window.deleteCampaign=async function(id){
-if(!confirm("Delete campaign?"))return;
-await deleteDoc(doc(db,"campaigns",id));
-reload("campaigns");
-loadStats();
-};
-
-/* APPROVALS */
-async function loadApprovals(){
-const snap=await latestWhere("lead_submissions","status","pending",30);
-let html="";
-
-snap.forEach(d=>{
-const l=d.data();
-html+=leadCard(d.id,l,true);
-});
-
-el("approvalList").innerHTML=html||"<div class='card'>No pending approvals</div>";
-}
-
-function leadCard(id,l,actions){
-return `
-<div class="card">
-<h3>${l.title||"Campaign"}</h3>
-<p><b>Tracking:</b> ${l.trackingId||"-"}</p>
-<p><b>UPI:</b> ${l.upi||"-"}</p>
-<p><b>Publisher:</b> ${l.publisherId||"-"}</p>
-<p><b>User Reward:</b> ₹${l.userReward||0}</p>
-<p><b>Publisher Commission:</b> ₹${l.affiliateCommission||0}</p>
-<p><b>Status:</b> <span class="badge">${l.status||"-"}</span></p>
-<p class="muted">${l.time?new Date(l.time).toLocaleString():"-"}</p>
-${actions?`
-<button class="action primary" onclick="approveLead('${id}')">Approve</button>
-<button class="action danger" onclick="rejectLead('${id}')">Reject</button>
-`:""}
-</div>`;
-}
-
-window.approveLead=async function(id){
-const ref=doc(db,"lead_submissions",id);
-const snap=await getDoc(ref);
-
-if(!snap.exists()){
-alert("Lead not found");
-return;
-}
-
-const l=snap.data();
-
-if(l.status==="approved"){
-alert("Already approved");
-return;
-}
-
-const publisherId=l.publisherId||"";
-const affiliateCommission=Number(l.affiliateCommission||0);
-const userReward=Number(l.userReward||0);
-const companyPayout=Number(l.companyPayout||0);
-const profit=companyPayout-userReward-affiliateCommission;
-
-await updateDoc(ref,{
-status:"approved",
-approvedAt:Date.now()
-});
-
-if(publisherId&&affiliateCommission>0){
-await updateDoc(doc(db,"users",publisherId),{
-balance:increment(affiliateCommission)
-});
-}
-
-await addDoc(collection(db,"affiliate_reports"),{
-trackingId:l.trackingId||"",
-slug:l.slug||"",
-campaignId:l.campaignId||"",
-publisherId,
-offerName:l.title||"",
-upi:l.upi||"",
-companyPayout,
-userReward,
-affiliateCommission,
-profit,
-status:"approved",
-time:Date.now()
-});
-
-await addDoc(collection(db,"revenue_share"),{
-trackingId:l.trackingId||"",
-slug:l.slug||"",
-campaignId:l.campaignId||"",
-publisherId,
-companyPayout,
-userReward,
-affiliateCommission,
-profit,
-status:"approved",
-time:Date.now()
-});
-
-alert("Approved");
-reload("approvals");
-loaded.leads=false;
-loaded.reports=false;
-loaded.revenue=false;
-loadStats();
-};
-
-window.rejectLead=async function(id){
-await updateDoc(doc(db,"lead_submissions",id),{
-status:"rejected",
-rejectedAt:Date.now()
-});
-reload("approvals");
-loaded.leads=false;
-loadStats();
-};
-
-async function loadLeads(){
-const snap=await latestDocs("lead_submissions",30);
-let html="";
-snap.forEach(d=>html+=leadCard(d.id,d.data(),false));
-el("leadList").innerHTML=html||"<div class='card'>No leads</div>";
-}
-
-/* WITHDRAW */
-async function loadWithdraws(){
-const snap=await latestDocs("withdrawals",30);
-let html="";
-
-snap.forEach(d=>{
-const w=d.data();
-html+=`
-<div class="card">
-<h3>₹${w.amount||0}</h3>
-<p><b>User:</b> ${w.userId||"-"}</p>
-<p><b>UPI:</b> ${w.upi||"-"}</p>
-<p><b>Status:</b> <span class="badge">${w.status||"pending"}</span></p>
-<p class="muted">${w.time?new Date(w.time).toLocaleString():"-"}</p>
-<button class="action primary" onclick="approveWithdraw('${d.id}','${w.userId}',${Number(w.amount||0)})">Approve</button>
-<button class="action danger" onclick="rejectWithdraw('${d.id}')">Reject</button>
-</div>`;
-});
-
-el("withdrawList").innerHTML=html||"<div class='card'>No withdraw requests</div>";
-}
-
-window.approveWithdraw=async function(id,userId,amount){
-if(!userId||!amount)return;
-
-const userSnap=await getDoc(doc(db,"users",userId));
-const balance=userSnap.exists()?Number(userSnap.data().balance||0):0;
-
-if(balance<amount){
-alert("User balance low");
-return;
-}
-
-await updateDoc(doc(db,"withdrawals",id),{
-status:"approved",
-paidAt:Date.now()
-});
-
-await updateDoc(doc(db,"users",userId),{
-balance:increment(-amount)
-});
-
-alert("Withdraw approved");
-reload("withdraws");
-loadStats();
-};
-
-window.rejectWithdraw=async function(id){
-await updateDoc(doc(db,"withdrawals",id),{
-status:"rejected",
-rejectedAt:Date.now()
-});
-reload("withdraws");
-loadStats();
-};
-
-/* AFFILIATE WITHDRAW */
-async function loadAffiliateWithdraws(){
-const snap=await latestDocs("affiliate_withdrawals",30);
-let html="";
-
-snap.forEach(d=>{
-const w=d.data();
-html+=`
-<div class="card">
-<h3>₹${w.amount||0}</h3>
-<p><b>Publisher:</b> ${w.publisherId||"-"}</p>
-<p><b>UPI:</b> ${w.upi||"-"}</p>
-<p><b>Status:</b> <span class="badge">${w.status||"pending"}</span></p>
-<button class="action primary" onclick="markAffiliatePaid('${d.id}')">Mark Paid</button>
-<button class="action danger" onclick="rejectAffiliateWithdraw('${d.id}')">Reject</button>
-</div>`;
-});
-
-el("affWithdrawList").innerHTML=html||"<div class='card'>No affiliate withdraw</div>";
-}
-
-window.markAffiliatePaid=async id=>{
-await updateDoc(doc(db,"affiliate_withdrawals",id),{status:"paid",paidAt:Date.now()});
-reload("affwithdraws");
-loadStats();
-};
-
-window.rejectAffiliateWithdraw=async id=>{
-await updateDoc(doc(db,"affiliate_withdrawals",id),{status:"rejected",rejectedAt:Date.now()});
-reload("affwithdraws");
-loadStats();
-};
-
-/* USERS */
-async function loadUsers(){
-const snap=await latestDocs("users",30);
-let html="";
-snap.forEach(d=>{
-const u=d.data();
-html+=`
-<div class="card">
-<h3>${u.email||"-"}</h3>
-<p><b>UID:</b> ${d.id}</p>
-<p><b>Balance:</b> ₹${u.balance||0}</p>
-<p><b>Role:</b> ${u.role||"user"}</p>
-<p><b>Status:</b> ${u.status||"active"}</p>
-</div>`;
-});
-el("userList").innerHTML=html||"<div class='card'>No users</div>";
-}
-
-/* REPORTS */
-async function loadReports(){
-const snap=await latestDocs("affiliate_reports",30);
-let html="";
-snap.forEach(d=>{
-const r=d.data();
-html+=`
-<div class="card">
-<h3>${r.offerName||"-"}</h3>
-<p><b>Tracking:</b> ${r.trackingId||"-"}</p>
-<p><b>Publisher:</b> ${r.publisherId||"-"}</p>
-<p><b>User Reward:</b> ₹${r.userReward||0}</p>
-<p><b>Commission:</b> ₹${r.affiliateCommission||0}</p>
-<p><b>Status:</b> ${r.status||"-"}</p>
-</div>`;
-});
-el("reportList").innerHTML=html||"<div class='card'>No reports</div>";
-}
-
-async function loadRevenue(){
-const snap=await latestDocs("revenue_share",30);
-let html="";
-snap.forEach(d=>{
-const r=d.data();
-html+=`
-<div class="card">
-<h3>${r.trackingId||"-"}</h3>
-<p><b>Company Payout:</b> ₹${r.companyPayout||0}</p>
-<p><b>User Reward:</b> ₹${r.userReward||0}</p>
-<p><b>Commission:</b> ₹${r.affiliateCommission||0}</p>
-<p><b>Profit:</b> ₹${r.profit||0}</p>
-</div>`;
-});
-el("revenueList").innerHTML=html||"<div class='card'>No revenue logs</div>";
-}
-
-window.copyPostback=()=>{
-navigator.clipboard.writeText(el("postbackUrl").value);
-alert("Copied");
-};
 </script>
+
 </body>
 </html>
