@@ -1,234 +1,414 @@
-<script type="module">
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel</title>
 
-import {
-auth,
-db,
-storage
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial;background:#f4f6fb;display:flex}
+.sidebar{width:260px;background:#111827;height:100vh;padding:20px;color:white;position:fixed}
+.logo{font-size:28px;font-weight:bold;margin-bottom:20px}
+.logo span{color:#3b82f6}
+.menu button{width:100%;padding:14px;margin-bottom:10px;background:#1f2937;border:0;color:white;border-radius:10px;cursor:pointer}
+.menu button:hover{background:#2563eb}
+.main{margin-left:260px;padding:25px;width:100%}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}
+.card{background:white;padding:20px;border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,.1)}
+input,select,textarea{width:100%;padding:12px;margin-top:10px;margin-bottom:12px;border:1px solid #ddd;border-radius:10px}
+.btn{padding:14px;background:#111;color:white;border:0;border-radius:10px;width:100%;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.list{margin-top:20px;display:grid;gap:15px}
+.item{background:white;padding:15px;border-radius:14px;box-shadow:0 5px 20px rgba(0,0,0,.08)}
+.item img{width:100%;height:180px;object-fit:cover;border-radius:10px}
+.hide{display:none}
+.green{background:#16a34a}
+.red{background:#dc2626}
+.orange{background:#f97316}
+@media(max-width:900px){
+body{display:block}
+.sidebar{position:relative;width:100%;height:auto}
+.main{margin:0}
+.stats,.grid{grid-template-columns:1fr}
 }
+</style>
+</head>
 
-from "./firebase.js";
+<body>
 
-import {
+<div class="sidebar">
+  <div class="logo">TASK<span>CPA</span></div>
 
-onAuthStateChanged
+  <div class="menu">
+    <button onclick="show('campaign')">Campaigns</button>
+    <button onclick="show('submissions')">Lead Reports</button>
+    <button onclick="show('withdraw')">Withdraw</button>
+    <button onclick="show('users')">Users</button>
+    <button onclick="location.href='index.html'">User Dashboard</button>
+  </div>
+</div>
 
-}
+<div class="main">
 
-from
+  <div class="stats">
+    <div class="card">
+      <h3>Total Campaigns</h3>
+      <h1 id="campaignCount">0</h1>
+    </div>
 
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    <div class="card">
+      <h3>Submissions</h3>
+      <h1 id="submissionCount">0</h1>
+    </div>
 
-import {
+    <div class="card">
+      <h3>Withdraws</h3>
+      <h1 id="withdrawCount">0</h1>
+    </div>
 
-collection,
-addDoc,
-getDocs,
-doc,
-getDoc
+    <div class="card">
+      <h3>Users</h3>
+      <h1 id="userCount">0</h1>
+    </div>
+  </div>
 
-}
+  <div id="campaign">
 
-from
+    <div class="grid">
 
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      <div class="card">
+        <h2>Add Campaign</h2>
 
-import {
+        <input id="title" placeholder="Campaign Title">
 
-ref,
-uploadBytes,
-getDownloadURL
+        <input id="reward" type="number" placeholder="Reward ₹">
 
-}
+        <select id="category">
+          <option>Banking</option>
+          <option>Survey</option>
+          <option>Crypto</option>
+          <option>Install</option>
+          <option>Shopping</option>
+          <option>Demat</option>
+        </select>
 
-from
+        <textarea id="steps" rows="5" placeholder="Worker Steps"></textarea>
 
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+        <input type="file" id="image" accept="image/*">
 
-onAuthStateChanged(
-auth,
+        <button class="btn" onclick="addCampaign()">ADD CAMPAIGN</button>
+      </div>
 
-async(user)=>{
+      <div class="card">
+        <h2>Admin Info</h2>
+        <p>Yahan se campaign add hoga.</p>
+        <p>Image direct Firebase Storage me upload hogi.</p>
+        <p>Campaign user dashboard me show hoga.</p>
+      </div>
 
-if(!user){
+    </div>
 
-location.href=
-"login.html";
+    <div id="campaignList" class="list"></div>
+  </div>
 
-return;
+  <div id="submissions" class="hide">
+    <div class="card">
+      <h2>Lead Reports / Task Submissions</h2>
+      <div id="submissionList" class="list"></div>
+    </div>
+  </div>
 
-}
+  <div id="withdraw" class="hide">
+    <div class="card">
+      <h2>Withdraw Requests</h2>
+      <div id="withdrawList" class="list"></div>
+    </div>
+  </div>
 
-const snap=
-
-await getDoc(
-
-doc(
-db,
-"users",
-user.uid
-)
-
-);
-
-const data=
-snap.data();
-
-if(
-!data ||
-
-data.role!=="admin"
-){
-
-alert(
-"Admin only"
-);
-
-location.href=
-"index.html";
-
-return;
-
-}
-
-loadCampaigns();
-
-}
-
-);
-
-async function loadCampaigns(){
-
-const snap=
-
-await getDocs(
-
-collection(
-db,
-"campaigns"
-)
-
-);
-
-campaignCount.innerText=
-snap.size;
-
-let html="";
-
-snap.forEach(docu=>{
-
-let d=
-docu.data();
-
-html+=`
-
-<div class="item">
-
-<img src="${d.image}">
-
-<h3>
-
-${d.title}
-
-</h3>
-
-<p>
-
-${d.category}
-
-</p>
-
-<b>
-
-₹${d.reward}
-
-</b>
+  <div id="users" class="hide">
+    <div class="card">
+      <h2>Users</h2>
+      <div id="userList" class="list"></div>
+    </div>
+  </div>
 
 </div>
 
-`;
+<script type="module">
+import { auth, db, storage } from "./firebase.js";
 
+import { onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+window.show = function(id){
+  document.getElementById("campaign").classList.add("hide");
+  document.getElementById("submissions").classList.add("hide");
+  document.getElementById("withdraw").classList.add("hide");
+  document.getElementById("users").classList.add("hide");
+
+  document.getElementById(id).classList.remove("hide");
+};
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    location.href = "login.html";
+    return;
+  }
+
+  const userSnap = await getDoc(doc(db,"users",user.uid));
+  const userData = userSnap.data();
+
+  if(!userData || userData.role !== "admin"){
+    alert("Admin only");
+    location.href = "index.html";
+    return;
+  }
+
+  loadAll();
 });
 
-campaignList.innerHTML=
-html;
-
+async function loadAll(){
+  await loadCampaigns();
+  await loadSubmissions();
+  await loadWithdraws();
+  await loadUsers();
 }
 
-window.addCampaign=
-async()=>{
+window.addCampaign = async function(){
+  const file = document.getElementById("image").files[0];
 
-let file=
-image.files[0];
+  if(!title.value || !reward.value || !steps.value){
+    alert("Fill all details");
+    return;
+  }
 
-if(!file){
+  if(!file){
+    alert("Upload campaign image");
+    return;
+  }
 
-alert(
-"Upload image"
-);
+  const imageRef = ref(storage, "campaigns/" + Date.now() + "-" + file.name);
 
-return;
+  await uploadBytes(imageRef, file);
 
+  const imageUrl = await getDownloadURL(imageRef);
+
+  await addDoc(collection(db,"campaigns"), {
+    title: title.value,
+    reward: Number(reward.value),
+    category: category.value,
+    steps: steps.value,
+    image: imageUrl,
+    status: "active",
+    createdAt: Date.now()
+  });
+
+  alert("Campaign Added");
+  location.reload();
+};
+
+async function loadCampaigns(){
+  const snap = await getDocs(collection(db,"campaigns"));
+
+  campaignCount.innerText = snap.size;
+
+  let html = "";
+
+  snap.forEach(docu=>{
+    const d = docu.data();
+
+    html += `
+      <div class="item">
+        <img src="${d.image || ''}">
+        <h3>${d.title || ''}</h3>
+        <p>${d.category || ''}</p>
+        <b>₹${d.reward || 0}</b>
+        <p>Status: ${d.status || 'active'}</p>
+
+        <button class="btn orange" onclick="toggleCampaign('${docu.id}','${d.status || 'active'}')">
+          ${d.status === 'paused' ? 'ACTIVATE' : 'PAUSE'}
+        </button>
+
+        <br><br>
+
+        <button class="btn red" onclick="deleteCampaign('${docu.id}')">
+          DELETE
+        </button>
+      </div>
+    `;
+  });
+
+  campaignList.innerHTML = html || "No campaigns found";
 }
 
-let imageRef=
+window.toggleCampaign = async function(id,status){
+  await updateDoc(doc(db,"campaigns",id), {
+    status: status === "paused" ? "active" : "paused"
+  });
 
-ref(
-storage,
-"campaigns/"+Date.now()
-);
+  alert("Campaign Updated");
+  loadCampaigns();
+};
 
-await uploadBytes(
-imageRef,
-file
-);
+window.deleteCampaign = async function(id){
+  if(!confirm("Delete campaign?")) return;
 
-let url=
+  await deleteDoc(doc(db,"campaigns",id));
 
-await getDownloadURL(
-imageRef
-);
+  alert("Deleted");
+  loadCampaigns();
+};
 
-await addDoc(
+async function loadSubmissions(){
+  const snap = await getDocs(collection(db,"submissions"));
 
-collection(
-db,
-"campaigns"
-),
+  submissionCount.innerText = snap.size;
 
-{
+  let html = "";
 
-title:
-title.value,
+  snap.forEach(docu=>{
+    const d = docu.data();
 
-reward:
-Number(
-reward.value
-),
+    html += `
+      <div class="item">
+        <h3>Campaign ID: ${d.campaign || ''}</h3>
+        <p>UPI: ${d.upi || ''}</p>
+        <p>Note: ${d.note || ''}</p>
+        <p>Status: <b>${d.status || 'pending'}</b></p>
 
-category:
-category.value,
+        ${d.proof ? `<img src="${d.proof}">` : ""}
 
-steps:
-steps.value,
+        <button class="btn green" onclick="approveLead('${docu.id}')">
+          APPROVE
+        </button>
 
-image:url,
+        <br><br>
 
-status:
-"active",
+        <button class="btn red" onclick="rejectLead('${docu.id}')">
+          REJECT
+        </button>
+      </div>
+    `;
+  });
 
-createdAt:
-Date.now()
-
+  submissionList.innerHTML = html || "No submissions found";
 }
 
-);
+window.approveLead = async function(id){
+  await updateDoc(doc(db,"submissions",id), {
+    status: "approved",
+    approvedAt: Date.now()
+  });
 
-alert(
-"Campaign Added"
-);
+  alert("Lead Approved");
+  loadSubmissions();
+};
 
-location.reload();
+window.rejectLead = async function(id){
+  await updateDoc(doc(db,"submissions",id), {
+    status: "rejected",
+    rejectedAt: Date.now()
+  });
 
+  alert("Lead Rejected");
+  loadSubmissions();
+};
+
+async function loadWithdraws(){
+  const snap = await getDocs(collection(db,"withdraws"));
+
+  withdrawCount.innerText = snap.size;
+
+  let html = "";
+
+  snap.forEach(docu=>{
+    const d = docu.data();
+
+    html += `
+      <div class="item">
+        <h3>₹${d.amount || 0}</h3>
+        <p>Name: ${d.name || ''}</p>
+        <p>UPI: ${d.upi || ''}</p>
+        <p>Status: <b>${d.status || 'pending'}</b></p>
+
+        <button class="btn green" onclick="approveWithdraw('${docu.id}')">
+          APPROVE WITHDRAW
+        </button>
+
+        <br><br>
+
+        <button class="btn red" onclick="rejectWithdraw('${docu.id}')">
+          REJECT WITHDRAW
+        </button>
+      </div>
+    `;
+  });
+
+  withdrawList.innerHTML = html || "No withdraw requests found";
 }
 
+window.approveWithdraw = async function(id){
+  await updateDoc(doc(db,"withdraws",id), {
+    status: "approved",
+    approvedAt: Date.now()
+  });
+
+  alert("Withdraw Approved");
+  loadWithdraws();
+};
+
+window.rejectWithdraw = async function(id){
+  await updateDoc(doc(db,"withdraws",id), {
+    status: "rejected",
+    rejectedAt: Date.now()
+  });
+
+  alert("Withdraw Rejected");
+  loadWithdraws();
+};
+
+async function loadUsers(){
+  const snap = await getDocs(collection(db,"users"));
+
+  userCount.innerText = snap.size;
+
+  let html = "";
+
+  snap.forEach(docu=>{
+    const d = docu.data();
+
+    html += `
+      <div class="item">
+        <h3>${d.name || 'No Name'}</h3>
+        <p>${d.email || ''}</p>
+        <p>Balance: ₹${d.balance || 0}</p>
+        <p>Role: ${d.role || 'user'}</p>
+      </div>
+    `;
+  });
+
+  userList.innerHTML = html || "No users found";
+}
 </script>
+
+</body>
+</html>
