@@ -1,422 +1,123 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Panel</title>
-
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial;background:#f4f6fb;display:flex}
-
-.sidebar{
-width:260px;
-background:#111827;
-height:100vh;
-padding:20px;
-color:white;
-position:fixed;
-}
-
-.logo{
-font-size:28px;
-font-weight:bold;
-margin-bottom:20px;
-}
-
-.logo span{color:#3b82f6}
-
-.menu button{
-width:100%;
-padding:14px;
-margin-bottom:10px;
-background:#1f2937;
-border:0;
-color:white;
-border-radius:10px;
-cursor:pointer;
-}
-
-.menu button:hover{
-background:#2563eb;
-}
-
-.main{
-margin-left:260px;
-padding:25px;
-width:100%;
-}
-
-.stats{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:15px;
-margin-bottom:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:16px;
-box-shadow:0 5px 20px rgba(0,0,0,.1);
-}
-
-input,select,textarea{
-width:100%;
-padding:12px;
-margin-top:10px;
-margin-bottom:12px;
-border:1px solid #ddd;
-border-radius:10px;
-}
-
-.btn{
-padding:14px;
-background:#111;
-color:white;
-border:0;
-border-radius:10px;
-width:100%;
-}
-
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-}
-
-.list{
-margin-top:20px;
-display:grid;
-gap:15px;
-}
-
-.item{
-background:white;
-padding:15px;
-border-radius:14px;
-}
-
-.item img{
-width:100%;
-height:180px;
-object-fit:cover;
-border-radius:10px;
-}
-
-.hide{display:none}
-</style>
-</head>
-
-<body>
-
-<div class="sidebar">
-
-<div class="logo">
-TASK<span>CPA</span>
-</div>
-
-<div class="menu">
-
-<button onclick="show('dash')">
-Dashboard
-</button>
-
-<button onclick="show('campaign')">
-Campaigns
-</button>
-
-<button onclick="show('withdraw')">
-Withdraw
-</button>
-
-<button onclick="show('users')">
-Users
-</button>
-
-<button onclick="show('reports')">
-Reports
-</button>
-
-</div>
-
-</div>
-
-<div class="main">
-
-<div class="stats">
-
-<div class="card">
-<h3>Total Campaign</h3>
-<h1 id="campaignCount">
-0
-</h1>
-</div>
-
-<div class="card">
-<h3>Users</h3>
-<h1 id="userCount">
-0
-</h1>
-</div>
-
-<div class="card">
-<h3>Pending</h3>
-<h1 id="pendingCount">
-0
-</h1>
-</div>
-
-<div class="card">
-<h3>Withdraw</h3>
-<h1 id="withdrawCount">
-0
-</h1>
-</div>
-
-</div>
-
-<div id="campaign">
-
-<div class="grid">
-
-<div class="card">
-
-<h2>Add Campaign</h2>
-
-<input id="title"
-placeholder="Title">
-
-<input id="reward"
-type="number"
-placeholder="Reward">
-
-<select id="category">
-<option>Banking</option>
-<option>Survey</option>
-<option>Crypto</option>
-<option>Install</option>
-</select>
-
-<textarea id="steps"
-placeholder="Steps">
-</textarea>
-
-<input
-type="file"
-id="image">
-
-<button
-class="btn"
-onclick="addCampaign()">
-
-ADD
-
-</button>
-
-</div>
-
-<div class="card">
-
-<h2>Quick Actions</h2>
-
-<button class="btn">
-Approve Leads
-</button>
-
-<br><br>
-
-<button class="btn">
-Approve Withdraw
-</button>
-
-<br><br>
-
-<button class="btn">
-Send Notice
-</button>
-
-</div>
-
-</div>
-
-<div id="campaignList"
-class="list">
-
-</div>
-
-</div>
-
-<div id="withdraw"
-class="hide">
-
-<div class="card">
-
-<h2>
-Withdraw Requests
-</h2>
-
-<div id="withdrawList">
-
-</div>
-
-</div>
-
-</div>
-
-<div id="users"
-class="hide">
-
-<div class="card">
-
-<h2>
-Users
-</h2>
-
-<div id="userList">
-
-</div>
-
-</div>
-
-</div>
-
-<div id="reports"
-class="hide">
-
-<div class="card">
-
-<h2>
-Task Reports
-</h2>
-
-<div id="reportList">
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 <script type="module">
 
 import {
+auth,
 db,
 storage
 }
+
 from "./firebase.js";
 
 import {
+
+onAuthStateChanged
+
+}
+
+from
+
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+
 collection,
 addDoc,
-getDocs
+getDocs,
+doc,
+getDoc
+
 }
+
 from
+
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
+
 ref,
 uploadBytes,
 getDownloadURL
+
 }
+
 from
+
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-window.show=(id)=>{
+onAuthStateChanged(
+auth,
 
-[
-campaign,
-withdraw,
-users,
-reports
-]
+async(user)=>{
 
-.forEach(
-x=>x.classList.add(
-"hide"
-)
-);
+if(!user){
 
-document
-.getElementById(id)
-.classList.remove(
-"hide"
-);
+location.href=
+"login.html";
+
+return;
 
 }
 
-window.addCampaign=
-async()=>{
+const snap=
 
-let file=
-image.files[0];
+await getDoc(
 
-let r=
-ref(
-storage,
-"campaigns/"+Date.now()
-);
-
-await uploadBytes(
-r,
-file
-);
-
-let url=
-await getDownloadURL(
-r
-);
-
-await addDoc(
-collection(
+doc(
 db,
-"campaigns"
-),
-{
-title:title.value,
-reward:Number(
-reward.value
-),
-category:
-category.value,
-steps:
-steps.value,
-image:url,
-status:"active",
-createdAt:
-Date.now()
-}
+"users",
+user.uid
+)
+
 );
+
+const data=
+snap.data();
+
+if(
+!data ||
+
+data.role!=="admin"
+){
 
 alert(
-"Added"
+"Admin only"
 );
 
-load();
+location.href=
+"index.html";
+
+return;
 
 }
 
-async function load(){
+loadCampaigns();
 
-const c=
+}
+
+);
+
+async function loadCampaigns(){
+
+const snap=
+
 await getDocs(
+
 collection(
 db,
 "campaigns"
 )
+
 );
 
 campaignCount.innerText=
-c.size;
+snap.size;
 
 let html="";
 
-c.forEach(doc=>{
+snap.forEach(docu=>{
 
 let d=
-doc.data();
+docu.data();
 
 html+=`
 
@@ -453,9 +154,81 @@ html;
 
 }
 
-load();
+window.addCampaign=
+async()=>{
+
+let file=
+image.files[0];
+
+if(!file){
+
+alert(
+"Upload image"
+);
+
+return;
+
+}
+
+let imageRef=
+
+ref(
+storage,
+"campaigns/"+Date.now()
+);
+
+await uploadBytes(
+imageRef,
+file
+);
+
+let url=
+
+await getDownloadURL(
+imageRef
+);
+
+await addDoc(
+
+collection(
+db,
+"campaigns"
+),
+
+{
+
+title:
+title.value,
+
+reward:
+Number(
+reward.value
+),
+
+category:
+category.value,
+
+steps:
+steps.value,
+
+image:url,
+
+status:
+"active",
+
+createdAt:
+Date.now()
+
+}
+
+);
+
+alert(
+"Campaign Added"
+);
+
+location.reload();
+
+}
 
 </script>
-
-</body>
-</html>
