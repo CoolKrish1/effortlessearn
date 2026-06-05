@@ -77,7 +77,7 @@ export async function init(){
     if(u){
       const s=await getDoc(doc(db,'users',u.uid));
       if(s.exists()) profile={id:u.uid,...s.data()};
-      else { profile={id:u.uid,email:u.email,balance:0,role:'user',createdAt:Date.now()}; await setDoc(doc(db,'users',u.uid),profile,{merge:true}); }
+      else { profile={id:u.uid,email:u.email||'',balance:0,role:isAdmin()?'admin':'user',status:isAdmin()?'approved':'pending',approved:isAdmin(),createdAt:Date.now()}; await setDoc(doc(db,'users',u.uid),profile,{merge:true}); }
     }else profile=null;
     await loadData();
     authChecked=true;
@@ -112,7 +112,21 @@ export async function loadData(){
     clickLogs=clickLogs.filter(x=>!x.publisherId || x.publisherId===uid || x.userId===uid);
   }
 }
-export function requireLogin(){ if(!authChecked){document.getElementById('root')&&(document.getElementById('root').innerHTML='<div class=\"boot\">Loading...</div>'); return false;} if(!user){ location.href='login.html'; return false;} return true; }
+export function requireLogin(){
+  const root=document.getElementById('root');
+  if(!authChecked){
+    if(root) root.innerHTML='<div class="boot">Loading...</div>';
+    return false;
+  }
+  if(!user){ location.href='login.html'; return false; }
+  if(!isAdmin() && (profile?.status==='pending' || profile?.status==='rejected' || profile?.approved===false)){
+    alert(profile?.status==='rejected'?'Your account was rejected by admin.':'Your account is pending admin approval.');
+    signOut(auth).finally(()=>{ location.href='login.html'; });
+    return false;
+  }
+  return true;
+}
+
 export function goTelegram(){ const url=settings.telegramUrl || localStorage.getItem('telegramUrl') || 'https://t.me/'; window.open(url,'_blank'); }
 window.goTelegram=goTelegram;
 window.logoutUser=async()=>{await signOut(auth);location.href='login.html'};

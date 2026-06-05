@@ -1,3 +1,45 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login | Effortless Earn</title>
   <meta name="description" content="Login to Effortless Earn publisher panel to manage offers, smart links, reports and wallet.">
-  <meta name="robots" content="index, follow"><link rel="stylesheet" href="style.css"></head><body><div class="authwrap"><div class="authbox"><div style="font-size:46px">🚀</div><h1>Login</h1><input id="email" class="field" placeholder="Email"><input id="pass" type="password" class="field" placeholder="Password"><button type="button" onclick="login()" class="btn blue full">Access Dashboard</button><p>New Publisher? <a href="register.html" class="smalllink">Create Account</a></p></div></div><script type="module">import { auth } from './firebase.js';import { signInWithEmailAndPassword,onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';onAuthStateChanged(auth,u=>{if(u) location.href='dashboard.html'});window.login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,pass.value);location.href='dashboard.html'}catch(e){alert(e.message)}};</script></body></html>
+  <meta name="robots" content="index, follow"><link rel="stylesheet" href="style.css"></head><body><div class="authwrap"><div class="authbox"><div style="font-size:46px">🚀</div><h1>Login</h1><input id="email" class="field" placeholder="Email"><input id="pass" type="password" class="field" placeholder="Password"><button type="button" onclick="login()" class="btn blue full">Access Dashboard</button><p>New Publisher? <a href="register.html" class="smalllink">Create Account</a></p></div></div><script type="module">
+import { auth, db } from './firebase.js';
+import { signInWithEmailAndPassword,onAuthStateChanged,signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { doc,getDoc,setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const ADMIN_EMAILS=['krish1235nayak@gmail.com'];
+async function checkApprovalAndGo(u){
+  if(!u) return;
+  const email=String(u.email||'').toLowerCase();
+  const isAdmin=ADMIN_EMAILS.includes(email);
+  const snap=await getDoc(doc(db,'users',u.uid));
+  let data=snap.exists()?snap.data():null;
+  if(!data){
+    data={name:u.displayName||'User',email:u.email||'',balance:0,role:isAdmin?'admin':'user',status:isAdmin?'approved':'pending',approved:isAdmin,createdAt:Date.now()};
+    await setDoc(doc(db,'users',u.uid),data,{merge:true});
+  }
+  if(isAdmin || data.role==='admin' || data.isAdmin===true){
+    await setDoc(doc(db,'users',u.uid),{role:'admin',status:'approved',approved:true,email:u.email||data.email||''},{merge:true});
+    location.href='dashboard.html';
+    return;
+  }
+  if(data.status==='pending' || data.status==='rejected' || data.approved===false){
+    alert(data.status==='rejected'?'Your account was rejected by admin.':'Your account is pending admin approval.');
+    await signOut(auth);
+    return;
+  }
+  location.href='dashboard.html';
+}
+let manualLogin=false;
+onAuthStateChanged(auth,u=>{ if(u && !manualLogin) checkApprovalAndGo(u).catch(e=>alert(e.message)); });
+window.login=async()=>{
+  const btn=document.querySelector('button[onclick="login()"]');
+  try{
+    manualLogin=true;
+    if(btn){btn.disabled=true;btn.textContent='Checking...'}
+    const emailVal=(document.getElementById('email')?.value||'').trim();
+    const passVal=document.getElementById('pass')?.value||'';
+    const r=await signInWithEmailAndPassword(auth,emailVal,passVal);
+    await checkApprovalAndGo(r.user);
+  }catch(e){alert(e?.message||'Login failed')}
+  finally{manualLogin=false;if(btn){btn.disabled=false;btn.textContent='Access Dashboard'}}
+};
+</script></body></html>
