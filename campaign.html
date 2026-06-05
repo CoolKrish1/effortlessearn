@@ -49,10 +49,17 @@ window.startTask=async()=>{
     if(btn){btn.disabled=false;btn.textContent='Confirm & Start Task ✨'}
     return;
   }
-  const url=campaign.destinationUrl||campaign.url||campaign.offerUrl||'';
-  if(url){
-    const sep=url.includes('?')?'&':'?';
-    location.href=url+sep+'click_id='+encodeURIComponent(clickId)+'&pub='+encodeURIComponent(campaign.publisherId||pub)+'&campaign_id='+encodeURIComponent(id);
+  const rawUrl=String(campaign.destinationUrl||campaign.trackingUrl||campaign.url||campaign.offerUrl||'').trim();
+  if(rawUrl){
+    // IMPORTANT: Do not auto-append extra parameters to CPA tracking links.
+    // Some networks like PathakCPA reject modified URLs and show "Tracking Error".
+    // If a network needs a value, put placeholders in Admin URL, e.g. &sub1={click_id}.
+    const finalUrl=rawUrl
+      .replaceAll('{click_id}', encodeURIComponent(clickId))
+      .replaceAll('{pub}', encodeURIComponent(campaign.publisherId||pub||''))
+      .replaceAll('{campaign_id}', encodeURIComponent(id||''))
+      .replaceAll('{smart_id}', encodeURIComponent(campaign.smartId||''));
+    location.href=finalUrl;
   }else{
     alert('Task saved. Destination URL not set.');
     if(btn){btn.disabled=false;btn.textContent='Confirm & Start Task ✨'}

@@ -1,7 +1,9 @@
-V4 Upgrade:
-1. Upload all files to hosting.
-2. Firebase Console > Firestore Database > Rules: paste firestore.rules and Publish.
-3. To enable admin: users/{yourUID} document role = admin.
-4. Admin page > Website Settings: set Telegram URL like https://t.me/yourchannel.
-5. Campaign Destination URL must be filled. Task portal opens that URL with click_id tracking.
-6. Normal users do not see Admin button. Admin can manage users, balance, roles, leads, withdraws, campaigns, smart links and settings.
+Campaign Reward Hub - V21 PathakCPA Redirect Fix
+
+Important setup:
+1. In Admin > Add Campaign, paste the exact PathakCPA Smart Tracking Link in Destination URL field.
+   Example: https://panel.pathakcpa.in/click/z3sqkb?pub=xxxx
+2. Do not add extra click_id/pub manually unless PathakCPA gives a specific sub parameter.
+3. campaign.html now redirects to the exact saved URL and will not append extra parameters automatically.
+4. If a network asks for subid, use placeholder in URL: &sub1={click_id}
+5. Publish firestore.rules in Firebase Console > Firestore Database > Rules.
