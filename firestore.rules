@@ -42,6 +42,7 @@ service cloud.firestore {
     match /withdrawals/{id} { allow read, write: if loggedIn(); }
     match /withdraws/{id} { allow read, write: if loggedIn(); }
     match /support/{id} { allow read, write: if loggedIn(); }
+    match /postback_hits/{id} { allow create: if true; allow read, update, delete: if loggedIn(); }
 
     match /{document=**} {
       allow read, write: if loggedIn();
