@@ -22,33 +22,38 @@ function offerTitle(link){const camp=cache.camps.find(c=>c.id===link?.campaignId
 function renderShell(){
  const link=getSelectedLink();
  const selected=link?String(link.slug||link.id):currentSlug;
- const options=['<option value="all">🎯 All Offers</option>'].concat(cache.links.map(l=>`<option value="${safe(l.slug||l.id)}" ${String(l.slug||l.id)===selected?'selected':''}>${safe(offerTitle(l))}</option>`)).join('');
- document.getElementById('root').innerHTML=`<main class="tracker-pro"><section class="tracker-wrap"><h1>MY TRACKER</h1><p class="muted big-space">CHECK GOALS & PAYMENTS</p><div class="tracker-box"><label>Your UPI ID / Bank A/C No</label><input id="trackUpi" class="track-input" placeholder="Ex: upi@okicici or 1234567890" value="${safe(localStorage.getItem('trackUpi')||'')}"><div class="track-filter-row"><select id="trackRange" class="track-select"><option value="all">ALL</option><option value="today">TODAY</option><option value="yesterday">YESTERDAY</option><option value="7days">7 DAYS</option></select><select id="trackOffer" class="track-select">${options}</select></div><button type="button" class="btn full track-btn" onclick="runTrack()">⚡ Track Report</button></div><div id="trackResult"></div></section></main>`;
+ const options=['<option value="all">All Offers</option>'].concat(cache.links.map(l=>`<option value="${safe(l.slug||l.id)}" ${String(l.slug||l.id)===selected?'selected':''}>${safe(offerTitle(l))}</option>`)).join('');
+ document.getElementById('root').innerHTML=`<main class="tracker-pro tracker-clean"><section class="tracker-wrap"><div class="tracker-hero"><div><h1>Track Reward</h1><p>Enter the same UPI/Bank details used on the offer page.</p></div><span class="tracker-pill">Live Status</span></div><div class="tracker-box tracker-card"><label>Your UPI ID / Bank A/C No</label><input id="trackUpi" class="track-input" placeholder="example@upi or bank account number" autocomplete="off"><div class="track-filter-row"><select id="trackRange" class="track-select"><option value="all">All Time</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="7days">Last 7 Days</option></select><select id="trackOffer" class="track-select">${options}</select></div><button type="button" class="btn full track-btn" onclick="runTrack()">Track Report</button><small class="track-note">No data is shown until UPI/Bank details are entered.</small></div><div id="trackResult"><div class="tracker-empty"><b>Enter details to track</b><span>Select an offer or choose All Offers, then tap Track Report.</span></div></div></section></main>`;
  if(currentSlug){document.getElementById('trackOffer').value=selected||'all'}
 }
 window.runTrack=()=>{
  const upi=(document.getElementById('trackUpi')?.value||'').trim();
  const range=document.getElementById('trackRange')?.value||'all';
  const chosen=document.getElementById('trackOffer')?.value||'all';
- localStorage.setItem('trackUpi',upi);
+ if(!upi){
+   document.getElementById('trackResult').innerHTML='<div class="tracker-empty warn"><b>UPI/Bank required</b><span>Enter your UPI ID or bank account number to view tracking status.</span></div>';
+   return;
+ }
  currentSlug=chosen==='all'?'':chosen;
  let links=chosen==='all'?cache.links:cache.links.filter(l=>String(l.slug||l.id)===chosen);
  const smartIds=new Set(links.map(l=>l.id)); const slugs=new Set(links.map(l=>String(l.slug||l.id)));
- let clicks=cache.clicks.filter(x=>(!links.length || smartIds.has(x.smartId) || slugs.has(String(x.slug))) && dateOk(x.time||x.createdAt,range));
- let leads=cache.leads.filter(x=>(!links.length || smartIds.has(x.smartId) || slugs.has(String(x.slug))) && dateOk(x.time||x.createdAt,range));
- if(upi){const u=upi.toLowerCase(); clicks=clicks.filter(x=>String(x.upi||x.p1||x.worker||'').toLowerCase().includes(u)); leads=leads.filter(x=>String(x.upi||x.p1||x.worker||'').toLowerCase().includes(u));}
+ const u=upi.toLowerCase().replace(/\s+/g,'');
+ const sameUser=x=>String(x.upi||x.p1||x.worker||x.bank||x.account||'').toLowerCase().replace(/\s+/g,'').includes(u);
+ const sameOffer=x=>(chosen==='all' || smartIds.has(x.smartId) || slugs.has(String(x.slug)) || links.some(l=>l.campaignId===x.campaignId));
+ let clicks=cache.clicks.filter(x=>sameOffer(x) && sameUser(x) && dateOk(x.time||x.createdAt,range));
+ let leads=cache.leads.filter(x=>sameOffer(x) && sameUser(x) && dateOk(x.time||x.createdAt,range));
  const approved=leads.filter(x=>String(x.status||'').toLowerCase()==='approved');
  const pending=leads.filter(x=>String(x.status||'pending').toLowerCase()==='pending');
+ const rejected=leads.filter(x=>String(x.status||'').toLowerCase()==='rejected');
  const reward=approved.reduce((a,x)=>a+Number(x.reward||x.payout||0),0);
- const rows=leads.length?leads.sort((a,b)=>(b.time||b.createdAt||0)-(a.time||a.createdAt||0)).slice(0,40).map(x=>`<div class="track-result-row"><div><b>${safe(x.campaignTitle||x.offerName||'Offer')}</b><small>${safe(x.goalName||x.event||'BASE')} • ${compactDate(x.time||x.createdAt)} • ${mask(x.upi)}</small></div><div class="track-amount"><b>${Number(x.reward||x.payout||0)?'₹'+money(x.reward||x.payout):'-'}</b>${statusBadge(x.status||'pending')}</div></div>`).join(''):'<div class="empty small">No report found. Check UPI/date/offer and try again.</div>';
- document.getElementById('trackResult').innerHTML=`<div class="tracker-summary"><div><span>Clicks</span><b>${clicks.length}</b></div><div><span>Pending</span><b>${pending.length}</b></div><div><span>Approved</span><b>₹${money(reward)}</b></div></div><div class="tracker-results"><h3>Tracking History</h3>${rows}</div>`;
+ const rows=leads.length?leads.sort((a,b)=>(b.time||b.createdAt||0)-(a.time||a.createdAt||0)).slice(0,40).map(x=>`<div class="track-result-row clean-row"><div><b>${safe(x.campaignTitle||x.offerName||'Offer')}</b><small>${safe(x.goalName||x.event||'BASE')}</small><small>${compactDate(x.time||x.createdAt)} • ${mask(x.upi||x.p1||x.worker||x.bank||x.account)}</small></div><div class="track-amount"><b>${Number(x.reward||x.payout||0)?'₹'+money(x.reward||x.payout):'-'}</b>${statusBadge(x.status||'pending')}</div></div>`).join(''):'<div class="tracker-empty"><b>No report found</b><span>Check UPI/Bank details, selected offer, and date filter.</span></div>';
+ document.getElementById('trackResult').innerHTML=`<div class="tracker-summary clean-summary"><div><span>Clicks</span><b>${clicks.length}</b></div><div><span>Pending</span><b>${pending.length}</b></div><div><span>Approved</span><b>₹${money(reward)}</b></div><div><span>Rejected</span><b>${rejected.length}</b></div></div><div class="tracker-results clean-results"><h3>Tracking History</h3>${rows}</div>`;
 };
 async function init(){
  document.getElementById('root').innerHTML='<main class="tracker-pro"><section class="tracker-wrap"><div class="tracker-box"><h2>Loading tracker...</h2></div></section></main>';
  const [links,camps,clicks,leads,subs]=await Promise.all([getCol('smart_links'),getCol('campaigns'),getCol('click_logs'),getCol('lead_submissions'),getCol('submissions')]);
  cache={links,camps,clicks,leads:[...leads,...subs]};
  renderShell();
- if(currentSlug) runTrack();
 }
 init();
 </script></body></html>
