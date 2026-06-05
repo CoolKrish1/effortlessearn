@@ -1,35 +1,36 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reports</title><link rel="stylesheet" href="style.css"></head><body><div id="root"></div><script type="module">
 import {init,requireLogin,shell,submissions,clickLogs,money} from './app.js';
-let currentFilter='all';
-const cols={time:true,click:true,offer:true,event:true,payout:true,status:true,source:true,p1:true,p2:true,ip:true,sub1:false,sub2:false};
+let currentFilter='all', page=1;
+const perPage=20;
+const cols={time:true,offer:true,event:true,payout:true,status:true,p1:true,p2:true,ip:false,source:false,sub1:false,sub2:false};
+function safe(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
 function dateText(t){const d=new Date(t||Date.now());return `<b>${d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</b><br><small>${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</small>`}
-function val(r,k){return r[k]||r[k.toLowerCase()]||''}
-function statusOf(r,type){return (r.status||type||'clicked').toLowerCase()}
-function row(r,type){const st=statusOf(r,type);return `<tr>
+function statusOf(r){return (r.status||r.type||'clicked').toLowerCase()}
+function row(r){const st=statusOf(r);return `<tr>
 <td data-col="time">${dateText(r.time||r.createdAt)}</td>
-<td data-col="click"><b class="blueText">${r.clickId||r.id||'-'}</b></td>
-<td data-col="offer"><b>${r.campaignTitle||r.offerName||r.campaignId||r.campaign||'-'}</b></td>
-<td data-col="event"><span class="blueText">${r.goalName||r.event||'BASE'}</span></td>
+<td data-col="offer"><b>${safe(r.campaignTitle||r.offerName||r.campaignId||r.campaign||'-')}</b></td>
+<td data-col="event"><span class="blueText">${safe(r.goalName||r.event||'BASE')}</span></td>
 <td data-col="payout"><b class="greenText">${Number(r.reward||r.payout||0)?'₹'+money(r.reward||r.payout):'-'}</b></td>
 <td data-col="status"><span class="status ${st}">${st}</span></td>
-<td data-col="source"><span class="sourceTag">${r.source||'campaign'}</span></td>
-<td data-col="p1">${r.upi?String(r.upi).slice(0,8)+'***':(r.p1||r.worker||'-')}</td>
-<td data-col="p2">${r.p2||r.refer||'-'}</td>
-<td data-col="ip">${r.ip||r.ipAddress||'-'}</td>
-<td data-col="sub1">${r.sub1||'-'}</td>
-<td data-col="sub2">${r.sub2||'-'}</td>
+<td data-col="p1">${r.upi?String(r.upi).slice(0,8)+'***':safe(r.p1||r.worker||'-')}</td>
+<td data-col="p2">${safe(r.p2||r.refer||'-')}</td>
+<td data-col="ip">${safe(r.ip||r.ipAddress||'-')}</td>
+<td data-col="source"><span class="sourceTag">${safe(r.source||'campaign')}</span></td>
+<td data-col="sub1">${safe(r.sub1||'-')}</td>
+<td data-col="sub2">${safe(r.sub2||'-')}</td>
 </tr>`}
 function buildData(){return [...submissions.map(x=>({...x,type:(x.status||'pending')})),...clickLogs.map(x=>({...x,type:'clicked'}))].sort((a,b)=>(b.time||b.createdAt||0)-(a.time||a.createdAt||0));}
-function sameDay(t,off=0){const d=new Date();d.setDate(d.getDate()-off);const x=new Date(t||0);return d.toDateString()===x.toDateString()}
-function renderRows(){let q=(document.getElementById('q')?.value||'').toLowerCase();let date=document.getElementById('dateFilter')?.value||'';let arr=(window._reports||[]).filter(x=>currentFilter==='all'||statusOf(x,x.type)===currentFilter).filter(x=>(x.campaignTitle||x.offerName||x.campaignId||x.campaign||'').toLowerCase().includes(q));if(date==='today')arr=arr.filter(x=>sameDay(x.time||x.createdAt,0));if(date==='yesterday')arr=arr.filter(x=>sameDay(x.time||x.createdAt,1));document.getElementById('rows').innerHTML=arr.map(x=>row(x,x.type)).join('')||'<tr><td colspan="12" class="emptyCell">No Records Found</td></tr>';applyColumns();updateActiveTabs();}
-function updateActiveTabs(){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentFilter));}
-function applyColumns(){Object.keys(cols).forEach(k=>document.querySelectorAll(`[data-col="${k}"]`).forEach(el=>el.style.display=cols[k]?'':'none'));document.querySelectorAll('[data-col-toggle]').forEach(x=>x.checked=!!cols[x.dataset.colToggle]);}
-window.filterReport=(f='all')=>{currentFilter=f;renderRows()};
-window.toggleFilters=()=>document.getElementById('filterBox')?.classList.toggle('hide');
+function filtered(){let q=(document.getElementById('q')?.value||'').toLowerCase();return (window._reports||[]).filter(x=>currentFilter==='all'||statusOf(x)===currentFilter).filter(x=>(x.campaignTitle||x.offerName||x.campaignId||x.campaign||'').toLowerCase().includes(q));}
+function renderRows(){let arr=filtered();let pages=Math.max(1,Math.ceil(arr.length/perPage));if(page>pages)page=pages;let shown=arr.slice((page-1)*perPage,page*perPage);document.getElementById('rows').innerHTML=shown.map(row).join('')||'<tr><td colspan="11" class="emptyCell">No Records Found</td></tr>';document.getElementById('pageInfo').textContent=`Page ${page} / ${pages} • ${arr.length} records`;document.getElementById('prevPage').disabled=page<=1;document.getElementById('nextPage').disabled=page>=pages;applyColumns();}
+function updateTabs(){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentFilter));}
+function applyColumns(){Object.keys(cols).forEach(k=>document.querySelectorAll(`[data-col="${k}"]`).forEach(el=>el.style.display=cols[k]?'':'none'));}
+window.filterReport=(f=currentFilter)=>{currentFilter=f;page=1;updateTabs();renderRows()};
+window.changePage=(n)=>{page+=n;renderRows()};
 window.toggleCol=(k,checked)=>{cols[k]=checked;applyColumns()};
-window.renderPage=()=>{if(!requireLogin())return;const all=buildData();window._reports=all;const approved=all.filter(x=>statusOf(x,x.type)==='approved').length;const pending=all.filter(x=>statusOf(x,x.type)==='pending').length;shell('reports',`
-<div class="report-tabs"><button type="button" data-tab="all" class="report-tab active" onclick="filterReport('all')">📊 All Reports <b>${all.length}</b></button><button type="button" data-tab="approved" class="report-tab paid" onclick="filterReport('approved')">🎯 Paid / Approved <b>${approved}</b></button><button type="button" data-tab="pending" class="report-tab pending" onclick="filterReport('pending')">⏳ Pending Check <b>${pending}</b></button></div>
-<div class="panel report-head"><div><h2>Tracking History</h2><p class="muted">Click, lead and payout tracking</p></div><button type="button" class="btn" onclick="toggleFilters()">⚱ Select Columns & Filters</button></div>
-<div id="filterBox" class="panel report-filter"><div class="mini">Select Columns</div><div class="checkgrid">${Object.keys(cols).map(k=>`<label><input type="checkbox" data-col-toggle="${k}" ${cols[k]?'checked':''} onchange="toggleCol('${k}',this.checked)"> ${k.toUpperCase()}</label>`).join('')}</div><hr><div class="toolbar"><select id="dateFilter" class="field" onchange="filterReport(currentFilter)"><option value="">All Dates</option><option value="today">Today</option><option value="yesterday">Yesterday</option></select><input id="q" class="field" placeholder="Search offer..." oninput="filterReport(currentFilter)"></div></div>
-<div class="tablewrap report-table"><table class="table"><thead><tr><th data-col="time">Time</th><th data-col="click">Click ID</th><th data-col="offer">Offer Name</th><th data-col="event">Event</th><th data-col="payout">Payout</th><th data-col="status">Status</th><th data-col="source">Source</th><th data-col="p1">P1 Worker</th><th data-col="p2">P2 Refer</th><th data-col="ip">IP Address</th><th data-col="sub1">Sub 1</th><th data-col="sub2">Sub 2</th></tr></thead><tbody id="rows">${all.map(x=>row(x,x.type)).join('')||'<tr><td colspan="12" class="emptyCell">No Records Found</td></tr>'}</tbody></table></div>`);setTimeout(applyColumns,0)};
+window.renderPage=()=>{if(!requireLogin())return;const all=buildData();window._reports=all;const approved=all.filter(x=>statusOf(x)==='approved').length;const pending=all.filter(x=>statusOf(x)==='pending').length;shell('reports',`
+<div class="report-tabs"><button type="button" data-tab="all" class="report-tab active" onclick="filterReport('all')">All <b>${all.length}</b></button><button type="button" data-tab="approved" class="report-tab paid" onclick="filterReport('approved')">Approved <b>${approved}</b></button><button type="button" data-tab="pending" class="report-tab pending" onclick="filterReport('pending')">Pending <b>${pending}</b></button></div>
+<div class="panel report-head"><div><h2>Tracking History</h2><p class="muted">Offer, event, payout and status</p></div><input id="q" class="field report-search" placeholder="Search offer..." oninput="filterReport()"></div>
+<div class="panel report-filter compact"><div class="checkgrid small">${Object.keys(cols).map(k=>`<label><input type="checkbox" ${cols[k]?'checked':''} onchange="toggleCol('${k}',this.checked)"> ${k.toUpperCase()}</label>`).join('')}</div></div>
+<div class="tablewrap report-table"><table class="table"><thead><tr><th data-col="time">Time</th><th data-col="offer">Offer Name</th><th data-col="event">Event</th><th data-col="payout">Payout</th><th data-col="status">Status</th><th data-col="p1">P1 Worker</th><th data-col="p2">P2 Refer</th><th data-col="ip">IP Address</th><th data-col="source">Source</th><th data-col="sub1">Sub 1</th><th data-col="sub2">Sub 2</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="pager"><button id="prevPage" type="button" class="btn light" onclick="changePage(-1)">← Previous</button><span id="pageInfo"></span><button id="nextPage" type="button" class="btn light" onclick="changePage(1)">Next →</button></div>`);renderRows()};
 init();</script></body></html>
