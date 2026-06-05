@@ -203,7 +203,12 @@ function renderReportsPage(){
 
 function smartBase(){return location.origin+location.pathname.replace(/[^/]*$/,'')}
 function smartUrl(l){const slug=encodeURIComponent(l.slug||l.id);return smartBase()+'campaign.html?id='+(encodeURIComponent(l.campaignId||''))+'&slug='+slug+'&pub='+(encodeURIComponent(l.publisherId||user?.uid||''))}
-function trackUrl(l){const slug=encodeURIComponent(l.slug||l.id);return smartBase()+'track/'+slug+'?pub='+(encodeURIComponent(l.publisherId||user?.uid||''))}
+function trackUrl(l){
+  const slug=encodeURIComponent(l.slug||l.id);
+  const pubId=encodeURIComponent(l.publisherId||user?.uid||'');
+  // Universal tracker: always use track.html so it works on Vercel, GitHub Pages, Firebase Hosting, and local preview.
+  return smartBase()+'track.html?slug='+slug+(pubId?'&pub='+pubId:'');
+}
 function shortLink(v){try{const u=new URL(v);return u.host+(u.pathname.length>18?u.pathname.slice(0,18)+'…':u.pathname)}catch(_){return String(v||'').slice(0,32)}}
 function smartCard(l){
   const workerLink=smartUrl(l);
@@ -222,7 +227,7 @@ function smartCard(l){
     <div class="smart-metrics"><span>Worker <b>₹${money(worker)}</b></span><span>Profit <b>₹${money(profit)}</b></span><span>Clicks <b>${clicks}</b></span><span>Leads <b>${leads}</b></span></div>
     <div class="smart-links-grid">
       <div class="smart-link blueSoft"><b>1. Worker Link (P1)</b><div class="toolbar"><input class="field" value="${workerLink}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${workerLink}');toast('Worker link copied')">Copy</button></div><small>${safe(shortLink(workerLink))}</small></div>
-      <div class="smart-link yellowSoft"><b>2. Tracking Link</b><div class="toolbar"><input class="field" value="${statusLink}" readonly><button type="button" class="btn gold" onclick="navigator.clipboard.writeText('${statusLink}');toast('Tracking link copied')">Copy</button></div><small>Universal status tracker</small></div>
+      <div class="smart-link yellowSoft"><b>2. Tracking Status Link</b><div class="toolbar"><input class="field" value="${statusLink}" readonly><button type="button" class="btn gold" onclick="navigator.clipboard.writeText('${statusLink}');toast('Tracking link copied')">Copy</button></div><small>Open to check task status by UPI/Bank</small></div>
     </div>
   </div>`
 }
