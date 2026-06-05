@@ -6,7 +6,7 @@ import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/fireba
 export let user=null, profile=null, campaigns=[], submissions=[], withdraws=[], users=[], smartLinks=[], clickLogs=[], settings={telegramUrl:""};
 let authChecked=false;
 export const $=id=>document.getElementById(id);
-export const isAdmin=()=>profile?.role==='admin' || profile?.isAdmin===true;
+export const isAdmin=()=>profile?.role==='admin' || profile?.isAdmin===true || ['krish1235nayak@gmail.com'].includes(String(user?.email||'').toLowerCase());
 export const isAffiliate=()=>['affiliate','admin'].includes(profile?.role) || isAdmin();
 const safe=(v)=>String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
 export const money=(n)=>Number(n||0).toLocaleString('en-IN');
@@ -98,16 +98,18 @@ export function offerCards(list,admin=false){
  return list.length?list.map(d=>`<div class="offer"><div class="offerhead"><img src="${safe(d.image)}"><div><h3>${safe(d.title)}</h3><p class="muted">${safe(d.category||'CPA')} • ${getGoals(d).length} Goal</p></div><span class="tag ${d.status==='paused'?'bad':'green'}">${safe(d.status||'active')}</span></div><div class="earn"><span>Total Earnings</span><b>₹${money(totalMax(d))}</b></div><button type="button" onclick="openOffer('${d.id}')" class="btn full">Start Earning →</button>${admin?`<div class="actions"><button type="button" class="btn orange" onclick="editCampaignAdmin('${d.id}')">Edit</button><button type="button" class="btn blue" onclick="toggleCampaign('${d.id}','${d.status==='paused'?'active':'paused'}')">${d.status==='paused'?'Active':'Pause'}</button><button type="button" class="btn red" onclick="deleteCampaign('${d.id}')">Delete</button></div>`:''}</div>`).join(''):`<div class="empty">No data found</div>`;
 }
 function goalsTable(c){return `<div class="panel"><h3>Earning Breakdown</h3><table class="table" style="min-width:0"><tr><th>Event / Action</th><th>Max</th><th>Worker</th><th>Your Profit</th></tr>${getGoals(c).map(g=>`<tr><td>${safe(g.name)}</td><td>₹${money(g.maxPayout)}</td><td>₹${money(g.userReward)}</td><td class="greenText">₹${money(g.affiliateProfit)}</td></tr>`).join('')}</table></div>`}
-window.openOffer=(id)=>{ const d=campaigns.find(x=>x.id===id); if(!d)return; const link=`${location.origin}${location.pathname.replace(/[^/]*$/,'')}campaign.html?id=${d.id}&pub=${user?.uid||''}`; modal(`<button type="button" class="close" onclick="closeModal()">×</button><div style="display:flex;gap:16px;align-items:center"><img class="preview" src="${safe(d.image)}"><div><span class="tag">${safe(d.category||'CPA')}</span><h1>${safe(d.title)}</h1><b class="greenText">Total Potential: ₹${money(totalMax(d))}</b></div></div><hr><div class="notice"><b>Terms & Conditions</b><p>${safe(d.terms||d.steps||'').replaceAll('\n','<br>')}</p></div><div class="linkbox"><b>Smart Tracking Link</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Link copied')">Copy</button></div></div>${goalsTable(d)}<div class="notice"><b>Steps</b><p>${safe(d.instructions||d.steps||'Complete the required steps correctly.').replaceAll('\n','<br>')}</p></div><button type="button" class="btn green full" onclick="closeModal();return navigate('smart','smartlinks.html?campaign=${d.id}')">Create Smart Campaign</button>`); };
+window.openOffer=(id)=>{ const d=campaigns.find(x=>x.id===id); if(!d)return; const link=`${location.origin}${location.pathname.replace(/[^/]*$/,'')}campaign.html?id=${d.id}&pub=${user?.uid||''}`; modal(`<button type="button" class="close" onclick="closeModal()">×</button><div style="display:flex;gap:16px;align-items:center"><img class="preview" src="${safe(d.image)}"><div><span class="tag">${safe(d.category||'CPA')}</span><h1>${safe(d.title)}</h1><b class="greenText">Total Potential: ₹${money(totalMax(d))}</b></div></div><hr><div class="notice"><b>Terms & Conditions</b><p>${safe(d.terms||d.steps||'').replaceAll('\n','<br>')}</p></div><div class="linkbox"><b>Smart Tracking Link</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Link copied')">Copy</button></div></div>${goalsTable(d)}<div class="notice"><b>Steps</b><p>${safe(d.instructions||d.steps||'Complete the required steps correctly.').replaceAll('\n','<br>')}</p></div><button type="button" class="btn green full" onclick="window.closeModal();return navigate('smart','smartlinks.html?campaign=${d.id}')">Create Smart Campaign</button>`); };
 
 
 
 // Soft navigation: sidebar page changes without full browser reload.
 window.navigate=(page,url)=>{ history.pushState({page},'',url); renderRoute(page); return false; };
 window.addEventListener('popstate',()=>renderRoute(pageFromPath(location.pathname)));
-function pageFromPath(path){let f=(path.split('/').pop()||'dashboard.html').replace('.html',''); return f==='index'?'dashboard':(f==='smartlinks'?'smart':f);}
+function pageFromPath(path){let f=(path.split('/').pop()||'dashboard.html').replace('.html',''); if(!f)f='dashboard'; return f==='index'?'dashboard':(f==='smartlinks'?'smart':f);}
 window.__renderRoute=renderRoute;
-function renderRoute(page){
+async function renderRoute(page){
+  if(!authChecked) return;
+  if(user){ try{ await loadData(); }catch(e){ console.warn('route data refresh failed',e); } }
   if(page==='dashboard') return renderDashboardPage();
   if(page==='offers') return renderOffersPage();
   if(page==='reports') return renderReportsPage();
@@ -149,14 +151,25 @@ function smartBase(){return location.origin+location.pathname.replace(/[^/]*$/,'
 function smartUrl(l){return smartBase()+'campaign.html?id='+(l.campaignId||'')+'&slug='+(l.slug||l.id)+'&pub='+(l.publisherId||user?.uid||'')}
 function smartCard(l){
   const link=smartUrl(l);
-  return `<div class="smart-card" id="smart_${l.id}"><div class="smart-card-head"><div><h2>${safe(l.campaignTitle||l.offerName||'Smart Campaign')}</h2><p class="muted">${safe(l.slug||l.id)}</p></div><div class="actions"><button type="button" class="iconbtn" onclick="openSmartBuilder('${l.campaignId}','${l.id}')">✎</button><button type="button" class="iconbtn danger" onclick="deleteSmartLive('${l.id}')">🗑</button></div></div><div class="smart-links"><div class="smart-link blueSoft"><b>Worker Link (P1)</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Copied')">Copy</button></div></div><div class="smart-link yellowSoft"><b>Tracking Status</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn yellow" onclick="navigator.clipboard.writeText('${link}');toast('Copied')">Copy</button></div></div></div></div>`
+  const goals=Array.isArray(l.goals)?l.goals:[];
+  const worker=goals.reduce((a,g)=>a+Number(g.userReward||0),0);
+  const profit=goals.reduce((a,g)=>a+Number(g.affiliateProfit||0),0);
+  const c=campaigns.find(x=>x.id===l.campaignId)||{};
+  return `<div class="smart-card pro-smart" id="smart_${l.id}">
+    <div class="smart-card-head">
+      <div class="smart-title"><img src="${safe(c.image||'')}"><div><h2>${safe(l.campaignTitle||l.offerName||c.title||'Smart Campaign')}</h2><p class="muted">${safe(l.slug||l.id)} • ${goals.length||1} goal</p></div></div>
+      <div class="actions"><button type="button" class="iconbtn" title="Edit" onclick="openSmartBuilder('${l.campaignId}','${l.id}')">✎</button><button type="button" class="iconbtn danger" title="Delete" onclick="deleteSmartLive('${l.id}')">🗑</button></div>
+    </div>
+    <div class="smart-metrics"><span>Worker <b>₹${money(worker)}</b></span><span>Profit <b>₹${money(profit)}</b></span><span class="greenText">Active</span></div>
+    <div class="smart-link blueSoft"><b>Tracking Link</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Copied')">Copy</button></div></div>
+  </div>`
 }
 function renderSmartLinksPage(){
   if(!requireLogin())return;
   const selectedId=new URLSearchParams(location.search).get('campaign')||'';
   const pre=campaigns.find(x=>x.id===selectedId)||null;
   const list=pre?smartLinks.filter(l=>l.campaignId===pre.id):smartLinks;
-  shell('smart',`<div class="panel page-title"><div><h2>My Smart Campaigns</h2><p class="muted">Create and manage campaign links.</p></div><button type="button" class="btn" onclick="openSmartBuilder('${pre?.id||''}')">＋ Create New</button></div>${pre?`<div class="selected-offer-mini"><img src="${safe(pre.image||'')}"><div><b>${safe(pre.title||'Campaign')}</b><small>Max ₹${money(totalMax(pre))}</small></div><span class="tag green">Selected</span></div>`:''}<div class="smart-list" id="smartList">${list.map(smartCard).join('')||`<div class="empty">No smart campaign yet.</div>`}</div>`);
+  shell('smart',`<div class="panel page-title"><div><h2>Smart Campaigns</h2><p class="muted">Create tracking links, set worker payout and manage profit.</p></div><button type="button" class="btn" onclick="openSmartBuilder('${pre?.id||''}')">＋ Add Campaign</button></div>${pre?`<div class="selected-offer-mini"><img src="${safe(pre.image||'')}"><div><b>${safe(pre.title||'Campaign')}</b><small>Max ₹${money(totalMax(pre))}</small></div><span class="tag green">Selected</span></div>`:''}<div class="smart-list" id="smartList">${list.map(smartCard).join('')||`<div class="empty">No smart campaign yet.</div>`}</div>`);
 }
 function activeCampaigns(){return campaigns.filter(x=>String(x.status||'active')!=='paused')}
 function slugify(v){return String(v||'offer').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,50)||'offer'}
@@ -188,7 +201,7 @@ window.saveSmartLive=async(smartId='')=>{
     const rawSlug=document.getElementById('smartSlug')?.value||slugify(title)+'-'+Date.now().toString().slice(-4);
     const payload={campaignId,campaignTitle:title,offerName:c.title||title,publisherId:user.uid,userId:user.uid,slug:slugify(rawSlug),goals:gs,enableP2:document.getElementById('smartP2')?.checked||false,steps:document.getElementById('smartSteps')?.value||'',updatedAt:Date.now()};
     if(smartId){await updateDoc(doc(db,'smart_links',smartId),payload)}else{payload.createdAt=Date.now(); const refDoc=await addDoc(collection(db,'smart_links'),payload); payload.id=refDoc.id; smartLinks.unshift(payload)}
-    closeModal();
+    window.closeModal();
     await loadData();
     renderSmartLinksPage();
     toast(smartId?'Updated':'Smart campaign created');
@@ -198,7 +211,7 @@ window.deleteSmartLive=async(id)=>{try{if(!confirm('Delete this smart campaign?'
 function renderWalletPage(){
   if(!requireLogin())return;
   const history=[...withdraws.map(w=>({...w,kind:'Payout'})),...submissions.filter(s=>s.status==='approved').map(s=>({...s,kind:'Task',amount:s.reward||s.payout||0,name:s.campaignTitle||s.offerName||s.campaignId,status:'credit'}))].sort((a,b)=>(b.time||b.createdAt||0)-(a.time||a.createdAt||0));
-  shell('wallet',`<div class="banner compact"><b>Secure Payment Gateway</b><small>Payments are processed after approval.</small></div><div class="grid2"><div class="panel payout-panel"><h2>Request Payout</h2><div class="balance-card"><span>Available Balance</span><strong>₹${money(profile?.balance||0)}</strong><em>Min Withdraw ₹100</em></div><input id="wname" class="field" placeholder="Name"><input id="wupi" class="field" placeholder="UPI ID"><input id="wamount" type="number" class="field" placeholder="Amount"><button type="button" onclick="requestWithdrawLive()" class="btn full">Withdraw Money →</button></div><div class="panel history-panel"><div class="panel-head"><h2>History</h2><span>${history.length}</span></div><div id="walletHistory" class="wallet-history">${history.slice(0,20).map(x=>`<div class="history-item"><div><b>${safe(x.name||x.kind||'Transaction')}</b><small>${compactDate(x.time||x.createdAt)} • ${safe(x.upi||x.status||'')}</small></div><strong class="${x.kind==='Task'?'greenText':''}">${x.kind==='Task'?'+':''}₹${money(x.amount||0)}</strong></div>`).join('')||'<div class="empty small">No history</div>'}</div></div></div>`);
+  shell('wallet',`<div class="banner compact"><b>Wallet</b><small>Withdrawals and transaction history.</small></div><div class="grid2"><div class="panel payout-panel"><h2>Request Payout</h2><div class="balance-card"><span>Available Balance</span><strong>₹${money(profile?.balance||0)}</strong><em>Min Withdraw ₹100</em></div><input id="wname" class="field" placeholder="Name"><input id="wupi" class="field" placeholder="UPI ID"><input id="wamount" type="number" class="field" placeholder="Amount"><button type="button" onclick="requestWithdrawLive()" class="btn full">Withdraw Money →</button></div><div class="panel history-panel"><div class="panel-head"><h2>History</h2><span>${history.length}</span></div><div id="walletHistory" class="wallet-history">${history.slice(0,20).map(x=>`<div class="history-item"><div><b>${safe(x.name||x.kind||'Transaction')}</b><small>${compactDate(x.time||x.createdAt)} • ${safe(x.upi||x.status||'')}</small></div><strong class="${x.kind==='Task'?'greenText':''}">${x.kind==='Task'?'+':''}₹${money(x.amount||0)}</strong></div>`).join('')||'<div class="empty small">No history</div>'}</div></div></div>`);
 }
 window.requestWithdrawLive=async()=>{const amount=Number(document.getElementById('wamount')?.value||0); if(amount<100){toast('Minimum withdraw ₹100');return} if(amount>Number(profile?.balance||0)){toast('Balance low');return} await addDoc(collection(db,'withdrawals'),{userId:user.uid,email:user.email,name:document.getElementById('wname')?.value||'',upi:document.getElementById('wupi')?.value||'',amount,status:'pending',time:Date.now()}); await loadData(); renderWalletPage(); toast('Withdraw requested')};
 function renderPostbackPage(){ if(!requireLogin())return; shell('postback',`<div class="panel"><h2>Global Postback URL</h2><div class="toolbar"><input class="field" placeholder="https://domain.com/callback?click_id={click_id}&payout={payout}&status={event_id}"><button type="button" class="btn">Save</button></div><div class="macro-grid"><span>{click_id}</span><span>{event_id}</span><span>{payout}</span><span>{p1_upi}</span><span>{ip}</span><span>{sub1}</span></div></div>`)}
@@ -210,3 +223,6 @@ export async function submitLead({campaignId,goalId='',goalName='',upi='',note='
  const c=campaigns.find(x=>x.id===campaignId)||{}; const goal=getGoals(c).find(g=>g.id===goalId)||getGoals(c)[0]||{};
  await addDoc(collection(db,'lead_submissions'),{campaignId,campaign:campaignId,campaignTitle:c.title||'',goalId:goal.id||goalId,goalName:goal.name||goalName,userId:user?.uid||'',publisherId:user?.uid||'',email:user?.email||'',upi,note,proof:proofUrl,status:'pending',reward:Number(goal.userReward||0),affiliateProfit:Number(goal.affiliateProfit||0),time:Date.now()});
 }
+
+window.addEventListener('error',e=>{console.error(e.error||e.message); try{toast('Error: '+(e.message||'Something failed'))}catch(_){}});
+window.addEventListener('unhandledrejection',e=>{console.error(e.reason); try{toast('Error: '+(e.reason?.message||'Request failed'))}catch(_){}});
