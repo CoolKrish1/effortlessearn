@@ -10,6 +10,12 @@ export const isAdmin=()=>profile?.role==='admin' || profile?.isAdmin===true || [
 export const isAffiliate=()=>['affiliate','admin'].includes(profile?.role) || isAdmin();
 const safe=(v)=>String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
 export const money=(n)=>Number(n||0).toLocaleString('en-IN');
+export const OFFER_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="%23eef4ff"/><circle cx="60" cy="50" r="18" fill="%232f6df6" opacity=".18"/><text x="60" y="79" font-size="14" font-family="Arial" fill="%232f6df6" text-anchor="middle" font-weight="700">OFFER</text></svg>`);
+export const imgSrc=(d)=>{
+  const v = d?.image || d?.imageUrl || d?.logo || d?.photo || d?.icon || '';
+  return String(v||'').trim() || OFFER_PLACEHOLDER;
+};
+export const imgTag=(d,cls='')=>`<img ${cls?`class="${cls}"`:''} loading="lazy" src="${safe(imgSrc(d))}" onerror="this.onerror=null;this.src='${OFFER_PLACEHOLDER}'">`;
 
 // Safe compact date formatter used by wallet, reports and history cards.
 // Supports Firebase Timestamp, milliseconds, seconds, ISO string, or missing values.
@@ -69,13 +75,25 @@ export async function init(){
   });
 }
 export async function loadData(){
-  campaigns=await getCollection('campaigns');
-  submissions=[...(await getCollection('submissions')),...(await getCollection('lead_submissions'))];
-  withdraws=[...(await getCollection('withdraws')),...(await getCollection('withdrawals'))];
-  smartLinks=await getCollection('smart_links');
-  clickLogs=[...(await getCollection('click_logs')),...(await getCollection('clicks'))];
-  const set=await getDoc(doc(db,'settings','main')).catch(()=>null); if(set?.exists()) settings={...settings,...set.data()};
-  users=isAdmin()?await getCollection('users'):(profile?[profile]:[]);
+  const [camp, subsA, subsB, wdA, wdB, sl, clA, clB, set, allUsers] = await Promise.all([
+    getCollection('campaigns'),
+    getCollection('submissions'),
+    getCollection('lead_submissions'),
+    getCollection('withdraws'),
+    getCollection('withdrawals'),
+    getCollection('smart_links'),
+    getCollection('click_logs'),
+    getCollection('clicks'),
+    getDoc(doc(db,'settings','main')).catch(()=>null),
+    isAdmin()?getCollection('users'):Promise.resolve(profile?[profile]:[])
+  ]);
+  campaigns=camp;
+  submissions=[...subsA,...subsB];
+  withdraws=[...wdA,...wdB];
+  smartLinks=sl;
+  clickLogs=[...clA,...clB];
+  if(set?.exists()) settings={...settings,...set.data()};
+  users=allUsers;
   if(!isAdmin() && user){
     const uid=user.uid;
     submissions=submissions.filter(x=>[x.userId,x.publisherId,x.affiliateId,x.uid].includes(uid)||x.email===user.email);
@@ -114,10 +132,10 @@ export function totalMax(c){return getGoals(c).reduce((a,g)=>a+Number(g.maxPayou
 export function totalProfit(c){return getGoals(c).reduce((a,g)=>a+Number(g.affiliateProfit||0),0)}
 
 export function offerCards(list,admin=false){
- return list.length?list.map(d=>`<div class="offer"><div class="offerhead"><img src="${safe(d.image)}"><div><h3>${safe(d.title)}</h3><p class="muted">${safe(d.category||'CPA')} • ${getGoals(d).length} Goal</p></div><span class="tag ${d.status==='paused'?'bad':'green'}">${safe(d.status||'active')}</span></div><div class="earn"><span>Total Earnings</span><b>₹${money(totalMax(d))}</b></div><button type="button" onclick="openOffer('${d.id}')" class="btn full">Start Earning →</button>${admin?`<div class="actions"><button type="button" class="btn orange" onclick="editCampaignAdmin('${d.id}')">Edit</button><button type="button" class="btn blue" onclick="toggleCampaign('${d.id}','${d.status==='paused'?'active':'paused'}')">${d.status==='paused'?'Active':'Pause'}</button><button type="button" class="btn red" onclick="deleteCampaign('${d.id}')">Delete</button></div>`:''}</div>`).join(''):`<div class="empty">No data found</div>`;
+ return list.length?list.map(d=>`<div class="offer"><div class="offerhead">${imgTag(d)}<div><h3>${safe(d.title)}</h3><p class="muted">${safe(d.category||'CPA')} • ${getGoals(d).length} Goal</p></div><span class="tag ${d.status==='paused'?'bad':'green'}">${safe(d.status||'active')}</span></div><div class="earn"><span>Total Earnings</span><b>₹${money(totalMax(d))}</b></div><button type="button" onclick="openOffer('${d.id}')" class="btn full">Start Earning →</button>${admin?`<div class="actions"><button type="button" class="btn orange" onclick="editCampaignAdmin('${d.id}')">Edit</button><button type="button" class="btn blue" onclick="toggleCampaign('${d.id}','${d.status==='paused'?'active':'paused'}')">${d.status==='paused'?'Active':'Pause'}</button><button type="button" class="btn red" onclick="deleteCampaign('${d.id}')">Delete</button></div>`:''}</div>`).join(''):`<div class="empty">No data found</div>`;
 }
 function goalsTable(c){return `<div class="panel"><h3>Earning Breakdown</h3><table class="table" style="min-width:0"><tr><th>Event / Action</th><th>Max</th><th>Worker</th><th>Your Profit</th></tr>${getGoals(c).map(g=>`<tr><td>${safe(g.name)}</td><td>₹${money(g.maxPayout)}</td><td>₹${money(g.userReward)}</td><td class="greenText">₹${money(g.affiliateProfit)}</td></tr>`).join('')}</table></div>`}
-window.openOffer=(id)=>{ const d=campaigns.find(x=>x.id===id); if(!d)return; const link=`${location.origin}${location.pathname.replace(/[^/]*$/,'')}campaign.html?id=${d.id}&pub=${user?.uid||''}`; modal(`<button type="button" class="close" onclick="closeModal()">×</button><div style="display:flex;gap:16px;align-items:center"><img class="preview" src="${safe(d.image)}"><div><span class="tag">${safe(d.category||'CPA')}</span><h1>${safe(d.title)}</h1><b class="greenText">Total Potential: ₹${money(totalMax(d))}</b></div></div><hr><div class="notice"><b>Terms & Conditions</b><p>${safe(d.terms||d.steps||'').replaceAll('\n','<br>')}</p></div><div class="linkbox"><b>Smart Tracking Link</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Link copied')">Copy</button></div></div>${goalsTable(d)}<div class="notice"><b>Steps</b><p>${safe(d.instructions||d.steps||'Complete the required steps correctly.').replaceAll('\n','<br>')}</p></div><button type="button" class="btn green full" onclick="window.closeModal();return navigate('smart','smartlinks.html?campaign=${d.id}')">Create Smart Campaign</button>`); };
+window.openOffer=(id)=>{ const d=campaigns.find(x=>x.id===id); if(!d)return; const link=`${location.origin}${location.pathname.replace(/[^/]*$/,'')}campaign.html?id=${d.id}&pub=${user?.uid||''}`; modal(`<button type="button" class="close" onclick="closeModal()">×</button><div style="display:flex;gap:16px;align-items:center">${imgTag(d,"preview")}<div><span class="tag">${safe(d.category||'CPA')}</span><h1>${safe(d.title)}</h1><b class="greenText">Total Potential: ₹${money(totalMax(d))}</b></div></div><hr><div class="notice"><b>Terms & Conditions</b><p>${safe(d.terms||d.steps||'').replaceAll('\n','<br>')}</p></div><div class="linkbox"><b>Smart Tracking Link</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Link copied')">Copy</button></div></div>${goalsTable(d)}<div class="notice"><b>Steps</b><p>${safe(d.instructions||d.steps||'Complete the required steps correctly.').replaceAll('\n','<br>')}</p></div><button type="button" class="btn green full" onclick="window.closeModal();return navigate('smart','smartlinks.html?campaign=${d.id}')">Create Smart Campaign</button>`); };
 
 
 
@@ -176,7 +194,7 @@ function smartCard(l){
   const c=campaigns.find(x=>x.id===l.campaignId)||{};
   return `<div class="smart-card pro-smart" id="smart_${l.id}">
     <div class="smart-card-head">
-      <div class="smart-title"><img src="${safe(c.image||'')}"><div><h2>${safe(l.campaignTitle||l.offerName||c.title||'Smart Campaign')}</h2><p class="muted">${safe(l.slug||l.id)} • ${goals.length||1} goal</p></div></div>
+      <div class="smart-title">${imgTag(c)}<div><h2>${safe(l.campaignTitle||l.offerName||c.title||'Smart Campaign')}</h2><p class="muted">${safe(l.slug||l.id)} • ${goals.length||1} goal</p></div></div>
       <div class="actions"><button type="button" class="iconbtn" title="Edit" onclick="openSmartBuilder('${l.campaignId}','${l.id}')">✎</button><button type="button" class="iconbtn danger" title="Delete" onclick="deleteSmartLive('${l.id}')">🗑</button></div>
     </div>
     <div class="smart-metrics"><span>Worker <b>₹${money(worker)}</b></span><span>Profit <b>₹${money(profit)}</b></span><span class="greenText">Active</span></div>
@@ -188,13 +206,13 @@ function renderSmartLinksPage(){
   const selectedId=new URLSearchParams(location.search).get('campaign')||'';
   const pre=campaigns.find(x=>x.id===selectedId)||null;
   const list=pre?smartLinks.filter(l=>l.campaignId===pre.id):smartLinks;
-  shell('smart',`<div class="panel page-title"><div><h2>Smart Campaigns</h2><p class="muted">Create tracking links, set worker payout and manage profit.</p></div><button type="button" class="btn" onclick="openSmartBuilder('${pre?.id||''}')">＋ Add Campaign</button></div>${pre?`<div class="selected-offer-mini"><img src="${safe(pre.image||'')}"><div><b>${safe(pre.title||'Campaign')}</b><small>Max ₹${money(totalMax(pre))}</small></div><span class="tag green">Selected</span></div>`:''}<div class="smart-list" id="smartList">${list.map(smartCard).join('')||`<div class="empty">No smart campaign yet.</div>`}</div>`);
+  shell('smart',`<div class="panel page-title"><div><h2>Smart Campaigns</h2><p class="muted">Create tracking links, set worker payout and manage profit.</p></div><button type="button" class="btn" onclick="openSmartBuilder('${pre?.id||''}')">＋ Add Campaign</button></div>${pre?`<div class="selected-offer-mini">${imgTag(pre)}<div><b>${safe(pre.title||'Campaign')}</b><small>Max ₹${money(totalMax(pre))}</small></div><span class="tag green">Selected</span></div>`:''}<div class="smart-list" id="smartList">${list.map(smartCard).join('')||`<div class="empty">No smart campaign yet.</div>`}</div>`);
 }
 function activeCampaigns(){return campaigns.filter(x=>String(x.status||'active')!=='paused')}
 function slugify(v){return String(v||'offer').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,50)||'offer'}
 function offerSelectHtml(current=''){
   const locked=!!current;
-  if(locked){ const c=campaigns.find(x=>x.id===current)||{}; return `<input id="smartOffer" type="hidden" value="${current}"><label class="mini">Selected Offer</label><div class="selected-offer-mini compact"><img src="${safe(c.image||'')}"><div><b>${safe(c.title||'Campaign')}</b><small>Max ₹${money(totalMax(c))}</small></div></div>`; }
+  if(locked){ const c=campaigns.find(x=>x.id===current)||{}; return `<input id="smartOffer" type="hidden" value="${current}"><label class="mini">Selected Offer</label><div class="selected-offer-mini compact">${imgTag(c)}<div><b>${safe(c.title||'Campaign')}</b><small>Max ₹${money(totalMax(c))}</small></div></div>`; }
   return `<label class="mini">Select Offer</label><select id="smartOffer" class="field" onchange="smartOfferChanged()"><option value="">-- Choose Offer --</option>${activeCampaigns().map(c=>`<option value="${c.id}">${safe(c.title||'Campaign')}</option>`).join('')}</select>`
 }
 function smartGoalHtml(c,l=null){

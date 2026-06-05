@@ -5,6 +5,33 @@ import {collection,addDoc,doc,setDoc,updateDoc,deleteDoc} from 'https://www.gsta
 import {ref,uploadBytes,getDownloadURL} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 const safe=v=>String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
 async function refresh(){await loadData();window.renderPage()}
+
+function fileToDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=reject;
+    r.readAsDataURL(file);
+  });
+}
+async function uploadCampaignImage(file){
+  if(!file) return '';
+  // First try Firebase Storage. If Storage rules block upload, still create campaign using small base64 fallback.
+  try{
+    const r=ref(storage,'campaigns/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
+    await uploadBytes(r,file);
+    return await getDownloadURL(r);
+  }catch(e){
+    console.warn('Storage upload failed, using fallback:', e?.message||e);
+    if(file.size <= 650000){
+      toast('Image saved locally');
+      return await fileToDataUrl(file);
+    }
+    toast('Image too large. Campaign saved without image. Use Image URL.');
+    return '';
+  }
+}
+
 function parseGoals(text){
   return String(text||'').split('\n').map((line,i)=>{
     const parts=line.split('|').map(x=>x.trim());
@@ -29,9 +56,9 @@ window.renderPage=()=>{
  <div class="panel"><h2>Campaigns</h2><div class="offers">${offerCards(campaigns,true)}</div></div>`)
 };
 window.saveSettings=async()=>{try{await setDoc(doc(db,'settings','main'),{telegramUrl:document.getElementById('telegram')?.value||''},{merge:true});localStorage.setItem('telegramUrl',document.getElementById('telegram')?.value||'');toast('Saved');await refresh()}catch(e){toast(e.message||'Save failed')}};
-window.addCampaign=async()=>{const btn=document.getElementById('addCampaignBtn');try{if(btn){btn.disabled=true;btn.textContent='Saving...'}const title=document.getElementById('atitle')?.value?.trim()||'';if(!title){toast('Title required');return}let image=document.getElementById('aimageurl')?.value?.trim()||'';const file=document.getElementById('aimg')?.files?.[0];if(file){try{const r=ref(storage,'campaigns/'+Date.now()+'-'+file.name);await uploadBytes(r,file);image=await getDownloadURL(r)}catch(e){console.warn(e);toast('Image upload skipped')}}let goals=parseGoals(document.getElementById('agoals')?.value||'');if(!goals.length)goals=[{id:'g0',name:'Task Complete',maxPayout:0,userReward:0,affiliateProfit:0}];await addDoc(collection(db,'campaigns'),{title,destinationUrl:document.getElementById('adestination')?.value?.trim()||'',category:document.getElementById('acat')?.value||'Other',image,steps:document.getElementById('asteps')?.value||'',instructions:document.getElementById('asteps')?.value||'',status:'active',goals,createdAt:Date.now()});toast('Campaign added');await refresh()}catch(e){console.error(e);toast(e.message||'Campaign add failed')}finally{if(btn){btn.disabled=false;btn.textContent='Add Campaign'}}};
+window.addCampaign=async()=>{const btn=document.getElementById('addCampaignBtn');try{if(btn){btn.disabled=true;btn.textContent='Saving...'}const title=document.getElementById('atitle')?.value?.trim()||'';if(!title){toast('Title required');return}let image=document.getElementById('aimageurl')?.value?.trim()||'';const file=document.getElementById('aimg')?.files?.[0];if(!image && file){image=await uploadCampaignImage(file)}let goals=parseGoals(document.getElementById('agoals')?.value||'');if(!goals.length)goals=[{id:'g0',name:'Task Complete',maxPayout:0,userReward:0,affiliateProfit:0}];await addDoc(collection(db,'campaigns'),{title,destinationUrl:document.getElementById('adestination')?.value?.trim()||'',category:document.getElementById('acat')?.value||'Other',image,imageUrl:image,logo:image,steps:document.getElementById('asteps')?.value||'',instructions:document.getElementById('asteps')?.value||'',status:'active',goals,createdAt:Date.now()});toast('Campaign added');await refresh()}catch(e){console.error(e);toast(e.message||'Campaign add failed')}finally{if(btn){btn.disabled=false;btn.textContent='Add Campaign'}}};
 window.editCampaignAdmin=(id)=>{const c=campaigns.find(x=>x.id===id);if(!c)return;modal(`<h2>Edit Campaign</h2><input id="etitle" class="field" value="${safe(c.title||'')}"><input id="edestination" class="field" value="${safe(c.destinationUrl||'')}" placeholder="Destination URL"><input id="eimage" class="field" value="${safe(c.image||'')}" placeholder="Image URL"><textarea id="egoals" class="field" rows="5">${getGoals(c).map(g=>`${g.name} | ${g.maxPayout} | ${g.userReward}`).join('\n')}</textarea><textarea id="esteps" class="field" rows="4">${safe(c.steps||c.instructions||'')}</textarea><button type="button" class="btn full" onclick="saveCampaignAdmin('${id}')">Save</button>`)};
-window.saveCampaignAdmin=async(id)=>{try{await updateDoc(doc(db,'campaigns',id),{title:document.getElementById('etitle')?.value||'',destinationUrl:document.getElementById('edestination')?.value||'',image:document.getElementById('eimage')?.value||'',goals:parseGoals(document.getElementById('egoals')?.value||''),steps:document.getElementById('esteps')?.value||'',instructions:document.getElementById('esteps')?.value||'',updatedAt:Date.now()});window.closeModal();toast('Updated');await refresh()}catch(e){toast(e.message||'Update failed')}};
+window.saveCampaignAdmin=async(id)=>{try{await updateDoc(doc(db,'campaigns',id),{title:document.getElementById('etitle')?.value||'',destinationUrl:document.getElementById('edestination')?.value||'',image:document.getElementById('eimage')?.value||'',imageUrl:document.getElementById('eimage')?.value||'',logo:document.getElementById('eimage')?.value||'',goals:parseGoals(document.getElementById('egoals')?.value||''),steps:document.getElementById('esteps')?.value||'',instructions:document.getElementById('esteps')?.value||'',updatedAt:Date.now()});window.closeModal();toast('Updated');await refresh()}catch(e){toast(e.message||'Update failed')}};
 window.lead=async(id,col,status,uid,reward)=>{try{await updateDoc(doc(db,col,id),{status,updatedAt:Date.now()});if(status==='approved'&&uid&&reward){const u=users.find(x=>x.id===uid);await setDoc(doc(db,'users',uid),{balance:Number(u?.balance||0)+Number(reward)},{merge:true})}toast('Updated');await refresh()}catch(e){toast(e.message||'Update failed')}};
 window.upd=async(id,col,status)=>{try{await updateDoc(doc(db,col,id),{status,updatedAt:Date.now()});toast('Updated');await refresh()}catch(e){toast(e.message||'Update failed')}};
 window.delDoc=async(id,col)=>{try{if(!confirm('Delete?'))return;await deleteDoc(doc(db,col,id));toast('Deleted');await refresh()}catch(e){toast(e.message||'Delete failed')}};
