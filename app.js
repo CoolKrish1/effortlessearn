@@ -13,7 +13,7 @@ export const money=(n)=>Number(n||0).toLocaleString('en-IN');
 // Global anti-refresh guard: form submit, blank # links and buttons without type.
 document.addEventListener('submit',e=>e.preventDefault(),true);
 document.addEventListener('click',e=>{
-  const a=e.target.closest('a[href="#"]');
+  const a=e.target.closest('a[href="#"],a[href=""]');
   if(a)e.preventDefault();
   const btn=e.target.closest('button');
   if(btn && !btn.getAttribute('type')) btn.setAttribute('type','button');
@@ -23,7 +23,6 @@ window.toast=toast;
 
 async function getCollection(name){try{return (await getDocs(collection(db,name))).docs.map(d=>({id:d.id,_collection:name,...d.data()}));}catch(e){console.warn('Load failed:',name,e.message);return []}}
 export async function init(){
-  if(!document.getElementById('loading')) document.body.insertAdjacentHTML('afterbegin','<div id="loading" class="loading">Loading...</div>');
   onAuthStateChanged(auth, async(u)=>{
     user=u;
     if(u){
@@ -32,7 +31,6 @@ export async function init(){
       else { profile={id:u.uid,email:u.email,balance:0,role:'user',createdAt:Date.now()}; await setDoc(doc(db,'users',u.uid),profile,{merge:true}); }
     }else profile=null;
     await loadData();
-    document.getElementById('loading')?.remove();
     window.renderPage && window.renderPage();
   });
 }
@@ -80,7 +78,7 @@ export function offerCards(list,admin=false){
  return list.length?list.map(d=>`<div class="offer"><div class="offerhead"><img src="${safe(d.image)}"><div><h3>${safe(d.title)}</h3><p class="muted">${safe(d.category||'CPA')} • ${getGoals(d).length} Goal</p></div><span class="tag ${d.status==='paused'?'bad':'green'}">${safe(d.status||'active')}</span></div><div class="earn"><span>Total Earnings</span><b>₹${money(totalMax(d))}</b></div><button type="button" onclick="openOffer('${d.id}')" class="btn full">Start Earning →</button>${admin?`<div class="actions"><button type="button" class="btn orange" onclick="editCampaignAdmin('${d.id}')">Edit</button><button type="button" class="btn blue" onclick="toggleCampaign('${d.id}','${d.status==='paused'?'active':'paused'}')">${d.status==='paused'?'Active':'Pause'}</button><button type="button" class="btn red" onclick="deleteCampaign('${d.id}')">Delete</button></div>`:''}</div>`).join(''):`<div class="empty">No data found</div>`;
 }
 function goalsTable(c){return `<div class="panel"><h3>Earning Breakdown</h3><table class="table" style="min-width:0"><tr><th>Event / Action</th><th>Max</th><th>Worker</th><th>Your Profit</th></tr>${getGoals(c).map(g=>`<tr><td>${safe(g.name)}</td><td>₹${money(g.maxPayout)}</td><td>₹${money(g.userReward)}</td><td class="greenText">₹${money(g.affiliateProfit)}</td></tr>`).join('')}</table></div>`}
-window.openOffer=(id)=>{ const d=campaigns.find(x=>x.id===id); if(!d)return; const link=`${location.origin}${location.pathname.replace(/[^/]*$/,'')}campaign.html?id=${d.id}&pub=${user?.uid||''}`; modal(`<button type="button" class="close" onclick="closeModal()">×</button><div style="display:flex;gap:16px;align-items:center"><img class="preview" src="${safe(d.image)}"><div><span class="tag">${safe(d.category||'CPA')}</span><h1>${safe(d.title)}</h1><b class="greenText">Total Potential: ₹${money(totalMax(d))}</b></div></div><hr><div class="notice"><b>Terms & Conditions</b><p>${safe(d.terms||d.steps||'').replaceAll('\n','<br>')}</p></div><div class="linkbox"><b>Your Smart Tracking Link</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Link copied')">Copy</button></div></div>${goalsTable(d)}<div class="notice"><b>Worker Steps</b><p>${safe(d.instructions||d.steps||'Complete task properly.').replaceAll('\n','<br>')}</p></div><button type="button" class="btn green full" onclick="location.href='smartlinks.html?campaign=${d.id}'">Create Smart Campaign</button>`); };
+window.openOffer=(id)=>{ const d=campaigns.find(x=>x.id===id); if(!d)return; const link=`${location.origin}${location.pathname.replace(/[^/]*$/,'')}campaign.html?id=${d.id}&pub=${user?.uid||''}`; modal(`<button type="button" class="close" onclick="closeModal()">×</button><div style="display:flex;gap:16px;align-items:center"><img class="preview" src="${safe(d.image)}"><div><span class="tag">${safe(d.category||'CPA')}</span><h1>${safe(d.title)}</h1><b class="greenText">Total Potential: ₹${money(totalMax(d))}</b></div></div><hr><div class="notice"><b>Terms & Conditions</b><p>${safe(d.terms||d.steps||'').replaceAll('\n','<br>')}</p></div><div class="linkbox"><b>Smart Tracking Link</b><div class="toolbar"><input class="field" value="${link}" readonly><button type="button" class="btn blue" onclick="navigator.clipboard.writeText('${link}');toast('Link copied')">Copy</button></div></div>${goalsTable(d)}<div class="notice"><b>Steps</b><p>${safe(d.instructions||d.steps||'Complete the required steps correctly.').replaceAll('\n','<br>')}</p></div><button type="button" class="btn green full" onclick="location.href='smartlinks.html?campaign=${d.id}'">Create Smart Campaign</button>`); };
 
 export async function submitLead({campaignId,goalId='',goalName='',upi='',note='',proofUrl=''}){
  const c=campaigns.find(x=>x.id===campaignId)||{}; const goal=getGoals(c).find(g=>g.id===goalId)||getGoals(c)[0]||{};
