@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn(){ return request.auth != null; }
+    function isAdmin(){ return signedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'; }
+    match /campaigns/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /smart_links/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /users/{uid} { allow create: if signedIn() && request.auth.uid == uid; allow read: if signedIn() && (request.auth.uid == uid || isAdmin()); allow update: if signedIn() && (request.auth.uid == uid || isAdmin()); allow delete: if isAdmin(); }
+    match /lead_submissions/{id} { allow create: if signedIn(); allow read: if signedIn(); allow update, delete: if isAdmin(); }
+    match /submissions/{id} { allow create: if signedIn(); allow read: if signedIn(); allow update, delete: if isAdmin(); }
+    match /withdrawals/{id} { allow create: if signedIn(); allow read: if signedIn(); allow update, delete: if isAdmin(); }
+    match /withdraws/{id} { allow create: if signedIn(); allow read: if signedIn(); allow update, delete: if isAdmin(); }
+    match /revenue_share/{id} { allow read, write: if isAdmin(); }
+    match /clicks/{id} { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /click_logs/{id} { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /reports/{id} { allow create, read: if signedIn(); allow update, delete: if isAdmin(); }
+    match /applications/{id} { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /fraud_logs/{id} { allow create: if signedIn(); allow read, update, delete: if isAdmin(); }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
