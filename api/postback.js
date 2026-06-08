@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     const clickSnap = await db
       .collection("click_logs")
-      .where("clickId", "==", click_id)
+      .where("trackingId", "==", click_id)
       .limit(1)
       .get();
 
