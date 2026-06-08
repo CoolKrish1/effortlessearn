@@ -204,7 +204,7 @@ window.exportReportsCSV=()=>{
   downloadCSV('reports-'+Date.now()+'.csv',rows);
 };
 
-window.renderReportRows=()=>{let arr=getFilteredReports();let pages=Math.max(1,Math.ceil(arr.length/20));if(reportPage>pages)reportPage=pages;let start=(reportPage-1)*20;let pageArr=arr.slice(start,start+20);document.getElementById('rows').innerHTML=pageArr.map(reportRow).join('')||'<tr><td colspan="11" class="emptyCell">No Records Found</td></tr>';document.getElementById('pageInfo').textContent=`Page ${reportPage} / ${pages} • ${arr.length} records`;document.getElementById('prevPage').disabled=reportPage<=1;document.getElementById('nextPage').disabled=reportPage>=pages;applyReportCols();}
+window.renderReportRows=()=>{let arr=getFilteredReports();let pages=Math.max(1,Math.ceil(arr.length/15));if(reportPage>pages)reportPage=pages;let start=(reportPage-1)*15;let pageArr=arr.slice(start,start+15);document.getElementById('rows').innerHTML=pageArr.map(reportRow).join('')||'<tr><td colspan="11" class="emptyCell">No Records Found</td></tr>';document.getElementById('pageInfo').textContent=`Page ${reportPage} / ${pages} • ${arr.length} records`;document.getElementById('prevPage').disabled=reportPage<=1;document.getElementById('nextPage').disabled=reportPage>=pages;applyReportCols();}
 window.changeReportPage=(n)=>{reportPage+=n;renderReportRows()};
 window.filterReport=(f='all')=>{reportFilter=f;reportPage=1;document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===reportFilter));renderReportRows()};
 window.toggleReportCol=(k,checked)=>{reportCols[k]=checked;applyReportCols()};
