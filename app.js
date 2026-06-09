@@ -106,10 +106,17 @@ export async function loadData(){
   users=allUsers;
   if(!isAdmin() && user){
     const uid=user.uid;
-    submissions=submissions.filter(x=>[x.userId,x.publisherId,x.affiliateId,x.uid].includes(uid)||x.email===user.email);
-    withdraws=withdraws.filter(x=>[x.userId,x.publisherId,x.uid].includes(uid)||x.email===user.email);
-    smartLinks=smartLinks.filter(x=>!x.publisherId || x.publisherId===uid || x.userId===uid);
-    clickLogs=clickLogs.filter(x=>!x.publisherId || x.publisherId===uid || x.userId===uid);
+    const email=String(user.email||'').toLowerCase();
+    const owns=(x)=>{
+      const ids=[x.userId,x.publisherId,x.affiliateId,x.uid,x.workerId,x.createdBy,x.ownerId].filter(Boolean).map(String);
+      const emails=[x.email,x.publisherEmail,x.userEmail,x.workerEmail].filter(Boolean).map(v=>String(v).toLowerCase());
+      return ids.includes(uid) || emails.includes(email);
+    };
+    // Privacy fix: normal users must see only their own reports/clicks/wallet/smart links.
+    submissions=submissions.filter(owns);
+    withdraws=withdraws.filter(owns);
+    smartLinks=smartLinks.filter(owns);
+    clickLogs=clickLogs.filter(owns);
   }
 }
 export function requireLogin(){
