@@ -10,7 +10,8 @@ const qs=new URLSearchParams(location.search);
 const id=qs.get('id')||'';
 const pub=qs.get('pub')||'';
 const slug=qs.get('slug')||'';
-const clickId='clk_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const trackingId='CID-'+Date.now()+'-'+Math.floor(100+Math.random()*900);
+const clickId=trackingId;
 function goals(c){let g=Array.isArray(c.goals)?c.goals:[]; if(!g.length)g=[{id:'g0',name:'Task Complete',userReward:c.userReward||c.reward||0,maxPayout:c.reward||0,affiliateProfit:0}]; return g.map((x,i)=>({id:x.id||('g'+i),name:x.name||x.title||('Goal '+(i+1)),userReward:Number(x.userReward||x.reward||0),maxPayout:Number(x.maxPayout||x.payout||0),affiliateProfit:Number(x.affiliateProfit||x.profit||0)}));}
 async function findSmartLink(){
   if(!slug) return null;
@@ -39,10 +40,10 @@ window.startTask=async()=>{
     if(btn){btn.disabled=true;btn.textContent='Starting...'}
     const info=await clientInfo();
     const gs=goals(campaign);
-    await addDoc(collection(db,'click_logs'),{clickId,campaignId:id,campaignTitle:campaign.title||'',publisherId:campaign.publisherId||pub,smartId:campaign.smartId||'',slug:campaign.smartSlug||slug,upi,time:Date.now(),status:'clicked',source:'campaign',...info});
+    await addDoc(collection(db,'click_logs'),{clickId,trackingId,campaignId:id,campaignTitle:campaign.title||'',publisherId:campaign.publisherId||pub,smartId:campaign.smartId||'',slug:campaign.smartSlug||slug,upi,time:Date.now(),status:'clicked',source:'campaign',...info});
     const payableGoals=gs.filter(g=>Number(g.userReward||0)>0);
     for(const g of (payableGoals.length?payableGoals:gs.slice(0,1))){
-      await addDoc(collection(db,'lead_submissions'),{clickId,campaignId:id,campaignTitle:campaign.title||'',goalId:g.id,goalName:g.name,publisherId:campaign.publisherId||pub,userId:campaign.publisherId||pub,upi,status:'pending',reward:Number(g.userReward||0),affiliateProfit:Number(g.affiliateProfit||0),time:Date.now(),source:'campaign',smartId:campaign.smartId||'',slug:campaign.smartSlug||slug,...info});
+      await addDoc(collection(db,'lead_submissions'),{clickId,trackingId,campaignId:id,campaignTitle:campaign.title||'',goalId:g.id,goalName:g.name,publisherId:campaign.publisherId||pub,userId:campaign.publisherId||pub,upi,status:'pending',reward:Number(g.userReward||0),affiliateProfit:Number(g.affiliateProfit||0),time:Date.now(),source:'campaign',smartId:campaign.smartId||'',slug:campaign.smartSlug||slug,...info});
     }
   }catch(e){
     console.error(e);
@@ -57,6 +58,9 @@ window.startTask=async()=>{
     // If a network needs a value, put placeholders in Admin URL, e.g. &sub1={click_id}.
     const finalUrl=rawUrl
       .replaceAll('{click_id}', encodeURIComponent(clickId))
+      .replaceAll('{tracking_id}', encodeURIComponent(trackingId))
+      .replaceAll('{subid}', encodeURIComponent(trackingId))
+      .replaceAll('{sub_id}', encodeURIComponent(trackingId))
       .replaceAll('{pub}', encodeURIComponent(campaign.publisherId||pub||''))
       .replaceAll('{campaign_id}', encodeURIComponent(id||''))
       .replaceAll('{smart_id}', encodeURIComponent(campaign.smartId||''));
