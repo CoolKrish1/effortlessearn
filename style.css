@@ -58,3 +58,19 @@ html,body{scroll-behavior:auto!important}body{background:#f5f7fb;color:#121826}.
 /* V36 privacy + advanced admin report polish */
 .admin-searchbar{grid-template-columns:1fr auto auto auto;display:grid;align-items:center}.admin-searchbar .btn{min-height:42px!important;padding:9px 12px!important}.admin-report-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:12px 0 14px}.admin-report-stats>div{background:#f8fbff;border:1px solid #e7eef8;border-radius:14px;padding:11px 12px}.admin-report-stats span{font-size:10px;color:#748096;text-transform:uppercase;font-weight:800;letter-spacing:.06em}.admin-report-stats b{display:block;margin-top:4px;font-size:18px;color:#101827}.pro-report-table code{display:inline-block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 7px;font-size:11px;color:#0f172a}.pro-report-table th:nth-child(1){min-width:110px}.pro-report-table th:nth-child(2){min-width:180px}.pro-report-table th:nth-child(4){min-width:130px}.admin-report-panel .head-actions{flex-wrap:wrap}.admin-report-panel .smallSelect{min-width:140px!important}
 @media(max-width:900px){.admin-searchbar{grid-template-columns:1fr 1fr;min-width:0}.admin-searchbar input{grid-column:1/-1}.admin-report-stats{grid-template-columns:repeat(2,1fr)}.pro-report-table{min-width:980px}}
+
+
+/* V37 data-safe admin/report polish */
+.admin-table td small,.pro-report-table td small{display:block;margin-top:4px;color:#98a2b3;font-size:11px;line-height:1.35}
+.pro-report-table code{display:inline-block;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#f3f6fb;border:1px solid #e5eaf2;border-radius:9px;padding:6px 9px;font-size:11px;color:#334155}
+.pro-report-table th{font-size:11px;letter-spacing:.6px;color:#667085;text-transform:uppercase;background:#fafbfc;position:sticky;top:0;z-index:1}
+.pro-report-table td{font-size:12px;vertical-align:middle;padding:12px 10px}
+.pro-report-table tr:hover{background:#fbfdff}
+.start-section .field{margin-bottom:10px}
+.task-section.start-section{background:#fbfdff;border:1px solid #edf1f7;border-radius:18px;padding:16px}
+.admin-actions .btn{padding:7px 10px;font-size:11px;border-radius:10px}
+.admin-searchbar input{font-size:13px}
+.status.approved{background:#dcfce7!important;color:#15803d!important}
+.status.pending{background:#fef3c7!important;color:#a16207!important}
+.status.rejected{background:#fee2e2!important;color:#b91c1c!important}
+.status.clicked{background:#e5e7eb!important;color:#475569!important}
